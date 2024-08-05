@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# check if the script was executed directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "The script was executed directly, it needs to be launched with source/."
+    echo "Usage: source build_venv"
+    echo "Usage: . build_venv"
+    exit -1
+fi
+
+venv_path="./linux_venv"
+
+# check if a python executable is passed as an argument
+if [ ! -z "$1" ]; then
+    # override python_executable with the one provided as an argument
+    python_executable="$1"
+elif command -v python3 &>/dev/null; then
+    python_executable="python3"
+else
+    python_executable="python"
+fi
+
+# check if venv already exists
+if [ -d "$venv_path" ]; then
+    echo "Virtual environment already exists."
+    read -p "Do you want to rebuild it? (y/n): " response
+
+    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+        echo "Rebuilding virtual environment..."
+        rm -rf $venv_path
+        $python_executable -m venv $venv_path
+        echo "Virtual environment successfully rebuilt at $venv_path"
+		echo "Installing dependencies..."
+		source $venv_path/bin/activate
+		pip install -r requirements.txt
+		deactivate
+    else
+        echo "No changes made to the existing virtual environment."
+    fi
+else
+    echo "Creating new Python virtual environment..."
+    $python_executable -m venv $venv_path
+    echo "Virtual environment successfully created at $venv_path"
+    echo "Installing dependencies..."
+    source $venv_path/bin/activate
+    pip install -r requirements.txt
+    echo "Dependencies successfully installed."
+    deactivate
+fi
