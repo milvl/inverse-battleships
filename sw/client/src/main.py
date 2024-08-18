@@ -2,6 +2,7 @@ from typing import Dict
 import os
 from utils import load_json
 from typedefs import PongGameConfig, PongGameAssets, PongGameUpdateResult
+from pydantic import ValidationError
 import pygame
 from assets_loader import AssetsLoader
 from game import PongGame
@@ -30,8 +31,8 @@ def main():
     # load the configuration file
     config: dict = load_config(DEFAULT_CONFIG_PATH)
     try:
-        PongGameConfig(**config)
-    except Exception as e:
+        PongGameConfig.model_validate(config, strict=True)
+    except ValidationError as e:
         print(f'Config data has incorrect format: {e}')
         return
 
@@ -39,8 +40,8 @@ def main():
     assets_loader: AssetsLoader = AssetsLoader(RESOURCES_DIR_PATH)
     assets: dict = assets_loader.load()
     try:
-        PongGameAssets(**assets)
-    except Exception as e:
+        PongGameAssets.model_validate(assets, strict=True)
+    except ValidationError as e:
         print(f'Assets data has incorrect format: {e}')
         return
     import pprint; pprint.pprint(assets)

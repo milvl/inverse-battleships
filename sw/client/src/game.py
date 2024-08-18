@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple
+from utils import maintains_min_window_size
 from typedefs import PongGameConfig, PongGameDebugInfo, PongGameUpdateResult, PyGameEvents
 import random
 from copy import deepcopy
@@ -86,7 +87,7 @@ class PongGame:
         # create a new font object
         font = pygame.font.Font(None, 25)
         # create a new text surface
-        text = font.render(str(self.debug_info), True, self.assets['colors']['white'])
+        text = font.render(str(self.debug_info), True, self.assets['colors']['white'], self.assets['colors']['black'])
         
         return text
 
@@ -141,18 +142,21 @@ class PongGame:
                 continue
 
             if event.type == pygame.VIDEORESIZE:
+                if not maintains_min_window_size(event.dict['w'], event.dict['h'], self.config['min_window_width'], self.config['min_window_height']):
+                    pygame.display.set_mode((self.config['min_window_width'], self.config['min_window_height']), pygame.RESIZABLE)
                 events.event_videoresize = event
                 continue
 
         return events
+    
 
     def update(self) -> PongGameUpdateResult:
+        # sanity check
         if not self.started:
             raise ValueError('The game has not been started yet.')
 
         # result: PongGameUpdateResult = {'update': False, 'exit': False}
         result: PongGameUpdateResult = PongGameUpdateResult(update=False, exit=False)
-
         events = self.__get_pygame_events()
         
         # user requests to quit
@@ -171,7 +175,7 @@ class PongGame:
             if not getattr(self, 'last_time', None):
                 self.last_time = pygame.time.get_ticks()
             else:
-                if pygame.time.get_ticks() - self.last_time >= 1000:
+                if pygame.time.get_ticks() - self.last_time >= 5000:
                     self.state = PongGameState.MAIN_MENU
                     del self.last_time
                     result.update = True
@@ -201,8 +205,10 @@ class PongGame:
 
         if result.update:
             self.debug_info.game_state = PongGameState.get_state_name(self.state)
-            self.debug_info_render = self.__get_debug_info_object()
             self.window.fill(PongGame.BACKGROUNDS_COLOR)
-            self.window.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
+            
+            if self.display_debug_info:
+                self.debug_info_render = self.__get_debug_info_object()
+                self.window.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
         
         return result

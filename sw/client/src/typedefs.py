@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Dict, Tuple
 
 
@@ -8,10 +8,14 @@ class PongGameConfig(BaseModel):
     Class that represents the configuration of the game.
     """
 
+    model_config: ConfigDict = {'extra': 'forbid'}
     window_width: int
     window_height: int
     tick_speed: int
     players_count: int
+    skip_intro: bool
+    min_window_width: int
+    min_window_height: int
 
 
 class PongGameAssets(BaseModel):
