@@ -42,13 +42,35 @@ class PongGameState:
     GAME_SESSION = 5
     GAME_END = 6
 
-    @staticmethod
-    def get_state_name(state: int) -> str:
+
+    def __init__(self):
+        # TODO DOC
+        self.__state = PongGameState.INTRO_SEQUENCE
+
+
+    @property
+    def state(self) -> int:
+        # TODO DOC
+        return self.__state
+
+
+    def set_state(self, new_state: int):
+        # TODO DOC
+        if not hasattr(self, 'state'):
+            raise SystemError('The state attribute has not been initialized yet.')
+        if new_state > PongGameState.GAME_END or new_state < PongGameState.INTRO_SEQUENCE:
+            raise ValueError('Invalid state.')
+        
+        if new_state == self.__state:
+            return
+
+        self.__state = new_state
+
+
+    def get_state_name(self) -> str:
         """
         Returns the name of the state.
 
-        :param state: The state.
-        :type state: int
         :return: The name of the state.
         :rtype: str
         """
@@ -62,7 +84,7 @@ class PongGameState:
             PongGameState.LOBBY: 'LOBBY',
             PongGameState.GAME_SESSION: 'GAME_SESSION',
             PongGameState.GAME_END: 'GAME_END'
-        }.get(state, 'UNKNOWN_STATE')
+        }.get(self.__state, 'UNKNOWN_STATE')
 
 
 class PongGame:
@@ -99,9 +121,8 @@ class PongGame:
         self.window: pygame.display = pygame.display.set_mode((self.config['window_width'], self.config['window_height']), pygame.RESIZABLE)
         pygame.display.set_caption(self.assets['strings']['window_title'])
         
-        self.state = PongGameState.INTRO_SEQUENCE
-        # self.debug_info: PongGameDebugInfo = {'game_state': PongGameState.get_state_name(self.state), 'dimensions': self.window.get_size(), 'last_reg_key': None}
-        self.debug_info: PongGameDebugInfo = PongGameDebugInfo(game_state=PongGameState.get_state_name(self.state), dimensions=self.window.get_size(), last_reg_key=None)
+        self.game_state = PongGameState()
+        self.debug_info: PongGameDebugInfo = PongGameDebugInfo(game_state=self.game_state.get_state_name(), dimensions=self.window.get_size(), last_reg_key=None)
         self.debug_info_render = self.__get_debug_info_object()
         self.window.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
 
@@ -207,12 +228,12 @@ class PongGame:
             result.update = True
 
         # ignore all events that are not of interest
-        if self.state == PongGameState.INTRO_SEQUENCE:
+        if self.game_state.state == PongGameState.INTRO_SEQUENCE:
             if not getattr(self, 'last_time', None):
                 self.last_time = pygame.time.get_ticks()
             else:
                 if pygame.time.get_ticks() - self.last_time >= 5000:
-                    self.state = PongGameState.MAIN_MENU
+                    self.game_state = PongGameState.MAIN_MENU
                     del self.last_time
                     result.update = True
         
@@ -225,21 +246,21 @@ class PongGame:
                     result.update = True
 
             # ordered by the most prioritized states (microoptimization)
-            if self.state == PongGameState.GAME_SESSION:
+            if self.game_state.state == PongGameState.GAME_SESSION:
                 self.__update_game_session(events)
-            elif self.state == PongGameState.LOBBY:
+            elif self.game_state.state == PongGameState.LOBBY:
                 self.__update_lobby(events)
-            elif self.state == PongGameState.LOBBY_SELECTION:
+            elif self.game_state.state == PongGameState.LOBBY_SELECTION:
                 self.__update_lobby_selection(events)
-            elif self.state == PongGameState.CONNECTION_MENU:
+            elif self.game_state.state == PongGameState.CONNECTION_MENU:
                 self.__update_connection_menu(events)
-            elif self.state == PongGameState.GAME_END:
+            elif self.game_state.state == PongGameState.GAME_END:
                 self.__update_game_end(events)
-            elif self.state == PongGameState.MAIN_MENU:
+            elif self.game_state.state == PongGameState.MAIN_MENU:
                 self.__update_main_menu(events)
-            elif self.state == PongGameState.SETTINGS_MENU:
+            elif self.game_state.state == PongGameState.SETTINGS_MENU:
                 self.__update_settings_menu(events)
-            elif self.state == PongGameState.INTRO_SEQUENCE:
+            elif self.game_state.state == PongGameState.INTRO_SEQUENCE:
                 raise SystemError('The INTRO_SEQUENCE state should have been handled before this point.')
             else:
                 raise SystemError('Unknown state.')
@@ -248,7 +269,7 @@ class PongGame:
         if result.update:
             # render the debug info if allowed
             if self.display_debug_info:
-                self.debug_info.game_state = PongGameState.get_state_name(self.state)
+                self.debug_info.game_state = self.game_state.get_state_name()
                 self.debug_info_render = self.__get_debug_info_object()
                 self.window.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
         
