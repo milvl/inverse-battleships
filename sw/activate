@@ -15,7 +15,6 @@ if [ ! -d "./linux_venv" ]; then
 fi
 
 source ./linux_venv/bin/activate
-export PATH=$PATH:$(pwd)/linux_venv/bin
 
 # add python version message
 python --version

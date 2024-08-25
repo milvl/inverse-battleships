@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# check for -h or --help flag
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage: "
+    echo "  source build_venv [python_executable]"
+    echo
+    echo "  . build_venv [python_executable]"
+    echo
+    echo "Arguments:"
+    echo "   [python_executable]: path to the python executable to use for creating the virtual environment"
+    echo "       - Optional."
+    echo "       - If no python_executable is provided, the script will use the first available python3 or python executable."
+    echo
+    echo "Note: The script will prompt you if you want to ensure the latest version of pip."
+    echo "Note: If the virtual environment already exists, the script will prompt you if you want to rebuild it."
+    return 0
+fi
+
 # check if the script was executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo "The script was executed directly, it needs to be launched with source/."
@@ -21,6 +38,7 @@ else
 fi
 
 # check if venv already exists
+resume=true
 if [ -d "$venv_path" ]; then
     echo "Virtual environment already exists."
     read -p "Do you want to rebuild it? (y/n): " response
@@ -28,21 +46,23 @@ if [ -d "$venv_path" ]; then
     if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
         echo "Rebuilding virtual environment..."
         rm -rf $venv_path
-        $python_executable -m venv $venv_path
-        echo "Virtual environment successfully rebuilt at $venv_path"
-		echo "Installing dependencies..."
-		source $venv_path/bin/activate
-		pip install -r requirements.txt
-		deactivate
     else
         echo "No changes made to the existing virtual environment."
+        resume=false
     fi
-else
+fi
+
+if [ "$resume" = true ]; then
     echo "Creating new Python virtual environment..."
     $python_executable -m venv $venv_path
     echo "Virtual environment successfully created at $venv_path"
     echo "Installing dependencies..."
     source $venv_path/bin/activate
+    read -p "Do you want to ensure the latest version of pip? (y/n): " response
+    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+        pip install --upgrade pip
+    fi
+    pip --version
     pip install -r requirements.txt
     echo "Dependencies successfully installed."
     deactivate

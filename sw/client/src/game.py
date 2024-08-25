@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple
+from graphics.menus import SelectMenu
 from utils import maintains_min_window_size
 from typedefs import PongGameConfig, PongGameDebugInfo, PongGameUpdateResult, PyGameEvents
 import random
@@ -65,12 +66,12 @@ class PongGameState:
 
 
 class PongGame:
-    BACKGROUNDS_COLOR = None
+    # TODO DOC
 
     def __init__(self, config: Dict, assets: Dict, display_debug_info: bool = False):
+        # TODO DOC
         self.config = deepcopy(config)
         self.assets = deepcopy(assets)
-        PongGame.BACKGROUNDS_COLOR = self.assets['colors']['black'] if PongGame.BACKGROUNDS_COLOR is None else PongGame.BACKGROUNDS_COLOR
         self.display_debug_info = display_debug_info
 
         self.started = False
@@ -150,6 +151,41 @@ class PongGame:
         return events
     
 
+    def __update_game_session(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_game_session method has not been implemented yet.')
+
+
+    def __update_lobby(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_lobby method has not been implemented yet.')
+
+
+    def __update_lobby_selection(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_lobby_selection method has not been implemented yet.')
+
+
+    def __update_connection_menu(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_connection_menu method has not been implemented yet.')
+
+
+    def __update_game_end(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
+
+
+    def __update_main_menu(self, events: PyGameEvents) -> PongGameUpdateResult:
+        # if no menu was drawn, prepare it and draw it
+        if not hasattr(self, 'menu'):
+            self.menu = SelectMenu(self.window, self.assets)
+            self.menu.add_options()
+            
+            self.menu.render()
+
+        # catch input of user and update the menu accordingly
+
+
+    def __update_settings_menu(self, events: PyGameEvents) -> PongGameUpdateResult:
+        raise NotImplementedError('The __update_settings_menu method has not been implemented yet.')
+    
+
     def update(self) -> PongGameUpdateResult:
         # sanity check
         if not self.started:
@@ -188,26 +224,31 @@ class PongGame:
                     self.debug_info.last_reg_key = pygame.key.name(events.event_keydown.key)
                     result.update = True
 
-            if self.state == PongGameState.MAIN_MENU:
-                pass
-            elif self.state == PongGameState.SETTINGS_MENU:
-                pass
-            elif self.state == PongGameState.CONNECTION_MENU:
-                pass
-            elif self.state == PongGameState.LOBBY_SELECTION:
-                pass
+            # ordered by the most prioritized states (microoptimization)
+            if self.state == PongGameState.GAME_SESSION:
+                self.__update_game_session(events)
             elif self.state == PongGameState.LOBBY:
-                pass
-            elif self.state == PongGameState.GAME_SESSION:
-                pass
+                self.__update_lobby(events)
+            elif self.state == PongGameState.LOBBY_SELECTION:
+                self.__update_lobby_selection(events)
+            elif self.state == PongGameState.CONNECTION_MENU:
+                self.__update_connection_menu(events)
             elif self.state == PongGameState.GAME_END:
-                pass
+                self.__update_game_end(events)
+            elif self.state == PongGameState.MAIN_MENU:
+                self.__update_main_menu(events)
+            elif self.state == PongGameState.SETTINGS_MENU:
+                self.__update_settings_menu(events)
+            elif self.state == PongGameState.INTRO_SEQUENCE:
+                raise SystemError('The INTRO_SEQUENCE state should have been handled before this point.')
+            else:
+                raise SystemError('Unknown state.')
 
+        # additional render surface overlay
         if result.update:
-            self.debug_info.game_state = PongGameState.get_state_name(self.state)
-            self.window.fill(PongGame.BACKGROUNDS_COLOR)
-            
+            # render the debug info if allowed
             if self.display_debug_info:
+                self.debug_info.game_state = PongGameState.get_state_name(self.state)
                 self.debug_info_render = self.__get_debug_info_object()
                 self.window.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
         

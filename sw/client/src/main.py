@@ -61,6 +61,8 @@ def main():
             pygame.display.update()
         clock.tick(tick_speed)
 
+    pygame.quit()
+
 
 if __name__ == '__main__':
     main()
