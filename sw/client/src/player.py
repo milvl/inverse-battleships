@@ -1,4 +1,4 @@
-class PongPlayer:
+class IBPlayer:
     def __init__(self, name: str, left: bool):
         self.name = name
         self.left = left

@@ -1,9 +1,10 @@
 {
-    "window_width": 1000,
-    "window_height": 1000,
+    "window_width": 500,
+    "window_height": 500,
     "players_count": 2,
     "tick_speed": 60,
     "skip_intro": false,
     "min_window_width": 100,
-    "min_window_height": 100
+    "min_window_height": 100,
+    "debug_mode": true
 }

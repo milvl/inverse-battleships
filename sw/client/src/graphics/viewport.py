@@ -2,31 +2,22 @@ from abc import ABC, abstractmethod
 import pygame
 
 
-class Viewport:
+class Viewport(ABC):
     """
     The Viewport class.
     """
 
 
     @abstractmethod
-    def __init__(self, window: pygame.display):
+    def __init__(self, surface: pygame.display):
         """
         Constructor for the Viewport class.
 
-        :param window: The window to render the viewport to.
-        :type window: pygame.display
+        :param surface: The surface to render the viewport to.
+        :type surface: pygame.display
         """
 
-        pass
-
-
-    @abstractmethod
-    def render(self):
-        """
-        Renders the viewport.
-        """
-
-        pass
+        raise NotImplementedError("Must be overridden by subclass.")
 
 
     @abstractmethod
@@ -38,4 +29,4 @@ class Viewport:
         :type events: pygame.event
         """
 
-        pass
+        raise NotImplementedError("Must be overridden by subclass.")

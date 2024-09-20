@@ -1,14 +1,17 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Union, Optional
+from dataclasses import dataclass, field
+import pygame
 
 
 ########## For externally defined data ##########
-class PongGameConfig(BaseModel):
+class IBGameConfig(BaseModel):
     """
     Class that represents the configuration of the game.
     """
 
     model_config: ConfigDict = {'extra': 'forbid'}
+
     window_width: int
     window_height: int
     tick_speed: int
@@ -16,9 +19,10 @@ class PongGameConfig(BaseModel):
     skip_intro: bool
     min_window_width: int
     min_window_height: int
+    debug_mode: bool
 
 
-class PongGameAssets(BaseModel):
+class IBAssets(BaseModel):
     """
     Class that represents the assets of the game.
     """
@@ -27,15 +31,23 @@ class PongGameAssets(BaseModel):
 
 
 ########## For internally defined data ##########
-class PongGameDebugInfo():
+
+@dataclass
+class IBGameDebugInfo():
     """
-    Class that represents the debug information of the game
+    Class that represents the debug information of the game.
+
+    :param game_state: The game state.
+    :type game_state: str, defaults to None
+    :param dimensions: The dimensions.
+    :type dimensions: Tuple[int, int], defaults to None
+    :param last_reg_key: The last registered key.
+    :type last_reg_key: Optional[str], defaults to None
     """
 
-    def __init__(self, game_state: str = None, dimensions: Tuple = None, last_reg_key: str = None):
-        self.game_state = game_state
-        self.dimensions = dimensions
-        self.last_reg_key = last_reg_key
+    game_state: str = None
+    dimensions: Tuple[int, int] = None
+    last_reg_key: Optional[str] = None
 
     def __str__(self) -> str:
         """
@@ -46,42 +58,48 @@ class PongGameDebugInfo():
         """
 
         return str(self.__dict__)
-    
-    def __repr__(self):
-        """
-        String representation of the class.
 
-        :return: The string representation of the class.
-        :rtype: str
-        """
 
-        return self.__str__()
-    
-
+@dataclass
 class PyGameEvents():
     """
     Class that represents the PyGame events.
+
+    :param event_quit: The quit event.
+    :type event_quit: Optional[pygame.event.Event]
+    :param event_keydown: The keydown event.
+    :type event_keydown: Optional[pygame.event.Event]
+    :param event_keyup: The keyup event.
+    :type event_keyup: Optional[pygame.event.Event]
+    :param event_mousemotion: The mousemotion event.
+    :type event_mousemotion: Optional[pygame.event.Event]
+    :param event_mousebuttondown: The mousebuttondown event.
+    :type event_mousebuttondown: Optional[pygame.event.Event]
+    :param event_mousebuttonup: The mousebuttonup event.
+    :type event_mousebuttonup: Optional[pygame.event.Event]
+    :param event_videoresize: The videoresize event.
+    :type event_videoresize: Optional[pygame.event.Event]
     """
 
-    def __init__(self):
-        """
-        Constructor for the PyGameEvents class.
-        """
-
-        self.event_quit = None
-        self.event_keydown = None
-        self.event_keyup = None
-        self.event_mousemotion = None
-        self.event_mousebuttondown = None
-        self.event_mousebuttonup = None
-        self.event_videoresize = None
+    event_quit: Optional[pygame.event.Event] = None
+    event_keydown: Optional[pygame.event.Event] = None
+    event_keyup: Optional[pygame.event.Event] = None
+    event_mousemotion: Optional[pygame.event.Event] = None
+    event_mousebuttondown: Optional[pygame.event.Event] = None
+    event_mousebuttonup: Optional[pygame.event.Event] = None
+    event_videoresize: Optional[pygame.event.Event] = None
 
 
-class PongGameUpdateResult():
+@dataclass
+class IBGameUpdateResult():
     """
     Class that represents the result of the game update.
+
+    :param exit: Whether to exit the game.
+    :type exit: bool, defaults to False
+    :param update_areas: The areas to update.
+    :type update_areas: Optional[List[pygame.Surface]]
     """
 
-    def __init__(self, exit: bool = None, update: bool = None):
-        self.exit = exit
-        self.update = update
+    exit: bool = False
+    update_areas: List[pygame.Surface] = field(default_factory=lambda: [])

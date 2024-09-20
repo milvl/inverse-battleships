@@ -1,0 +1,45 @@
+{
+  "loggers": [
+	  "main_logger"
+  ],
+  "loggers_general": [
+    "general_logger"
+  ],
+  "temp_loggers": {
+    "temp": true
+  },
+  "logger_handler_configs": {
+    "general_logger.console_handler": {
+      "output": "stdout",
+      "level": "DEBUG",
+      "format": "%(asctime)s.%(msecs)03d - [%(module)s - %(levelname)s] - (%(module)s.%(funcName)s:%(lineno)d) - \"%(message)s\"",
+      "datefmt": "%H:%M:%S"
+    },
+  
+    "main_logger.file_handler": {
+      "output": "../main_loger.log",
+        "level": "DEBUG",
+        "format": "%(asctime)s.%(msecs)03d - [%(levelname)s] - (%(module)s.%(funcName)s:%(lineno)d) - \"%(message)s\"",
+        "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+
+    "template.handler_template": {
+      "__notice__": "template = name of the logger; handler_template = console_handler/file_handler (only for informative description purposes, no other functionality)",
+      "__comment01__": "template for handler config, NOT active because NOT INCLUDED in loggers list",
+      
+      "output": "stdout",
+      "__comment02__": "options: <stdout or console>, <stderr>, <path to log file>",
+      
+      "level": "DEBUG",
+      "__comment03__": "options: DEBUG, INFO, WARNING, ERROR, CRITICAL",
+      
+      "format": "%(asctime)s.%(msecs)d - %(levelname)s: %(message)s",
+      "__comment04a__": "options: %(asctime)s, %(levelname)s, %(message)s, %(name)s, %(filename)s",
+      "__comment04b__": "%(module)s, %(funcName)s, %(lineno)d, %(process)d, %(thread)d",
+      "__comment04c__": "%(asctime)s.%(msecs)03d - [%(module)s - %(levelname)s] - (TH_%(thread)s | PR_%(process)s | %(funcName)s:%(lineno)d) - \"%(message)s\"",
+      
+      "datefmt": "%Y-%m-%d %H:%M:%S",
+      "__comment05__": "options: %Y-%m-%d %H:%M:%S, %Y/%m/%d %H:%M:%S, %Y%m%d %H:%M:%S"
+    }
+  }
+}
