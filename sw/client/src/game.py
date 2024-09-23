@@ -224,14 +224,16 @@ class IBGame:
         raise NotImplementedError('The __update_game_end method has not been implemented yet.')
 
 
-    def __update_main_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
+    def __update_main_menu(self, events: PyGameEvents):
+        # TODO DOC
+
         # if no menu was drawn, prepare it and draw it
         if not hasattr(self, 'menu'):
             title = MenuTitle(self.assets['strings']['main_menu_title'])
             options = [
                 MenuOption(self.assets['strings']['main_menu_option_play'], lambda: print('Play menu')),
                 MenuOption(self.assets['strings']['main_menu_option_settings'], lambda: print('Settings menu')),
-                MenuOption(self.assets['strings']['main_menu_option_exit'], lambda: pygame.quit())
+                MenuOption(self.assets['strings']['main_menu_option_exit'], lambda: SelectMenu.handle_exit(self))
             ]
             self.menu = SelectMenu(self.presentation_surface, self.assets, title, options)
 
@@ -262,11 +264,13 @@ class IBGame:
         debug info should be updated, False otherwise.
         :rtype: bool
         """
+
+        #TODO magic num
         
         if not getattr(self, 'last_time', None):
             self.last_time = pygame.time.get_ticks()
     
-        if pygame.time.get_ticks() - self.last_time >= 5000:
+        if pygame.time.get_ticks() - self.last_time >= 2000:
             self.game_state.state = IBGameState.MAIN_MENU
             logger.info('Intro sequence completed, switching state to MAIN_MENU')
             del self.last_time

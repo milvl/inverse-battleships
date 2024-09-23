@@ -11,7 +11,7 @@
   "logger_handler_configs": {
     "general_logger.console_handler": {
       "output": "stdout",
-      "level": "INFO",
+      "level": "DEBUG",
       "format": "%(asctime)s.%(msecs)03d - [%(module)s - %(levelname)s] - (%(module)s.%(funcName)s:%(lineno)d) - \"%(message)s\"",
       "datefmt": "%H:%M:%S"
     },

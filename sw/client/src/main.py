@@ -1,11 +1,7 @@
 import os
-from const import DEFAULT_CONFIG_PATH, RESOURCES_DIR_PATH, LOGGERS_CONFIG_PATH, MAIN_LOGGER_NAME
-import loggers
-from time import sleep
-loggers.set_path_to_config_file(LOGGERS_CONFIG_PATH)
-while not loggers.is_ready():
-    sleep(0.1)
-logger = loggers.get_logger(MAIN_LOGGER_NAME)
+from init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
+
+logger = loggers.get_logger(LOGGER_NAME)
 temp_logger = loggers.get_temp_logger('temp')
 
 from typing import Dict
@@ -51,10 +47,10 @@ def main():
         logger.info('Posix system detected')
     else:
         logger.critical('Unknown operating system detected, exiting...')
-        exit(1)
+        exit(EXIT_FAILURE)
 
     # load the configuration file
-    config: dict = load_config(DEFAULT_CONFIG_PATH)
+    config: dict = load_config(CFG_PATH)
     try:
         logger.debug('Validating the default configuration data...')
         IBGameConfig.model_validate(config, strict=True)
@@ -62,7 +58,7 @@ def main():
     except ValidationError as e:
         print(f'Default config data has incorrect format: {e}')
         logger.critical(f'Config data has incorrect format: {e}')
-        return
+        exit(EXIT_INVALID_CFG)
 
     # load the assets
     assets_loader: AssetsLoader = AssetsLoader(RESOURCES_DIR_PATH)
@@ -74,7 +70,7 @@ def main():
     except ValidationError as e:
         print(f'Assets data has incorrect format: {e}')
         logger.critical(f'Assets data has incorrect format: {e}')
-        return
+        exit(EXIT_INVALID_ASSETS_CFG)
 
     clock = pygame.time.Clock()
     tick_speed = config['tick_speed']
@@ -117,6 +113,7 @@ def main():
         pygame.quit()
 
     logger.info('Program terminated')
+    exit(EXIT_SUCCESS)
 
 
 if __name__ == '__main__':

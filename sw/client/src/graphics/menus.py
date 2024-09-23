@@ -225,6 +225,13 @@ class SelectMenu(Viewport):
     Represents the select menu.
     """
 
+
+    @staticmethod
+    def handle_exit(self):
+        # TODO DOC
+
+        self.update_result.exit = True
+
     @staticmethod
     def __draw_options(surface: pygame.Surface, 
                        options: List[MenuOption], 
@@ -416,28 +423,43 @@ class SelectMenu(Viewport):
 
         # handle possible option hover
         if events.event_mousemotion:
-            updated = True
             for option in self.__options:
+                was_highlighted = option.highlighted
                 if option.rect.collidepoint(events.event_mousemotion.pos):
                     option.highlighted = True
                 else:
                     option.highlighted = False
+                
+                if was_highlighted != option.highlighted:
+                    updated = True
+        
+        # handle possible option click
+        if events.event_mousebuttonup:
+            for option in self.__options:
+                if option.rect.collidepoint(events.event_mousebuttonup.pos):
+                    updated = True
+                    option.execute()
+                    break
 
         # handle keyboard input
         if events.event_keydown:
             next_index_shift = 0
             none_highlighted = True
-            valid_choice = False
+            valid_option_choice = False
+            submitted = False
             if events.event_keydown.key == pygame.K_UP:
-                valid_choice = True
+                valid_option_choice = True
                 next_index_shift = -1
                     
             elif events.event_keydown.key == pygame.K_DOWN:
                 limit_func = min
-                valid_choice = True
+                valid_option_choice = True
                 next_index_shift = 1
+
+            elif events.event_keydown.key == pygame.K_RETURN:
+                submitted = True
             
-            if valid_choice:
+            if valid_option_choice:
                 updated = True
                 for i, option in enumerate(self.__options):
                     if option.highlighted:
@@ -449,6 +471,13 @@ class SelectMenu(Viewport):
                 if none_highlighted:
                     next_index = 0
                 self.__options[next_index].highlighted = True
+
+            if submitted:
+                updated = True
+                for option in self.__options:
+                    if option.highlighted:
+                        option.execute()
+                        break
                 
         return updated
         
