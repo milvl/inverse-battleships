@@ -7,7 +7,7 @@ tmp_logger = loggers.get_temp_logger('temp')
 from pprint import pformat
 from typing import List, Dict, Tuple, Union, Optional
 from graphics.menus import SelectMenu, MenuTitle, MenuOption
-from utils import maintains_min_window_size
+from utils import maintains_min_window_size, color_make_seethrough
 from typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
 import random
 from copy import deepcopy
@@ -123,7 +123,11 @@ class IBGame:
         # create a new font object
         font = pygame.font.Font(None, int(pygame.display.get_desktop_sizes()[0][1] * 1/45))
         # create a new text surface
-        text = font.render(str(self.debug_info), True, self.assets['colors']['white'], self.assets['colors']['black'])
+        text = font.render(str(self.debug_info), 
+                           True, 
+                           self.assets['colors']['white'], 
+                        #    color_make_seethrough(self.assets['colors']['black']))
+        )
         
         return text
 
@@ -138,16 +142,15 @@ class IBGame:
         
         self.game_state = IBGameState()
 
-        self.presentation_surface = pygame.Surface(self.window.get_size())
+        self.presentation_surface = self.window.subsurface(self.window.get_rect())
         if self.config.get('debug_mode', False):
             logger.info('Debug mode is enabled')
             self.debug_mode = True
-            self.debug_surface = pygame.Surface(self.window.get_size())
             self.debug_info: IBGameDebugInfo = IBGameDebugInfo(str(self.game_state), self.window.get_size())
             self.debug_info_render: pygame.Surface = self.__get_debug_info_object()
-            self.last_debug_rect: Union[pygame.Rect, None] = None
-            self.debug_surface.blit(self.debug_info_render, (0, self.window.get_height() - self.debug_info_render.get_height()))
-            self.window.blit(self.debug_surface, (0, 0))
+            self.debug_surface = self.window.subsurface(0, self.window.get_height() - self.debug_info_render.get_height(), self.window.get_width(), self.debug_info_render.get_height())
+            self.debug_surface.blit(self.debug_info_render, (0, 0))
+            pygame.display.flip()
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -288,14 +291,14 @@ class IBGame:
         if not maintains_min_window_size(event.dict['w'], event.dict['h'], self.config['min_window_width'], self.config['min_window_height']):
                 logger.warning('The window size is below the minimum allowed size, resizing the window to the minimum size')
                 pygame.display.set_mode((self.config['min_window_width'], self.config['min_window_height']), pygame.RESIZABLE)
-        self.presentation_surface = pygame.display.set_mode(pygame.display.get_window_size(), pygame.RESIZABLE)
+        self.presentation_surface = self.window.subsurface(self.window.get_rect())
         
         logger.debug(f'Window resized to: {events.event_videoresize.dict["size"]}')
         self.update_result.update_areas.append(True)
 
         if self.debug_mode:
             self.debug_info.dimensions = events.event_videoresize.dict['size']
-            self.debug_surface = pygame.Surface(self.presentation_surface.get_size())
+            self.debug_surface = self.window.subsurface(0, self.window.get_height() - self.debug_info_render.get_height(), self.window.get_width(), self.debug_info_render.get_height())
             return True
         
         return False
@@ -328,7 +331,8 @@ class IBGame:
 
         # ignore all events that are not of interest
         if self.game_state.state == IBGameState.INTRO_SEQUENCE:
-            debug_update = self.__handle_intro_sequence()
+            if not debug_update:
+                debug_update = self.__handle_intro_sequence()
         
         # handle events that are of interest
         else:
@@ -369,24 +373,16 @@ class IBGame:
             else:
                 logger.critical('Unknown state.')
                 raise SystemError('Unknown state.')
-        
-        # render the presentation surface
-        self.window.blit(self.presentation_surface, (0, 0))
 
         # render the debug info if allowed
         if debug_update:
-            if self.last_debug_rect:
-                self.update_result.update_areas.append(self.last_debug_rect)
-                self.last_debug_rect = None
+            self.debug_surface.fill(self.assets['colors']['black'])
             self.debug_info.game_state = str(self.game_state)
             self.debug_info_render = self.__get_debug_info_object()
-            self.debug_surface.fill(IBGame.CLEAR_BACKGROUND)
             new_rect_x = 0
             new_rect_y = self.window.get_height() - self.debug_info_render.get_height()
-            self.debug_surface.blit(self.debug_info_render, (new_rect_x, new_rect_y))
-            self.window.blit(self.debug_surface, (0, 0))
+            self.debug_surface.blit(self.debug_info_render, (0, 0))
             new_rect = pygame.Rect(new_rect_x, new_rect_y, self.window.get_width(), self.debug_info_render.get_height())
             self.update_result.update_areas.append(new_rect)
-            self.last_debug_rect = new_rect
         
         return self.update_result

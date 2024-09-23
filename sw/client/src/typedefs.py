@@ -14,6 +14,7 @@ class IBGameConfig(BaseModel):
 
     window_width: int
     window_height: int
+    color_bit_depth: int
     tick_speed: int
     players_count: int
     skip_intro: bool

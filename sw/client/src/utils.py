@@ -126,3 +126,23 @@ def color_highlight(color: Union[Tuple[int, int, int], Tuple[int, int, int, int]
     color_highlighted = tuple(color_highlighted)
 
     return color_highlighted
+
+
+def color_make_seethrough(color: Union[Tuple[int, int, int], Tuple[int, int, int, int]], alpha: int = 20) -> Union[Tuple[int, int, int], Tuple[int, int, int, int]]:
+    """
+    Makes the given color seethrough by adding an alpha value.
+
+    :param color: The color to make seethrough.
+    :type color: Tuple[int, int, int]
+    :param alpha: The alpha value to add, defaults to 50
+    :type alpha: int, optional
+    :return: The seethrough color.
+    :rtype: Tuple[int, int, int, int]
+    """
+
+    if len(color) == 3:
+        return color + (alpha,)
+    elif len(color) == 4:
+        return color[:3] + (alpha,)
+    else:
+        raise ValueError("Invalid color tuple length")

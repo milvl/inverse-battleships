@@ -1,6 +1,7 @@
 {
     "window_width": 500,
     "window_height": 500,
+    "color_bit_depth": 32,
     "players_count": 2,
     "tick_speed": 60,
     "skip_intro": false,

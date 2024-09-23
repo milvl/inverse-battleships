@@ -310,6 +310,8 @@ class SelectMenu(Viewport):
         option_x = surface.get_width() // 2
 
         update_rects.extend(SelectMenu.__draw_options(surface, options, 0, option_height, option_width, option_x, assets))
+        
+        return update_rects
 
 
     def __init__(self, surface: pygame.Surface, assets: IBAssets, title: MenuTitle = None, options: List[MenuOption] = None, scale_title_area_to_screen_height: float = 0.25):
@@ -393,7 +395,7 @@ class SelectMenu(Viewport):
         # update and draw the background
         surface_width, surface_height = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_width, surface_height)
-        pygame.draw.rect(self.__surface, self.__assets['colors']['black'], self.__background)
+        pygame.draw.rect(self.__surface, self.__assets['colors']['pink'], self.__background)
         tmp_logger.debug(f'Background: {self.__background}')
 
         # draw the objects
@@ -403,10 +405,16 @@ class SelectMenu(Viewport):
     def update(self, events: PyGameEvents):
         """
         Updates the select menu.
+
+        :param events: The pygame events.
+        :type events: PyGameEvents
+        :return: Whether the select menu was updated.
+        :rtype: bool
         """
 
         updated = False
 
+        # handle possible option hover
         if events.event_mousemotion:
             updated = True
             for option in self.__options:
@@ -414,6 +422,33 @@ class SelectMenu(Viewport):
                     option.highlighted = True
                 else:
                     option.highlighted = False
-        
+
+        # handle keyboard input
+        if events.event_keydown:
+            next_index_shift = 0
+            none_highlighted = True
+            valid_choice = False
+            if events.event_keydown.key == pygame.K_UP:
+                valid_choice = True
+                next_index_shift = -1
+                    
+            elif events.event_keydown.key == pygame.K_DOWN:
+                limit_func = min
+                valid_choice = True
+                next_index_shift = 1
+            
+            if valid_choice:
+                updated = True
+                for i, option in enumerate(self.__options):
+                    if option.highlighted:
+                        none_highlighted = False
+                        option.highlighted = False
+                        next_index = (i + next_index_shift) % len(self.__options)
+                        break
+                
+                if none_highlighted:
+                    next_index = 0
+                self.__options[next_index].highlighted = True
+                
         return updated
         

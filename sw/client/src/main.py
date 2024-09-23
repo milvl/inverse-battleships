@@ -83,7 +83,7 @@ def main():
     game = IBGame(config, assets)
     logger.info('Game instance created')
 
-    window: pygame.display = pygame.display.set_mode((config['window_width'], config['window_height']), pygame.RESIZABLE)
+    window: pygame.display = pygame.display.set_mode((config['window_width'], config['window_height']), pygame.RESIZABLE, config['color_bit_depth'])
     logger.info('Window created')
 
     game.start(window)
@@ -97,7 +97,6 @@ def main():
             break
 
         if update_result.update_areas:
-            temp_logger.debug(f'Update areas: \n{pformat(update_result.update_areas, indent=4)}')
             # complex update -> updates the entire screen
             if update_result.update_areas[0] == True:
                 logger.debug('Complex update detected, updating the entire screen')
