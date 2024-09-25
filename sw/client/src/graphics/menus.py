@@ -402,7 +402,7 @@ class SelectMenu(Viewport):
         # update and draw the background
         surface_width, surface_height = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_width, surface_height)
-        pygame.draw.rect(self.__surface, self.__assets['colors']['pink'], self.__background)
+        pygame.draw.rect(self.__surface, self.__assets['colors']['purple'], self.__background)
         tmp_logger.debug(f'Background: {self.__background}')
 
         # draw the objects
