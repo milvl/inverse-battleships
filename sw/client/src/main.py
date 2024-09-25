@@ -1,9 +1,7 @@
+# python .\client\src\main.py -c .\client\cfg\debug_cfg.json -l .\client\cfg\debug_loggers_cfg.json
+
 import os
 from init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
-
-logger = loggers.get_logger(LOGGER_NAME)
-temp_logger = loggers.get_temp_logger('temp')
-
 from typing import Dict
 from pprint import pformat
 from utils import load_json
@@ -13,6 +11,8 @@ import pygame
 from assets_loader import AssetsLoader
 from game import IBGame
 
+# logger = loggers.NullLogger()
+# temp_logger = loggers.NullLogger()
 
 def load_config(path: str) -> Dict:
     """
@@ -117,4 +117,7 @@ def main():
 
 
 if __name__ == '__main__':
+    logger = loggers.get_logger(LOGGER_NAME)
+    temp_logger = loggers.get_temp_logger('temp')
+    
     main()
