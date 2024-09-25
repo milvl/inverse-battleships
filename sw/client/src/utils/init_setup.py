@@ -1,3 +1,5 @@
+# TODO add doc
+
 import argparse
 from const import *
 args_parser = argparse.ArgumentParser(description='Client application for the game "Inverse Battleships"')

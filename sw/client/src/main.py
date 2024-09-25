@@ -1,5 +1,5 @@
 import os
-from init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
+from utils.init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
 
 logger = loggers.get_logger(LOGGER_NAME)
 temp_logger = loggers.get_temp_logger('temp')
@@ -10,7 +10,7 @@ from utils import load_json
 from typedefs import IBGameConfig, IBAssets, IBGameUpdateResult
 from pydantic import ValidationError
 import pygame
-from assets_loader import AssetsLoader
+from utils.assets_loader import AssetsLoader
 from game import IBGame
 
 

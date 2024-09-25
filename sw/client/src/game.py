@@ -1,9 +1,5 @@
 from const import MAIN_LOGGER_NAME
-import loggers
-logger = loggers.get_logger(MAIN_LOGGER_NAME)
-# TODO remove
-tmp_logger = loggers.get_temp_logger('temp')
-
+from utils import loggers
 from pprint import pformat
 from typing import List, Dict, Tuple, Union, Optional
 from graphics.menus import SelectMenu, MenuTitle, MenuOption
@@ -14,6 +10,11 @@ from copy import deepcopy
 from player import IBPlayer
 import pygame
 from pygame.locals import *
+
+logger = loggers.get_logger(MAIN_LOGGER_NAME)
+# TODO remove
+tmp_logger = loggers.get_temp_logger('temp')
+
 
 def debug_get_random_color() -> Tuple[int, int, int]:
     """

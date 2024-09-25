@@ -2,14 +2,14 @@ from typing import List, Dict, Tuple, Union
 from abc import ABC, ABCMeta, abstractmethod
 from sys import path
 
-from loggers import get_temp_logger
-tmp_logger = get_temp_logger('temp')
-# TODO remove
-
+from utils.loggers import get_temp_logger
 from utils import get_rendered_text_with_size, color_highlight
 from graphics.viewport import Viewport
 from typedefs import IBAssets, PyGameEvents
 import pygame
+
+tmp_logger = get_temp_logger('temp')
+# TODO remove
 
 
 ####################################################################################################
