@@ -3,5 +3,6 @@
     "main_menu_title": "Inverse Battleships",
     "main_menu_option_play": "Play",
     "main_menu_option_settings": "Settings",
-    "main_menu_option_exit": "Exit"
+    "main_menu_option_exit": "Exit",
+    "init_state_label": "Enter your name:"
 }

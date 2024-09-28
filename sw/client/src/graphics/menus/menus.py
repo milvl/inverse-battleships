@@ -1,225 +1,17 @@
 from typing import List, Dict, Tuple, Union
-from abc import ABC, ABCMeta, abstractmethod
-from sys import path
-
+from abc import ABC
+from graphics.menus.primitives import MenuOption, MenuTitle, TextInput
 from utils.loggers import get_temp_logger
-from utils import get_rendered_text_with_size, color_highlight
+from utils.utils import get_rendered_text_with_size, color_highlight
 from graphics.viewport import Viewport
 from typedefs import IBAssets, PyGameEvents
 import pygame
 
 tmp_logger = get_temp_logger('temp')
+tmp_logger.info('temp logger created')
 # TODO remove
 
 
-####################################################################################################
-class MenuRectText(ABC):
-    """
-    Represents a menu text (with additional rectangle with outline around it).
-    """
-
-    DEFAULT_TEXT_COLOR: tuple = (255, 255, 255)
-    DEFAULT_FONT_SIZE: int = 36
-
-
-    def __init__(self, text: str):
-        """
-        Constructor for the MenuRectText class.
-        
-        :param text: The text of the object.
-        :type text: str
-        """
-
-        self.__text = text
-        self.__rect = None
-
-
-    @property
-    def rect(self):
-        """
-        Getter for the rect property.
-
-        :return: The rectangle of the text.
-        :rtype: pygame.Rect
-        """
-
-        return self.__rect
-
-
-    def render(self, 
-               surface: pygame.display, 
-               position: Tuple[int, int],
-               height: int = DEFAULT_FONT_SIZE,
-               width: int = DEFAULT_FONT_SIZE * 50,
-               radius: int = -1,
-               centered: bool = False,
-               font_path: str = None, 
-               color: Tuple[int, int, int] = DEFAULT_TEXT_COLOR,
-               background_color: Union[Tuple[int, int, int], None] = None,
-               outline_color: Union[Tuple[int, int, int], None] = None,
-               ) -> pygame.Rect:
-        """
-        Renders the text.
-        Height is prefered because it is the implicit parameter for pygame.font.Font(None, height).
-
-        :param surface: The surface to render the text to.
-        :type surface: pygame.display
-        :param position: The position to render the text at.
-        :type position: tuple
-        :param height: The height of the text, defaults to DEFAULT_FONT_SIZE
-        :type height: int, optional
-        :param width: The width of the text, defaults to DEFAULT_FONT_SIZE * 50
-        :type width: int, optional
-        :param radius: The radius of the rectangle, defaults to -1
-        :type radius: int, optional
-        :param centered: Whether to center the element, defaults to False
-        :type centered: bool, optional
-        :param font_path: The path to the font to use for rendering, defaults to None
-        :type font_path: str, optional
-        :param color: The color to use for rendering, defaults to DEFAULT_TEXT_COLOR
-        :type color: tuple, optional
-        :param background_color: The background color to use for rendering, defaults to None
-        :type background_color: tuple, optional
-        :param outline_color: The outline color to use for rendering, defaults to None
-        :type outline_color: tuple, optional
-        :return: The rectangle of the rendered text.
-        """
-
-        text_to_rect_ratio: float = 0.8 if background_color else 1
-        rect_to_outline_ratio: float = 0.9 if outline_color else 1
-
-        rect_with_outline_height = height
-        rect_with_outline_width = width if width else None
-        rect_height = rect_with_outline_height * rect_to_outline_ratio
-        rect_width = rect_with_outline_width * rect_to_outline_ratio if rect_with_outline_width else None
-        text_height = rect_height * text_to_rect_ratio
-        text_width = rect_width * text_to_rect_ratio if rect_width else None
-        text_surface = get_rendered_text_with_size(self.__text, text_width, text_height, font_path, color)
-
-        pos_out_x, pos_out_y = position if not centered \
-            else (position[0] - (rect_with_outline_width // 2), position[1] - (rect_with_outline_height // 2))
-        pos_rect_x = pos_out_x + ((rect_with_outline_width - rect_width) // 2)
-        pos_rect_y = pos_out_y + ((rect_with_outline_height - rect_height) // 2)
-        pos_text_x = pos_rect_x + ((rect_width - text_surface.get_width()) // 2)
-        pos_text_y = pos_rect_y + ((rect_height - text_surface.get_height()) // 2)
-
-        # render the outline rectangle
-        if outline_color:
-            pygame.draw.rect(surface, 
-                             outline_color, 
-                             (pos_out_x, pos_out_y, rect_with_outline_width, rect_with_outline_height), 
-                             border_radius=radius)
-
-        # render the rectangle
-        if background_color:
-            pygame.draw.rect(surface, 
-                             background_color, 
-                             (pos_rect_x, pos_rect_y, rect_width, rect_height), 
-                             border_radius=int(radius))
-
-        # render the text
-        surface.blit(text_surface, (pos_text_x, pos_text_y))
-
-        self.__rect = pygame.Rect(pos_out_x, pos_out_y, rect_with_outline_width, rect_with_outline_height)
-        return self.__rect
-
-
-####################################################################################################
-class MenuTitle(MenuRectText):
-    """
-    Represents a menu title.
-    """
-
-
-    def __init__(self, text: str):
-        """
-        Constructor for the MenuTitle class.
-        
-        :param text: The text of the menu title.
-        :type text: str
-        """
-        super().__init__(text)
-
-
-####################################################################################################
-class MenuOption(MenuRectText):
-    """
-    Represents a menu option.
-    """
-
-    DEFAULT_FONT_SIZE = MenuRectText.DEFAULT_FONT_SIZE
-    DEFAULT_TEXT_COLOR = MenuRectText.DEFAULT_TEXT_COLOR
-
-
-    def __init__(self, text: str, function: callable, highlighted: bool = False):
-        """
-        Constructor for the MenuOption class.
-        
-        :param text: The text of the menu option.
-        :type text: str
-        :param function: The function to execute when the menu option is selected.
-        :type function: callable
-        :param highlighted: Whether the menu option is highlighted, defaults to False
-        :type highlighted: bool, optional
-        """
-
-        super().__init__(text)
-        self.__function = function
-        self.__highlighted = highlighted
-
-
-    @property
-    def highlighted(self):
-        """
-        Getter for the highlighted property.
-
-        :return: Whether the menu option is highlighted.
-        :rtype: bool
-        """
-
-        return self.__highlighted
-    
-
-    @highlighted.setter
-    def highlighted(self, highlighted: bool):
-        """
-        Setter for the highlighted property.
-
-        :param highlighted: Whether the menu option is highlighted.
-        :type highlighted: bool
-        """
-
-        self.__highlighted = highlighted
-
-
-    def render(self, 
-               surface: pygame.Surface,
-               position: 
-               Tuple[int], 
-               height: int = DEFAULT_FONT_SIZE, 
-               width: int = DEFAULT_FONT_SIZE * 50, 
-               radius: int = -1,
-               centered: bool = False, 
-               font_path: str = None, 
-               color: Tuple[int] = DEFAULT_TEXT_COLOR, 
-               background_color: Tuple[int] | None = None, 
-               outline_color: Tuple[int] | None = None) -> pygame.Rect:
-        # TODO DOC
-        res_bckg_color = background_color if not self.__highlighted else color_highlight(background_color)
-        rect = super().render(surface, position, height, width, radius, centered, font_path, color, res_bckg_color, outline_color)
-
-        return rect
-
-    
-    def execute(self):
-        """
-        Executes the function of the menu option.
-        """
-
-        self.__function()
-
-
-####################################################################################################
 class SelectMenu(Viewport):
     """
     Represents the select menu.
@@ -231,6 +23,7 @@ class SelectMenu(Viewport):
         # TODO DOC
 
         self.update_result.exit = True
+
 
     @staticmethod
     def __draw_options(surface: pygame.Surface, 
@@ -260,6 +53,7 @@ class SelectMenu(Viewport):
             update_rects.append(update_rect)
         
         return update_rects
+
 
     @staticmethod
     def __draw_title_and_options(surface: pygame.Surface, 
@@ -403,7 +197,6 @@ class SelectMenu(Viewport):
         surface_width, surface_height = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_width, surface_height)
         pygame.draw.rect(self.__surface, self.__assets['colors']['purple'], self.__background)
-        tmp_logger.debug(f'Background: {self.__background}')
 
         # draw the objects
         self.__draw_objects()
@@ -480,4 +273,133 @@ class SelectMenu(Viewport):
                         break
                 
         return updated
+    
+
+class InputMenu(Viewport):
+    """
+    Represents the input menu.
+    """
+
+    def __init__(self, 
+                 surface: pygame.Surface, 
+                 assets: IBAssets, 
+                 label_text: str):
+        # TODO DOC
         
+
+        if not pygame.get_init():
+            raise ValueError('The pygame module has not been initialized.')
+        if not pygame.font.get_init():
+            raise ValueError('The pygame.font module has not been initialized.')
+        if not pygame.display.get_init():
+            raise ValueError('The pygame.display module has not been initialized.')
+        if not pygame.display.get_surface():
+            raise ValueError('The pygame.display module has not have a surface to render to.')
+        
+        self.__surface = surface
+        self.__assets = assets
+        self.__label_text = label_text
+        self.__input_rect = None
+        self.__submit_button = None
+
+        master_display = pygame.display.get_surface()
+        self.__background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
+    
+
+    @property
+    def surface(self):
+        """
+        Getter for the surface property.
+
+        :return: The surface of the input menu.
+        :rtype: pygame.Surface
+        """
+
+        return self.__surface
+    
+
+    @surface.setter
+    def surface(self, surface: pygame.Surface):
+        """
+        Setter for the surface property.
+
+        :param surface: The surface to set the input menu to.
+        :type surface: pygame.Surface
+        """
+
+        self.__surface = surface
+        
+
+    def redraw(self):
+        """
+        Redraws the input menu. Expects that the entire screen is redrawn 
+        with pygame.display.flip() after this method is called.
+        """
+
+        # update and draw the background
+        surface_width, surface_height = self.__surface.get_size()
+        self.__background = pygame.Rect(0, 0, surface_width, surface_height)
+        pygame.draw.rect(self.__surface, self.__assets['colors']['black'], self.__background)
+
+        if not self.__input_rect:
+            self.__input_rect = TextInput('', True)
+
+        # rect that will contain the input and label
+        objects_rect_dimensions = surface_width * 0.5, surface_height * 0.5
+        input_rect_dimensions = objects_rect_dimensions[0] * 0.75, objects_rect_dimensions[1] * 0.25
+        input_rect_position = surface_width // 2, surface_height // 2 + input_rect_dimensions[1] // 2
+
+        submit_button_dimensions = objects_rect_dimensions[0] * 0.25, objects_rect_dimensions[1] * 0.25
+        submit_button_position = input_rect_position[0] + input_rect_dimensions[0] // 2 + submit_button_dimensions[0] // 4, surface_height // 2
+
+        label_rect_dimensions = objects_rect_dimensions[0], objects_rect_dimensions[1] * 0.5
+        label_rect_position = (surface_width - label_rect_dimensions[0]) // 2, (surface_height - label_rect_dimensions[1]) // 2
+
+        # draw the label
+        label = get_rendered_text_with_size(self.__label_text, label_rect_dimensions[0], label_rect_dimensions[1], color=self.__assets['colors']['white'])
+        self.__surface.blit(label, label_rect_position)
+
+        # draw the input
+        self.__input_rect.render(self.__surface, 
+                                 input_rect_position, 
+                                 height=input_rect_dimensions[1], 
+                                 width=input_rect_dimensions[0], 
+                                 centered=True, 
+                                 color=self.__assets['colors']['black'], 
+                                 background_color=self.__assets['colors']['white'])
+        
+        # draw the submit button (sprite from __assets)
+        self.__submit_button = pygame.transform.scale(self.__assets['sprites']['ok'], (submit_button_dimensions[0], submit_button_dimensions[1]))
+        self.__surface.blit(self.__submit_button, submit_button_position)
+        
+        return self.__background
+    
+    
+    def draw(self):
+        # TODO DOC
+
+        self.redraw()
+        return self.__background
+    
+
+    def update(self, events: PyGameEvents):
+        if events.event_mousebuttonup:
+            # TODO implement
+            pass
+        elif events.event_keydown:
+            if events.event_keydown.key == pygame.K_RETURN:
+                # TODO implement
+                pass
+
+            # TODO bandage fix - improve if possible
+            elif events.event_keydown.key == pygame.K_BACKSPACE:
+                if self.__input_rect.text and self.__input_rect.text != TextInput.CURSOR:
+                    if self.__input_rect.text.endswith(TextInput.CURSOR):
+                        self.__input_rect.text = self.__input_rect.text[:-2]
+                    else:
+                        self.__input_rect.text = self.__input_rect.text[:-1]
+            else:
+                if self.__input_rect.text.endswith(TextInput.CURSOR):
+                    self.__input_rect.text = self.__input_rect.text[:-1] + events.event_keydown.unicode
+                else:
+                    self.__input_rect.text += events.event_keydown.unicode

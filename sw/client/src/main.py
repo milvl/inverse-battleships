@@ -4,7 +4,7 @@ import os
 from utils.init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
 from typing import Dict
 from pprint import pformat
-from utils import load_json
+from utils.utils import load_json
 from typedefs import IBGameConfig, IBAssets, IBGameUpdateResult
 from pydantic import ValidationError
 import pygame

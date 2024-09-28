@@ -12,7 +12,7 @@ LOGGERS_CFG_PATH = args.loggers_config if args.loggers_config else LOGGERS_CONFI
 CFG_PATH = args.config if args.config else DEFAULT_CONFIG_PATH
 LOGGER_NAME = args.name if args.name else MAIN_LOGGER_NAME
 
-import loggers
+from utils import loggers
 from time import sleep
 loggers.set_path_to_config_file(LOGGERS_CFG_PATH)
 while not loggers.is_ready():

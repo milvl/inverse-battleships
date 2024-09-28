@@ -18,12 +18,30 @@ class Viewport(ABC):
         """
 
         raise NotImplementedError("Must be overridden by subclass.")
+    
+
+    @abstractmethod
+    def draw(self):
+        """
+        Draws the viewport.
+        """
+
+        raise NotImplementedError("Must be overridden by subclass.")
+    
+
+    @abstractmethod
+    def redraw(self):
+        """
+        Redraws the viewport.
+        """
+
+        raise NotImplementedError("Must be overridden by subclass.")
 
 
     @abstractmethod
     def update(self, events: pygame.event):
         """
-        Updates the viewport.
+        Updates the viewport state.
 
         :param events: The events to update the viewport with.
         :type events: pygame.event

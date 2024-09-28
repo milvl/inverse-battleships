@@ -2,8 +2,8 @@ from const import MAIN_LOGGER_NAME
 from utils import loggers
 from pprint import pformat
 from typing import List, Dict, Tuple, Union, Optional
-from graphics.menus import SelectMenu, MenuTitle, MenuOption
-from utils import maintains_min_window_size, color_make_seethrough
+from graphics.menus.menus import InputMenu, SelectMenu, MenuTitle, MenuOption
+from utils.utils import maintains_min_window_size, color_make_seethrough
 from typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
 import random
 from copy import deepcopy
@@ -41,7 +41,7 @@ def __create_players(player_names: List[str]) -> List[IBPlayer]:
 
 class IBGameState:
     # TODO DOC
-    INTRO_SEQUENCE = -1
+    INIT = -1
     MAIN_MENU = 0
     SETTINGS_MENU = 1
     CONNECTION_MENU = 2
@@ -53,9 +53,9 @@ class IBGameState:
 
     def __init__(self):
         # TODO DOC
-        self.__state = IBGameState.INTRO_SEQUENCE
+        self.__state = IBGameState.INIT
         self.__state_names = {
-            IBGameState.INTRO_SEQUENCE: 'INTRO_SEQUENCE',
+            IBGameState.INIT: 'INIT',
             IBGameState.MAIN_MENU: 'MAIN_MENU',
             IBGameState.SETTINGS_MENU: 'SETTINGS_MENU',
             IBGameState.CONNECTION_MENU: 'CONNECTION_MENU',
@@ -78,7 +78,7 @@ class IBGameState:
         # TODO DOC
 
         # sanity check simplified based on contract
-        if new_state > IBGameState.GAME_END or new_state < IBGameState.INTRO_SEQUENCE:
+        if new_state > IBGameState.GAME_END or new_state < IBGameState.INIT:
             raise ValueError('Invalid state to set.')
         
         if new_state == self.__state:
@@ -107,7 +107,7 @@ class IBGame:
     def __init__(self, config: Dict, assets: Dict):
         # TODO DOC
         self.config = deepcopy(config)
-        self.assets = deepcopy(assets)
+        self.assets = {'colors': deepcopy(assets['colors']), 'strings': deepcopy(assets['strings']), 'sprites': assets['sprites']}
 
         self.started = False
         self.debug_mode = False
@@ -229,27 +229,27 @@ class IBGame:
         # TODO DOC
 
         # if no menu was drawn, prepare it and draw it
-        if not hasattr(self, 'menu'):
+        if not hasattr(self, 'context'):
             title = MenuTitle(self.assets['strings']['main_menu_title'])
             options = [
                 MenuOption(self.assets['strings']['main_menu_option_play'], lambda: print('Play menu')),
                 MenuOption(self.assets['strings']['main_menu_option_settings'], lambda: print('Settings menu')),
                 MenuOption(self.assets['strings']['main_menu_option_exit'], lambda: SelectMenu.handle_exit(self))
             ]
-            self.menu = SelectMenu(self.presentation_surface, self.assets, title, options)
+            self.context = SelectMenu(self.presentation_surface, self.assets, title, options)
 
             # draw the menu for the first time
-            self.menu.redraw()
+            self.context.redraw()
             self.update_result.update_areas.append(True)
 
         # if the user resized the window, redraw the menu
         if events.event_videoresize:
-            self.menu.surface = self.presentation_surface
-            self.menu.redraw()
+            self.context.surface = self.presentation_surface
+            self.context.redraw()
             return
         
         # catch update
-        if self.menu.update(events):
+        if self.context.update(events):
             self.update_result.update_areas.extend(self.menu.draw())
 
 
@@ -257,29 +257,22 @@ class IBGame:
         raise NotImplementedError('The __update_settings_menu method has not been implemented yet.')
     
 
-    def __handle_intro_sequence(self) -> bool:
+    def __update_init_state(self, events: PyGameEvents):
         """
-        Handles the intro sequence.
-
-        :return: True if the intro sequence has been completed and 
-        debug info should be updated, False otherwise.
-        :rtype: bool
+        Handles the initialization state.
         """
 
-        #TODO magic num
+        if not hasattr(self, 'context'):
+            label_text = self.assets['strings']['init_state_label']
+            self.context = InputMenu(self.presentation_surface, self.assets, label_text)
         
-        if not getattr(self, 'last_time', None):
-            self.last_time = pygame.time.get_ticks()
-    
-        if pygame.time.get_ticks() - self.last_time >= 2000:
-            self.game_state.state = IBGameState.MAIN_MENU
-            logger.info('Intro sequence completed, switching state to MAIN_MENU')
-            del self.last_time
-
-            if self.debug_mode:
-                return True
+        if events.event_videoresize:
+            self.context.surface = self.presentation_surface
             
-        return False
+        self.context.redraw()
+        self.update_result.update_areas.append(True)
+
+        self.context.update(events)
 
 
     def __handle_window_resize(self, events) -> bool:
@@ -333,51 +326,41 @@ class IBGame:
             debug_update = self.__handle_window_resize(events)
 
 
+        # capture the last key pressed for debugging purposes
+        if self.debug_mode:
+            if events.event_keydown:
+                self.debug_info.last_reg_key = pygame.key.name(events.event_keydown.key)
+                logger.debug(f'Last registered key: {self.debug_info.last_reg_key}')
+                debug_update = True
 
-        # ignore all events that are not of interest
-        if self.game_state.state == IBGameState.INTRO_SEQUENCE:
-            if not debug_update:
-                debug_update = self.__handle_intro_sequence()
+        # ordered by the most prioritized states (microoptimization)
+        if self.game_state.state == IBGameState.GAME_SESSION:
+            self.__update_game_session(events)
+
+        elif self.game_state.state == IBGameState.LOBBY:
+            self.__update_lobby(events)
+
+        elif self.game_state.state == IBGameState.LOBBY_SELECTION:
+            self.__update_lobby_selection(events)
+
+        elif self.game_state.state == IBGameState.CONNECTION_MENU:
+            self.__update_connection_menu(events)
+
+        elif self.game_state.state == IBGameState.GAME_END:
+            self.__update_game_end(events)
+
+        elif self.game_state.state == IBGameState.MAIN_MENU:
+            self.__update_main_menu(events)
+
+        elif self.game_state.state == IBGameState.SETTINGS_MENU:
+            self.__update_settings_menu(events)
+
+        elif self.game_state.state == IBGameState.INIT:
+            self.__update_init_state(events)
         
-        # handle events that are of interest
         else:
-
-            # capture the last key pressed for debugging purposes
-            if self.debug_mode:
-                if events.event_keydown:
-                    self.debug_info.last_reg_key = pygame.key.name(events.event_keydown.key)
-                    logger.debug(f'Last registered key: {self.debug_info.last_reg_key}')
-                    debug_update = True
-
-            # ordered by the most prioritized states (microoptimization)
-            if self.game_state.state == IBGameState.GAME_SESSION:
-                self.__update_game_session(events)
-
-            elif self.game_state.state == IBGameState.LOBBY:
-                self.__update_lobby(events)
-
-            elif self.game_state.state == IBGameState.LOBBY_SELECTION:
-                self.__update_lobby_selection(events)
-
-            elif self.game_state.state == IBGameState.CONNECTION_MENU:
-                self.__update_connection_menu(events)
-
-            elif self.game_state.state == IBGameState.GAME_END:
-                self.__update_game_end(events)
-
-            elif self.game_state.state == IBGameState.MAIN_MENU:
-                self.__update_main_menu(events)
-
-            elif self.game_state.state == IBGameState.SETTINGS_MENU:
-                self.__update_settings_menu(events)
-
-            elif self.game_state.state == IBGameState.INTRO_SEQUENCE:
-                logger.critical('The INTRO_SEQUENCE state should have been handled before this point.')
-                raise SystemError('The INTRO_SEQUENCE state should have been handled before this point.')
-            
-            else:
-                logger.critical('Unknown state.')
-                raise SystemError('Unknown state.')
+            logger.critical('Unknown state.')
+            raise SystemError('Unknown state.')
 
         # render the debug info if allowed
         if debug_update:
