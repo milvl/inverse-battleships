@@ -1,0 +1,33 @@
+Client 0: Connected to server at 127.0.0.1:8080 from port 55414
+Client 1: Connected to server at 127.0.0.1:8080 from port 55418
+Client 0: Sent to server: HELLO
+Client 1: Sent to server: BYE
+Client 2: Connected to server at 127.0.0.1:8080 from port 55426
+Client 2: Sent to server: HELLO
+Client 3: Connected to server at 127.0.0.1:8080 from port 55438
+Client 3: Sent to server: HELLO
+Client 0: Received from server: NUM:4757
+Client 0: Extracted number: 4757
+Client 0: Sent to server: 9514
+Client 0: Received from server: OK
+Client 0: Connection closed by the server
+Client 1: Received from server: WRONG
+Client 1: Connection closed by the server
+Client 2: Received from server: NUM:843
+Client 2: Extracted number: 843
+Client 2: Sent to server: 1687
+Client 3: Received from server: NUM:5817
+Client 3: Extracted number: 5817
+Client 3: Sent to server: some_error
+Client 3: Received from server: WRONG
+Client 3: Connection closed by the server
+Client 2: Received from server: WRONG
+Client 2: Connection closed by the server
+Client 5: Connected to server at 127.0.0.1:8080 from port 55450
+Client 5: Sent to server: HELLO
+Client 4: Connected to server at 127.0.0.1:8080 from port 55446
+Client 4: Client disconnected before authentication
+Client 5: Received from server: NUM:9733
+Client 5: Extracted number: 9733
+Client 5: Sent to server: 19466
+Client 5: Client disconnected before validation

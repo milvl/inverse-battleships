@@ -1,0 +1,138 @@
+\hypertarget{session_8h}{}\doxysection{session.\+h File Reference}
+\label{session_8h}\index{session.h@{session.h}}
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+Include dependency graph for session.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structsession}{session}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{session_8h_a1272ee1217254f6492fedc768e3d01e6}{SESSION\+\_\+\+STATE\+\_\+\+CONNECTED}}~1
+\item 
+\#define \mbox{\hyperlink{session_8h_acaafe55ec737693e44ac786cd3fe23a9}{SESSION\+\_\+\+STATE\+\_\+\+AUTHORIZED}}~2
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{session_8h_ac0c3f84daa86d3478921e697233856fe}{init\+\_\+session}} (\mbox{\hyperlink{structsession}{session}} $\ast$p\+\_\+session, int fd\+\_\+sock, int num, int $\ast$p\+\_\+err)
+\begin{DoxyCompactList}\small\item\em Initializes the session. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{session_8h_a3ad7b1f6d3886401b7a795f3c0952cf2}{session\+\_\+authenticate}} (\mbox{\hyperlink{structsession}{session}} $\ast$p\+\_\+session, char $\ast$p\+\_\+buffer, int buffer\+\_\+size, int $\ast$p\+\_\+err)
+\begin{DoxyCompactList}\small\item\em Authenticates the session. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{session_8h_a84970dd6911c64ec2fe9c36ee4d05504}{session\+\_\+validate}} (\mbox{\hyperlink{structsession}{session}} $\ast$p\+\_\+session, char $\ast$p\+\_\+buffer, int buffer\+\_\+size, int $\ast$p\+\_\+err)
+\begin{DoxyCompactList}\small\item\em Validates the session. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{session_8h_acaafe55ec737693e44ac786cd3fe23a9}\label{session_8h_acaafe55ec737693e44ac786cd3fe23a9}} 
+\index{session.h@{session.h}!SESSION\_STATE\_AUTHORIZED@{SESSION\_STATE\_AUTHORIZED}}
+\index{SESSION\_STATE\_AUTHORIZED@{SESSION\_STATE\_AUTHORIZED}!session.h@{session.h}}
+\doxysubsubsection{\texorpdfstring{SESSION\_STATE\_AUTHORIZED}{SESSION\_STATE\_AUTHORIZED}}
+{\footnotesize\ttfamily \#define SESSION\+\_\+\+STATE\+\_\+\+AUTHORIZED~2}
+
+
+
+Definition at line 10 of file session.\+h.
+
+\mbox{\Hypertarget{session_8h_a1272ee1217254f6492fedc768e3d01e6}\label{session_8h_a1272ee1217254f6492fedc768e3d01e6}} 
+\index{session.h@{session.h}!SESSION\_STATE\_CONNECTED@{SESSION\_STATE\_CONNECTED}}
+\index{SESSION\_STATE\_CONNECTED@{SESSION\_STATE\_CONNECTED}!session.h@{session.h}}
+\doxysubsubsection{\texorpdfstring{SESSION\_STATE\_CONNECTED}{SESSION\_STATE\_CONNECTED}}
+{\footnotesize\ttfamily \#define SESSION\+\_\+\+STATE\+\_\+\+CONNECTED~1}
+
+
+
+Definition at line 9 of file session.\+h.
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{session_8h_ac0c3f84daa86d3478921e697233856fe}\label{session_8h_ac0c3f84daa86d3478921e697233856fe}} 
+\index{session.h@{session.h}!init\_session@{init\_session}}
+\index{init\_session@{init\_session}!session.h@{session.h}}
+\doxysubsubsection{\texorpdfstring{init\_session()}{init\_session()}}
+{\footnotesize\ttfamily void init\+\_\+session (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsession}{session}} $\ast$}]{p\+\_\+session,  }\item[{int}]{fd\+\_\+sock,  }\item[{int}]{num,  }\item[{int $\ast$}]{p\+\_\+err }\end{DoxyParamCaption})}
+
+
+
+Initializes the session. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em p\+\_\+session} & Pointer to the session \\
+\hline
+{\em fd\+\_\+sock} & Socket file descriptor \\
+\hline
+{\em num} & Session number \\
+\hline
+{\em p\+\_\+err} & Pointer to the error flag \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 3 of file session.\+c.
+
+\mbox{\Hypertarget{session_8h_a3ad7b1f6d3886401b7a795f3c0952cf2}\label{session_8h_a3ad7b1f6d3886401b7a795f3c0952cf2}} 
+\index{session.h@{session.h}!session\_authenticate@{session\_authenticate}}
+\index{session\_authenticate@{session\_authenticate}!session.h@{session.h}}
+\doxysubsubsection{\texorpdfstring{session\_authenticate()}{session\_authenticate()}}
+{\footnotesize\ttfamily bool session\+\_\+authenticate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsession}{session}} $\ast$}]{p\+\_\+session,  }\item[{char $\ast$}]{p\+\_\+buffer,  }\item[{int}]{buffer\+\_\+size,  }\item[{int $\ast$}]{p\+\_\+err }\end{DoxyParamCaption})}
+
+
+
+Authenticates the session. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em p\+\_\+session} & Pointer to the session \\
+\hline
+{\em p\+\_\+buffer} & Pointer to the buffer \\
+\hline
+{\em buffer\+\_\+size} & Buffer size \\
+\hline
+{\em p\+\_\+err} & Pointer to the error flag \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if OK, anything else on failure 
+\end{DoxyReturn}
+
+
+Definition at line 14 of file session.\+c.
+
+\mbox{\Hypertarget{session_8h_a84970dd6911c64ec2fe9c36ee4d05504}\label{session_8h_a84970dd6911c64ec2fe9c36ee4d05504}} 
+\index{session.h@{session.h}!session\_validate@{session\_validate}}
+\index{session\_validate@{session\_validate}!session.h@{session.h}}
+\doxysubsubsection{\texorpdfstring{session\_validate()}{session\_validate()}}
+{\footnotesize\ttfamily bool session\+\_\+validate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsession}{session}} $\ast$}]{p\+\_\+session,  }\item[{char $\ast$}]{p\+\_\+buffer,  }\item[{int}]{buffer\+\_\+size,  }\item[{int $\ast$}]{p\+\_\+err }\end{DoxyParamCaption})}
+
+
+
+Validates the session. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em p\+\_\+session} & Pointer to the session \\
+\hline
+{\em p\+\_\+buffer} & Pointer to the buffer \\
+\hline
+{\em buffer\+\_\+size} & Buffer size \\
+\hline
+{\em p\+\_\+err} & Pointer to the error flag \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 if OK, anything else on failure 
+\end{DoxyReturn}
+
+
+Definition at line 36 of file session.\+c.
+

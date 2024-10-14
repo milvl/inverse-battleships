@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['server_2ec_44',['server.c',['../server_8c.html',1,'']]],
+  ['server_5fip_45',['SERVER_IP',['../const_8h.html#a28d06fc286f28044ed3380969700ff3f',1,'const.h']]],
+  ['session_46',['session',['../structsession.html',1,'']]],
+  ['session_2ec_47',['session.c',['../session_8c.html',1,'']]],
+  ['session_2eh_48',['session.h',['../session_8h.html',1,'']]],
+  ['session_5fauthenticate_49',['session_authenticate',['../session_8c.html#a3ad7b1f6d3886401b7a795f3c0952cf2',1,'session_authenticate(session *p_session, char *p_buffer, int buffer_size, int *p_err):&#160;session.c'],['../session_8h.html#a3ad7b1f6d3886401b7a795f3c0952cf2',1,'session_authenticate(session *p_session, char *p_buffer, int buffer_size, int *p_err):&#160;session.c']]],
+  ['session_5fset_50',['session_set',['../structsession__set.html',1,'']]],
+  ['session_5fset_2ec_51',['session_set.c',['../session__set_8c.html',1,'']]],
+  ['session_5fset_2eh_52',['session_set.h',['../session__set_8h.html',1,'']]],
+  ['session_5fset_5fadd_53',['session_set_add',['../session__set_8c.html#aa8e5115a81c598d8d60d6b7a66cd5d20',1,'session_set_add(session_set *p_sess_set, session *p_session, int *p_err):&#160;session_set.c'],['../session__set_8h.html#aa8e5115a81c598d8d60d6b7a66cd5d20',1,'session_set_add(session_set *p_sess_set, session *p_session, int *p_err):&#160;session_set.c']]],
+  ['session_5fset_5fcontains_54',['session_set_contains',['../session__set_8h.html#a77ec032f6d846ee8ab0ea09f956731b4',1,'session_set_contains(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c'],['../session__set_8c.html#a77ec032f6d846ee8ab0ea09f956731b4',1,'session_set_contains(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c']]],
+  ['session_5fset_5ffree_55',['session_set_free',['../session__set_8c.html#a8bede9ffefaeae3a4afe501a2aeb6e1f',1,'session_set_free(session_set *p_sess_set, int *p_err):&#160;session_set.c'],['../session__set_8h.html#a8bede9ffefaeae3a4afe501a2aeb6e1f',1,'session_set_free(session_set *p_sess_set, int *p_err):&#160;session_set.c']]],
+  ['session_5fset_5finit_56',['session_set_init',['../session__set_8c.html#a61fe52e2e7d3107b97133ca9d3eea31f',1,'session_set_init(session_set *p_sess_set, int *p_err):&#160;session_set.c'],['../session__set_8h.html#a61fe52e2e7d3107b97133ca9d3eea31f',1,'session_set_init(session_set *p_sess_set, int *p_err):&#160;session_set.c']]],
+  ['session_5fset_5fpeek_57',['session_set_peek',['../session__set_8c.html#a6a0d5c75a7c76544f2e9667fa189184d',1,'session_set_peek(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c'],['../session__set_8h.html#a6a0d5c75a7c76544f2e9667fa189184d',1,'session_set_peek(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c']]],
+  ['session_5fset_5fremove_58',['session_set_remove',['../session__set_8c.html#af3a197014c13db90cd930f80877e2b37',1,'session_set_remove(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c'],['../session__set_8h.html#af3a197014c13db90cd930f80877e2b37',1,'session_set_remove(session_set *p_sess_set, int fd, int *p_err):&#160;session_set.c']]],
+  ['session_5fstate_5fauthorized_59',['SESSION_STATE_AUTHORIZED',['../session_8h.html#acaafe55ec737693e44ac786cd3fe23a9',1,'session.h']]],
+  ['session_5fstate_5fconnected_60',['SESSION_STATE_CONNECTED',['../session_8h.html#a1272ee1217254f6492fedc768e3d01e6',1,'session.h']]],
+  ['session_5fvalidate_61',['session_validate',['../session_8c.html#a84970dd6911c64ec2fe9c36ee4d05504',1,'session_validate(session *p_session, char *p_buffer, int buffer_size, int *p_err):&#160;session.c'],['../session_8h.html#a84970dd6911c64ec2fe9c36ee4d05504',1,'session_validate(session *p_session, char *p_buffer, int buffer_size, int *p_err):&#160;session.c']]],
+  ['set_5fup_5fmaster_5fsocket_62',['set_up_master_socket',['../server_8c.html#a634c012c8dc5a05898b165a3b94b2b78',1,'server.c']]],
+  ['siginthandler_63',['sigintHandler',['../server_8c.html#a458379afdbad052bb3077d6b425d2fee',1,'server.c']]],
+  ['size_64',['size',['../structsession__set.html#a36f670bfc6680dfb8851de339a879f29',1,'session_set']]],
+  ['socket_5fnot_5fset_65',['SOCKET_NOT_SET',['../server_8c.html#ad971b4d2ddc252fdd99deb269ef21263',1,'server.c']]],
+  ['state_66',['state',['../structsession.html#a29e906021d1fdd3e7820053f4329d5ab',1,'session']]]
+];
