@@ -1,0 +1,17 @@
+CMD
+- netsh 
+  - netsh interface ipv4 show config
+- pathping
+- tracert
+- ping
+- ipconfig
+- route
+  - route PRINT
+
+Powershell
+- Get-NetIpAddress
+- Test-NetConnection
+- Get-NetTCPConnection (netstat/ss)
+- Get-DnsClient
+- Clear-DnsClientCache
+- Resolve-DnsName
