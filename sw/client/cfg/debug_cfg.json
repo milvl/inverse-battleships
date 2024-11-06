@@ -5,7 +5,7 @@
     "players_count": 2,
     "tick_speed": 60,
     "skip_intro": false,
-    "min_window_width": 100,
-    "min_window_height": 100,
+    "min_window_width": 250,
+    "min_window_height": 250,
     "debug_mode": true
 }

@@ -74,11 +74,13 @@ def get_rendered_text_with_size(text: str, width: int, height: int, font_path: s
     if not pygame.font.get_init():
         raise SystemError("pygame.font has not been initialized")
 
+    scale_ratio = 0.8
+
     font = pygame.font.Font(font_path, int(height))
     
     surface = font.render(text, False, color)
     while surface.get_width() > width:
-        height -= 1
+        height *= scale_ratio
         font = pygame.font.Font(font_path, int(height))
         surface = font.render(text, False, color)
 

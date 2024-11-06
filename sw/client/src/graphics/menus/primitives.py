@@ -279,6 +279,7 @@ class TextInput(RectText):
         self.__last_time = time.time()
         self.__variants = [self._text, self._text + TextInput.CURSOR]
         self.__current_variant = 0
+        self.__cursor_visible = False
 
     
     @property
@@ -330,6 +331,26 @@ class TextInput(RectText):
         if self.__is_focused:
             self.__variants = [self._text, self._text + TextInput.CURSOR]
             self.__current_variant = 0
+        
+    
+    @property
+    def is_cursor_visible(self):
+        """
+        Getter for the is_cursor_visible property.
+
+        :return: Whether the cursor is visible.
+        :rtype: bool
+        """
+
+        if self.__is_focused:
+            if time.time() - self.__last_time >= TextInput.CURSOR_BLINK_DELAY:
+                self.__last_time = time.time()
+                self.__current_variant = 1 - self.__current_variant
+                self.__cursor_visible = not self.__cursor_visible
+            
+            self._text = self.__variants[self.__current_variant]
+
+        return self.__cursor_visible
 
     
     def render(self, 
@@ -368,11 +389,4 @@ class TextInput(RectText):
         :rtype: pygame.Rect
         """
 
-        if self.__is_focused:
-            if time.time() - self.__last_time >= TextInput.CURSOR_BLINK_DELAY:
-                self.__last_time = time.time()
-                self.__current_variant = 1 - self.__current_variant
-            
-            self._text = self.__variants[self.__current_variant]
-        
         return super().render(surface, position, height, width, radius, centered, font_path, color, background_color, None, RectText.TEXT_ALIGN_LEFT)

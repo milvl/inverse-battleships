@@ -262,17 +262,22 @@ class IBGame:
         Handles the initialization state.
         """
 
+        # initialize the context as needed
         if not hasattr(self, 'context'):
             label_text = self.assets['strings']['init_state_label']
             self.context = InputMenu(self.presentation_surface, self.assets, label_text)
+            self.context.redraw()
+            self.update_result.update_areas.append(True)
+
         
         if events.event_videoresize:
             self.context.surface = self.presentation_surface
+            self.context.redraw()
             
-        self.context.redraw()
-        self.update_result.update_areas.append(True)
-
-        self.context.update(events)
+        res = self.context.update(events)
+        if res:
+            update_rect = self.context.draw()
+            self.update_result.update_areas.append(update_rect)
 
 
     def __handle_window_resize(self, events) -> bool:
@@ -310,10 +315,10 @@ class IBGame:
             logger.critical('The game has not been started yet so it cannot be updated')
             raise SystemError('The game has not been started yet.')
 
+        # reset the update result
         self.update_result.update_areas = []
         events = self.__get_pygame_events()
-
-        debug_update = False
+        debug_info_updated = False
         
         # user requests to quit
         if events.event_quit:
@@ -323,7 +328,8 @@ class IBGame:
             
         # user attempts to resize the window
         elif events.event_videoresize:
-            debug_update = self.__handle_window_resize(events)
+            self.__handle_window_resize(events)
+            debug_info_updated = True
 
 
         # capture the last key pressed for debugging purposes
@@ -331,8 +337,8 @@ class IBGame:
             if events.event_keydown:
                 self.debug_info.last_reg_key = pygame.key.name(events.event_keydown.key)
                 logger.debug(f'Last registered key: {self.debug_info.last_reg_key}')
-                debug_update = True
-
+                debug_info_updated = True
+            
         # ordered by the most prioritized states (microoptimization)
         if self.game_state.state == IBGameState.GAME_SESSION:
             self.__update_game_session(events)
@@ -363,7 +369,7 @@ class IBGame:
             raise SystemError('Unknown state.')
 
         # render the debug info if allowed
-        if debug_update:
+        if self.debug_mode and debug_info_updated:
             self.debug_surface.fill(self.assets['colors']['black'])
             self.debug_info.game_state = str(self.game_state)
             self.debug_info_render = self.__get_debug_info_object()

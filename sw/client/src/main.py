@@ -1,4 +1,5 @@
-# python .\client\src\main.py -c .\client\cfg\debug_cfg.json -l .\client\cfg\debug_loggers_cfg.json
+# win: python .\client\src\main.py -c .\client\cfg\debug_cfg.json -l .\client\cfg\debug_loggers_cfg.json
+# linux: python ./client/src/main.py -c ./client/cfg/debug_cfg.json -l ./client/cfg/debug_loggers_cfg.json
 
 import os
 from utils.init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
@@ -82,6 +83,12 @@ def main():
     window: pygame.display = pygame.display.set_mode((config['window_width'], config['window_height']), pygame.RESIZABLE, config['color_bit_depth'])
     logger.info('Window created')
 
+    logger.debug('Converting the sprites to alpha...')
+    for key, value in assets['sprites'].items():
+        assets['sprites'][key] = value.convert_alpha()
+    logger.info('Sprites converted to alpha')
+    
+
     game.start(window)
     logger.info('Game started')
     pygame.display.flip()
@@ -119,5 +126,13 @@ def main():
 if __name__ == '__main__':
     logger = loggers.get_logger(LOGGER_NAME)
     temp_logger = loggers.get_temp_logger('temp')
+
+    # import cProfile
     
     main()
+    # cProfile.run('main()', 'main.prof')
+    # import pstats
+
+    # p = pstats.Stats('main.prof')
+    # p.sort_stats('time').print_stats(10)  # Sort by time and show top 10 results
+
