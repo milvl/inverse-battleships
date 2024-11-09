@@ -1,7 +1,7 @@
 from const import MAIN_LOGGER_NAME
 from utils import loggers
 from pprint import pformat
-from typing import List, Dict, Tuple, Union, Optional
+from typing import List, Dict, Tuple, Union, Optional, Any, Callable
 from graphics.menus.menus import InputMenu, SelectMenu, MenuTitle, MenuOption
 from utils.utils import maintains_min_window_size, color_make_seethrough
 from typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
@@ -103,6 +103,7 @@ class IBGame:
     # TODO DOC
 
     CLEAR_BACKGROUND = (0, 0, 0, 0)
+    PLAYER_NICKNAME_MAX_LENGTH = 20
 
     def __init__(self, config: Dict, assets: Dict):
         # TODO DOC
@@ -203,6 +204,45 @@ class IBGame:
                 continue
 
         return events
+
+
+    def __proccess_input(self, events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
+        """
+        Processes the input events into a dictionary.
+
+        :param events: PyGame events.
+        :type events: PyGameEvents
+        :param key_input_validator: Function to validate the keyboard input 
+        and return a valid event.
+        :type key_input_validator: Callable
+        :return: The processed input events.
+        :rtype: Dict[str, Any]
+        """
+        
+        res = {}
+        if events.event_keyup:
+            key_up = key_input_validator(events.event_keyup)
+            if not key_up:
+                logger.debug('Invalid keyup event, skipping...')
+                return res
+            if key_up.key == K_BACKSPACE:
+                res['backspace'] = True
+            elif key_up.key == K_RETURN:
+                res['return'] = True
+            elif key_up.unicode.isprintable():
+                res['new_char'] = events.event_keyup.unicode
+            elif key_up.key == K_ESCAPE:
+                res['escape'] = True
+            elif key_up.key == K_UP or events.event_keyup.key == K_DOWN or events.event_keyup.key == K_LEFT or events.event_keyup.key == K_RIGHT:
+                res['direction'] = events.event_keyup.key
+
+            logger.debug(f'Processed keyup event: {pygame.key.name(events.event_keyup.key)}')
+            
+        elif events.event_mousebuttonup:
+            res['mouse_click'] = events.event_mousebuttonup.pos
+            logger.debug(f'Processed mousebuttonup event: {events.event_mousebuttonup.pos}')
+        
+        return res
     
 
     def __update_game_session(self, events: PyGameEvents) -> IBGameUpdateResult:
@@ -262,23 +302,40 @@ class IBGame:
         Handles the initialization state.
         """
 
+        move_to_main_menu = False
+
         # initialize the context as needed
         if not hasattr(self, 'context'):
             label_text = self.assets['strings']['init_state_label']
             self.context = InputMenu(self.presentation_surface, self.assets, label_text)
+            def key_input_validator(key_event):
+                if key_event.key == K_RETURN or key_event.key == K_BACKSPACE:
+                    return key_event
+                elif key_event.unicode.isprintable() and len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
+                        return key_event
+                else:
+                    logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
+                
+            self.key_input_validator = key_input_validator
             self.context.redraw()
             self.update_result.update_areas.append(True)
 
-        
         if events.event_videoresize:
             self.context.surface = self.presentation_surface
             self.context.redraw()
+
+        inputs = self.__proccess_input(events, self.key_input_validator)
             
-        res = self.context.update(events)
-        if res:
+        res = self.context.update(inputs)
+        if res.get('graphics_update', False):
             update_rect = self.context.draw()
             self.update_result.update_areas.append(update_rect)
-
+        elif res.get('submit', False):
+            logger.info(f'User submitted the input: {self.context.text_input}')
+            self.context = None
+            self.game_state.state = IBGameState.MAIN_MENU
+            logger.info('Changing the state to MAIN_MENU')
+            
 
     def __handle_window_resize(self, events) -> bool:
         """

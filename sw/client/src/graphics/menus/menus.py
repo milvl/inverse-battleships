@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Any
 from abc import ABC
 from graphics.menus.primitives import MenuOption, MenuTitle, TextInput
 from utils.loggers import get_temp_logger
@@ -280,12 +280,14 @@ class InputMenu(Viewport):
     Represents the input menu.
     """
 
+
     __OBJECTS_RECT_SCALE = 0.5
     __INPUT_RECT_WIDTH_SCALE = 0.75
     __INPUT_RECT_HEIGHT_SCALE = 0.25
     __LABEL_RECT_SCALE = 1 - __INPUT_RECT_HEIGHT_SCALE
     __IN_BTTN_GAP_W_SCALE_TO_LBL_H = 0.25
     __LBL_IN_GAP_H_SCALE_TO_BTTN_W = 0.5
+
 
     @staticmethod
     def __draw_content(obj):
@@ -347,6 +349,7 @@ class InputMenu(Viewport):
         button_rect = pygame.Rect(submit_button_position[0], submit_button_position[1], submit_button_dimensions[0], submit_button_dimensions[1])
 
         return {'bounding_rect': objects_bounds_rect, 'input_rect': input_rect, 'button_rect': button_rect}
+    
 
     def __init__(self, 
                  surface: pygame.Surface, 
@@ -367,6 +370,7 @@ class InputMenu(Viewport):
         self.__surface = surface
         self.__assets = assets
         self.__label_text = label_text
+
         self.__text_input = ''
         self.__input_rect = None
         self.__input_rect_bounds = None
@@ -399,6 +403,18 @@ class InputMenu(Viewport):
         """
 
         self.__surface = surface
+
+    
+    @property
+    def text_input(self):
+        """
+        Getter for the text_input property.
+
+        :return: The text input of the input menu.
+        :rtype: str
+        """
+
+        return self.__text_input
         
 
     def redraw(self):
@@ -422,7 +438,12 @@ class InputMenu(Viewport):
     
     
     def draw(self):
-        # TODO DOC
+        """
+        Draws the input menu (input label, input field, and submit button).
+
+        :return: The bounding rectangle of the input menu.
+        :rtype: pygame.Rect
+        """
 
         res = __class__.__draw_content(self)
         self.__input_rect_bounds = res['input_rect']
@@ -431,28 +452,41 @@ class InputMenu(Viewport):
         return res['bounding_rect']
     
 
-    def update(self, events: PyGameEvents):
-        if events.event_mousebuttonup:
-            # TODO implement
-            pass
-        elif events.event_keydown:
-            if events.event_keydown.key == pygame.K_RETURN:
-                # TODO implement
-                pass
+    def update(self, events: Dict[str, Any]):
+        # TODO DOC
 
-            elif events.event_keydown.key == pygame.K_BACKSPACE:
-                # backspace available
-                if self.__text_input:
-                    self.__text_input = self.__text_input[:-1]
-            
-            elif events.event_keydown.unicode.isprintable():
-                self.__text_input += events.event_keydown.unicode
+        res = {'graphics_update': False, 'submit': False}
 
-            self.__input_rect.text = self.__text_input
-            
-            return True
+        # submitting the input
+        if events.get('mouse_click', False):
+            if self.__submit_button_bounds.collidepoint(events['mouse_click']):
+                res['submit'] = True
+                return res
+
+        elif events.get('return', False):
+            res['submit'] = True
+            return res
+
+        # non state changing events
+        elif events.get('new_char', False):
+            self.__text_input += events['new_char']
+            if len(self.__input_rect.text) > 0 and self.__input_rect.text[-1] == TextInput.CURSOR:
+                self.__input_rect.text = self.__input_rect.text[:-1] + events['new_char']
+            else:
+                self.__input_rect.text += events['new_char']
+            res['graphics_update'] = True
+        
+        elif events.get('backspace', False) and len(self.__text_input) > 0:
+            self.__text_input = self.__text_input[:-1]
+            if self.__input_rect.text[-1] == TextInput.CURSOR:
+                self.__input_rect.text = self.__input_rect.text[:-2]
+            else:
+                self.__input_rect.text = self.__input_rect.text[:-1]
+            res['graphics_update'] = True
 
         # time to update the cursor
         elif self.__cursor_visible != self.__input_rect.is_cursor_visible:
             self.__cursor_visible = self.__input_rect.is_cursor_visible
-            return True
+            res['graphics_update'] = True
+
+        return res
