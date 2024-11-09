@@ -153,6 +153,8 @@ class IBGame:
             self.debug_surface = self.window.subsurface(0, self.window.get_height() - self.debug_info_render.get_height(), self.window.get_width(), self.debug_info_render.get_height())
             self.debug_surface.blit(self.debug_info_render, (0, 0))
             pygame.display.flip()
+        
+        self.context = None
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -225,22 +227,29 @@ class IBGame:
             if not key_up:
                 logger.debug('Invalid keyup event, skipping...')
                 return res
-            if key_up.key == K_BACKSPACE:
+            if key_up.key == pygame.K_UP or \
+                key_up.key == pygame.K_DOWN or \
+                key_up.key == pygame.K_LEFT or \
+                key_up.key == pygame.K_RIGHT:
+                res['direction'] = events.event_keyup.key
+            elif key_up.key == pygame.K_BACKSPACE:
                 res['backspace'] = True
-            elif key_up.key == K_RETURN:
+            elif key_up.key == pygame.K_RETURN:
                 res['return'] = True
+            elif key_up.key == pygame.K_ESCAPE:
+                res['escape'] = True
             elif key_up.unicode.isprintable():
                 res['new_char'] = events.event_keyup.unicode
-            elif key_up.key == K_ESCAPE:
-                res['escape'] = True
-            elif key_up.key == K_UP or events.event_keyup.key == K_DOWN or events.event_keyup.key == K_LEFT or events.event_keyup.key == K_RIGHT:
-                res['direction'] = events.event_keyup.key
 
             logger.debug(f'Processed keyup event: {pygame.key.name(events.event_keyup.key)}')
             
         elif events.event_mousebuttonup:
             res['mouse_click'] = events.event_mousebuttonup.pos
             logger.debug(f'Processed mousebuttonup event: {events.event_mousebuttonup.pos}')
+        
+        elif events.event_mousemotion:
+            res['mouse_motion'] = events.event_mousemotion.pos
+            logger.debug(f'Processed mousemotion event: {events.event_mousemotion.pos}')
         
         return res
     
@@ -269,12 +278,12 @@ class IBGame:
         # TODO DOC
 
         # if no menu was drawn, prepare it and draw it
-        if not hasattr(self, 'context'):
+        if not self.context:
             title = MenuTitle(self.assets['strings']['main_menu_title'])
             options = [
-                MenuOption(self.assets['strings']['main_menu_option_play'], lambda: print('Play menu')),
-                MenuOption(self.assets['strings']['main_menu_option_settings'], lambda: print('Settings menu')),
-                MenuOption(self.assets['strings']['main_menu_option_exit'], lambda: SelectMenu.handle_exit(self))
+                MenuOption(self.assets['strings']['main_menu_option_play']),
+                MenuOption(self.assets['strings']['main_menu_option_settings']),
+                MenuOption(self.assets['strings']['main_menu_option_exit'])
             ]
             self.context = SelectMenu(self.presentation_surface, self.assets, title, options)
 
@@ -287,10 +296,34 @@ class IBGame:
             self.context.surface = self.presentation_surface
             self.context.redraw()
             return
-        
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
         # catch update
-        if self.context.update(events):
-            self.update_result.update_areas.extend(self.menu.draw())
+        res = self.context.update(inputs)
+        if res['graphics_update']:
+            self.update_result.update_areas.extend(self.context.draw())
+        
+        elif res['submit']:
+            logger.debug(f'User selected the option: {self.context.selected_option_text}')
+            if self.context.selected_option_text == self.assets['strings']['main_menu_option_play']:
+                logger.info('Changing the state to LOBBY_SELECTION')
+                print('Changing the state to LOBBY_SELECTION')
+            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_settings']:
+                logger.info('Changing the state to SETTINGS_MENU')
+                print('Changing the state to SETTINGS_MENU')
+            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_exit']:
+                logger.info('User requested to exit the game')
+                self.update_result.exit = True
+                return self.update_result
+            else:
+                logger.error('Unknown option selected.')
+                raise ValueError('Unknown option selected.')
+            
+            self.context = None
+            self.update_result.update_areas.append(True)
+            return
 
 
     def __update_settings_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
@@ -305,11 +338,11 @@ class IBGame:
         move_to_main_menu = False
 
         # initialize the context as needed
-        if not hasattr(self, 'context'):
+        if not self.context:
             label_text = self.assets['strings']['init_state_label']
             self.context = InputMenu(self.presentation_surface, self.assets, label_text)
             def key_input_validator(key_event):
-                if key_event.key == K_RETURN or key_event.key == K_BACKSPACE:
+                if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
                     return key_event
                 elif key_event.unicode.isprintable() and len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
                         return key_event

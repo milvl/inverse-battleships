@@ -158,21 +158,30 @@ class MenuOption(RectText):
     DEFAULT_TEXT_COLOR = RectText.DEFAULT_TEXT_COLOR
 
 
-    def __init__(self, text: str, function: callable, highlighted: bool = False):
+    def __init__(self, text: str, highlighted: bool = False):
         """
         Constructor for the MenuOption class.
         
         :param text: The text of the menu option.
         :type text: str
-        :param function: The function to execute when the menu option is selected.
-        :type function: callable
         :param highlighted: Whether the menu option is highlighted, defaults to False
         :type highlighted: bool, optional
         """
 
         super().__init__(text)
-        self.__function = function
         self.__highlighted = highlighted
+    
+
+    @property
+    def text(self):
+        """
+        Getter for the text property.
+
+        :return: The text of the menu option.
+        :rtype: str
+        """
+
+        return self._text
 
 
     @property
@@ -242,14 +251,6 @@ class MenuOption(RectText):
         rect = super().render(surface, position, height, width, radius, centered, font_path, color, res_bckg_color, outline_color)
 
         return rect
-
-    
-    def execute(self):
-        """
-        Executes the function of the menu option.
-        """
-
-        self.__function()
 
 
 ####################################################################################################
