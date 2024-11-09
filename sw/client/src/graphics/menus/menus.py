@@ -135,6 +135,7 @@ class SelectMenu(Viewport):
 
         self.__title = title
         self.__options = options
+        self.__highlighted_option_index = -1
 
         # if both title and options are present
         if self.__title and self.__options:
@@ -169,6 +170,18 @@ class SelectMenu(Viewport):
         return self.__surface
     
 
+    @property
+    def selected_option_text(self):
+        """
+        Getter for the selected_option_text property.
+
+        :return: The text of the selected option.
+        :rtype: str
+        """
+
+        return self.__options[self.highlighted_option_index].text
+    
+
     @surface.setter
     def surface(self, surface: pygame.Surface):
         """
@@ -179,6 +192,44 @@ class SelectMenu(Viewport):
         """
 
         self.__surface = surface
+
+    
+    @property
+    def highlighted_option_index(self):
+        """
+        Getter for the highlighted_option_index property.
+
+        :return: The index of the highlighted option.
+        :rtype: int
+        """
+
+        return self.__highlighted_option_index
+    
+
+    def set_highlighted_option_index(self, index: int):
+        """
+        Setter for the highlighted_option_index property.
+        Keeps the index within the bounds of the options list.
+
+        :param index: The index of the option to highlight.
+        :type index: int
+        """
+
+        if self.__highlighted_option_index != -1:
+            self.__options[self.__highlighted_option_index].highlighted = False
+        index = index % len(self.__options)
+        self.__highlighted_option_index = index
+        self.__options[self.__highlighted_option_index].highlighted = True
+    
+
+    def unset_highlighted_option_index(self):
+        """
+        Unsets the highlighted option index.
+        """
+
+        if self.__highlighted_option_index != -1:
+            self.__options[self.__highlighted_option_index].highlighted = False
+            self.__highlighted_option_index = -1
 
 
     def draw(self):
@@ -202,77 +253,60 @@ class SelectMenu(Viewport):
         self.__draw_objects()
 
 
-    def update(self, events: PyGameEvents):
+    def update(self, events: Dict[str, Any]) -> Dict[str, Any]:
         """
         Updates the select menu.
 
-        :param events: The pygame events.
-        :type events: PyGameEvents
-        :return: Whether the select menu was updated.
-        :rtype: bool
+        :param events: The events that occurred.
+        :type events: Dict[str, Any]
+        :return: Relevant information about the update.
+        :rtype: Dict[str, Any]
         """
 
-        updated = False
+        result = {'graphics_update': False, 
+                  'option_selected': -1, 
+                  'submit': False}
+
+        result['option_selected'] = self.highlighted_option_index
 
         # handle possible option hover
-        if events.event_mousemotion:
-            for option in self.__options:
-                was_highlighted = option.highlighted
-                if option.rect.collidepoint(events.event_mousemotion.pos):
-                    option.highlighted = True
-                else:
-                    option.highlighted = False
-                
-                if was_highlighted != option.highlighted:
-                    updated = True
+        if events.get('mouse_motion', False):
+            if self.highlighted_option_index != -1:
+                self.unset_highlighted_option_index()
+                result['graphics_update'] = True
+
+            for i, option in enumerate(self.__options):
+                if option.rect.collidepoint(events['mouse_motion']):
+                    if not option.highlighted:
+                        self.set_highlighted_option_index(i)
+                        result['graphics_update'] = True
+                    break
         
         # handle possible option click
-        if events.event_mousebuttonup:
-            for option in self.__options:
-                if option.rect.collidepoint(events.event_mousebuttonup.pos):
-                    updated = True
-                    option.execute()
-                    break
+        if events.get('mouse_click', False):
+            if self.__options[self.highlighted_option_index].rect.collidepoint(events['mouse_click']):
+                result['submit'] = True
+                return result
 
         # handle keyboard input
-        if events.event_keydown:
-            next_index_shift = 0
-            none_highlighted = True
-            valid_option_choice = False
-            submitted = False
-            if events.event_keydown.key == pygame.K_UP:
-                valid_option_choice = True
-                next_index_shift = -1
-                    
-            elif events.event_keydown.key == pygame.K_DOWN:
-                limit_func = min
-                valid_option_choice = True
-                next_index_shift = 1
+        if events.get('direction', False):
+            if self.highlighted_option_index != -1:
+                if events['direction'] == pygame.K_DOWN:
+                    self.set_highlighted_option_index(self.highlighted_option_index + 1)
+                    result['graphics_update'] = True
+                elif events['direction'] == pygame.K_UP:
+                    self.set_highlighted_option_index(self.highlighted_option_index - 1)
+                    result['graphics_update'] = True
+            else:
+                self.set_highlighted_option_index(0)
+                result['graphics_update'] = True
+        
+        # handle enter key
+        if events.get('return', False):
+            result['submit'] = True
+            return result
 
-            elif events.event_keydown.key == pygame.K_RETURN:
-                submitted = True
-            
-            if valid_option_choice:
-                updated = True
-                for i, option in enumerate(self.__options):
-                    if option.highlighted:
-                        none_highlighted = False
-                        option.highlighted = False
-                        next_index = (i + next_index_shift) % len(self.__options)
-                        break
-                
-                if none_highlighted:
-                    next_index = 0
-                self.__options[next_index].highlighted = True
-
-            if submitted:
-                updated = True
-                for option in self.__options:
-                    if option.highlighted:
-                        option.execute()
-                        break
-                
-        return updated
+        return result
     
 
 class InputMenu(Viewport):
