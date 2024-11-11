@@ -7,80 +7,25 @@ import json
 import os
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
+from game.ib_game_state import IBGameState
 from util import loggers
-from typing import List, Dict, Any, Callable
-from graphics.menus.menus import InputMenu, SelectMenu, MenuTitle, MenuOption
+from typing import Dict, Any, Callable
+from graphics.menus.input_menu import InputMenu
+from graphics.menus.select_menu import SelectMenu
+# from graphics.menus.settings_menu import SettingsMenu
+from graphics.menus.primitives import MenuTitle, MenuOption
 from util.etc import maintains_min_window_size
 from util.path import get_project_root
-from typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
+from const.typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
 from copy import deepcopy
 import pygame
 from pygame.locals import *
+
 
 logger = loggers.get_logger(MAIN_LOGGER_NAME)
 # TODO remove
 tmp_logger = loggers.get_temp_logger('temp')
 PROJECT_ROOT_DIR = get_project_root()
-
-
-class IBGameState:
-    # TODO DOC
-    INIT = -1
-    MAIN_MENU = 0
-    SETTINGS_MENU = 1
-    CONNECTION_MENU = 2
-    LOBBY_SELECTION = 3
-    LOBBY = 4
-    GAME_SESSION = 5
-    GAME_END = 6
-
-
-    def __init__(self):
-        # TODO DOC
-        self.__state = IBGameState.INIT
-        self.__state_names = {
-            IBGameState.INIT: 'INIT',
-            IBGameState.MAIN_MENU: 'MAIN_MENU',
-            IBGameState.SETTINGS_MENU: 'SETTINGS_MENU',
-            IBGameState.CONNECTION_MENU: 'CONNECTION_MENU',
-            IBGameState.LOBBY_SELECTION: 'LOBBY_SELECTION',
-            IBGameState.LOBBY: 'LOBBY',
-            IBGameState.GAME_SESSION: 'GAME_SESSION',
-            IBGameState.GAME_END: 'GAME_END'
-        }
-        logger.debug(f'IBGameState initialized with state: {str(self)}')
-
-
-    @property
-    def state(self) -> int:
-        # TODO DOC
-        return self.__state
-
-
-    @state.setter
-    def state(self, new_state: int):
-        # TODO DOC
-
-        # sanity check simplified based on contract
-        if new_state > IBGameState.GAME_END or new_state < IBGameState.INIT:
-            raise ValueError('Invalid state to set.')
-        
-        if new_state == self.__state:
-            return
-    
-        # logging handled near the call location
-        self.__state = new_state
-
-
-    def __str__(self) -> str:
-        """
-        Returns the name of the state.
-
-        :return: The name of the state.
-        :rtype: str
-        """
-
-        return self.__state_names.get(self.__state, 'UNKNOWN_STATE')
 
 
 class IBGame:
@@ -92,6 +37,8 @@ class IBGame:
 
     PLAYER_NICKNAME_MAX_LENGTH = 20
     """The maximum length of the player's nickname."""
+    SERVER_ADDRESS_MAX_LENGTH = 18 # 9 IP, 5 port, 1 colon, 3 dots
+    """The maximum length of the server address."""
 
 
     @staticmethod
@@ -401,7 +348,24 @@ class IBGame:
 
 
     def __update_settings_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
-        raise NotImplementedError('The __update_settings_menu method has not been implemented yet.')
+        # initialize the context as needed
+        # if not self.context:
+        #     label_text = self.assets['strings']['settings_menu_label']
+        #     # self.context = SettingsMenu(self.presentation_surface, self.assets, label_text)
+        #     def key_input_validator(key_event):
+        #         if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
+        #             return key_event
+                
+        #         elif key_event.unicode.isnumeric() or key_event.unicode in ['.', ':'] and \
+        #             len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
+        #                 return key_event
+        #         else:
+        #             logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
+                
+        #     self.key_input_validator = key_input_validator
+        #     self.context.redraw()
+        #     self.update_result.update_areas.append(True)
+        pass
     
 
     def __update_init_state(self, events: PyGameEvents):

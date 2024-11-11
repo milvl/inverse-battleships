@@ -9,11 +9,11 @@ from const.exit_codes import EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_
 from typing import Dict
 from pprint import pformat
 from util.file import load_json
-from typedefs import IBGameConfig, IBAssets, IBGameUpdateResult
+from const.typedefs import IBGameConfig, IBAssets, IBGameUpdateResult
 from pydantic import ValidationError
 import pygame
 from util.assets_loader import AssetsLoader
-from game import IBGame
+from game.ib_game import IBGame
 
 # logger = loggers.NullLogger()
 # temp_logger = loggers.NullLogger()
