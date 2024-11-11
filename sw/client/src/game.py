@@ -94,6 +94,78 @@ class IBGame:
     """The maximum length of the player's nickname."""
 
 
+    @staticmethod
+    def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
+        """
+        Processes the input events into a dictionary.
+
+        :param events: PyGame events.
+        :type events: PyGameEvents
+        :param key_input_validator: Function to validate the keyboard input 
+        and return a valid event.
+        :type key_input_validator: Callable
+        :return: The processed input events.
+        :rtype: Dict[str, Any]
+        """
+        
+        res = {}
+        if events.event_keyup:
+            key_up = key_input_validator(events.event_keyup)
+            if not key_up:
+                logger.debug('Invalid keyup event, skipping...')
+                return res
+            if key_up.key == pygame.K_UP or \
+                key_up.key == pygame.K_DOWN or \
+                key_up.key == pygame.K_LEFT or \
+                key_up.key == pygame.K_RIGHT:
+                res['direction'] = events.event_keyup.key
+            elif key_up.key == pygame.K_BACKSPACE:
+                res['backspace'] = True
+            elif key_up.key == pygame.K_RETURN:
+                res['return'] = True
+            elif key_up.key == pygame.K_ESCAPE:
+                res['escape'] = True
+            elif key_up.unicode.isprintable():
+                res['new_char'] = events.event_keyup.unicode
+
+            logger.debug(f'Processed keyup event: {pygame.key.name(events.event_keyup.key)}')
+            
+        elif events.event_mousebuttonup:
+            res['mouse_click'] = events.event_mousebuttonup.pos
+            logger.debug(f'Processed mousebuttonup event: {events.event_mousebuttonup.pos}')
+        
+        elif events.event_mousemotion:
+            res['mouse_motion'] = events.event_mousemotion.pos
+            # logger.debug(f'Processed mousemotion event: {events.event_mousemotion.pos}')
+        
+        return res
+    
+
+    @staticmethod
+    def __create_user_cfg(player_name: str):
+        """
+        Creates a new user configuration file.
+
+        :param player_name: The name of the player.
+        :type player_name: str
+        """
+
+        user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{player_name}.json')
+
+        default_user_cfg = {}
+        with open(DEFAULT_USER_CONFIG_PATH, 'r') as f:
+            default_user_cfg.update(json.load(f))
+        
+        # create dirs if needed
+        os.makedirs(os.path.dirname(user_cfg_path), exist_ok=True)
+        new_user_cfg = {
+            'nickname': player_name,
+        }
+        new_user_cfg.update(default_user_cfg)
+        with open(user_cfg_path, 'w') as f:
+            json.dump(new_user_cfg, f)
+
+
     def __init__(self, config: Dict[str, Any], assets: Dict[str, Any]):
         """
         Creates a new instance of the IBGame class.
@@ -218,78 +290,6 @@ class IBGame:
                 continue
 
         return events
-
-
-    @staticmethod
-    def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
-        """
-        Processes the input events into a dictionary.
-
-        :param events: PyGame events.
-        :type events: PyGameEvents
-        :param key_input_validator: Function to validate the keyboard input 
-        and return a valid event.
-        :type key_input_validator: Callable
-        :return: The processed input events.
-        :rtype: Dict[str, Any]
-        """
-        
-        res = {}
-        if events.event_keyup:
-            key_up = key_input_validator(events.event_keyup)
-            if not key_up:
-                logger.debug('Invalid keyup event, skipping...')
-                return res
-            if key_up.key == pygame.K_UP or \
-                key_up.key == pygame.K_DOWN or \
-                key_up.key == pygame.K_LEFT or \
-                key_up.key == pygame.K_RIGHT:
-                res['direction'] = events.event_keyup.key
-            elif key_up.key == pygame.K_BACKSPACE:
-                res['backspace'] = True
-            elif key_up.key == pygame.K_RETURN:
-                res['return'] = True
-            elif key_up.key == pygame.K_ESCAPE:
-                res['escape'] = True
-            elif key_up.unicode.isprintable():
-                res['new_char'] = events.event_keyup.unicode
-
-            logger.debug(f'Processed keyup event: {pygame.key.name(events.event_keyup.key)}')
-            
-        elif events.event_mousebuttonup:
-            res['mouse_click'] = events.event_mousebuttonup.pos
-            logger.debug(f'Processed mousebuttonup event: {events.event_mousebuttonup.pos}')
-        
-        elif events.event_mousemotion:
-            res['mouse_motion'] = events.event_mousemotion.pos
-            # logger.debug(f'Processed mousemotion event: {events.event_mousemotion.pos}')
-        
-        return res
-    
-
-    @staticmethod
-    def __create_user_cfg(player_name: str):
-        """
-        Creates a new user configuration file.
-
-        :param player_name: The name of the player.
-        :type player_name: str
-        """
-
-        user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{player_name}.json')
-
-        default_user_cfg = {}
-        with open(DEFAULT_USER_CONFIG_PATH, 'r') as f:
-            default_user_cfg.update(json.load(f))
-        
-        # create dirs if needed
-        os.makedirs(os.path.dirname(user_cfg_path), exist_ok=True)
-        new_user_cfg = {
-            'nickname': player_name,
-        }
-        new_user_cfg.update(default_user_cfg)
-        with open(user_cfg_path, 'w') as f:
-            json.dump(new_user_cfg, f)
     
 
     def __set_up_user_session(self):
