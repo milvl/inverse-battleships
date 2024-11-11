@@ -1,0 +1,9 @@
+"""
+Module with exit codes constants.
+"""
+
+# EXIT CODES
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+EXIT_INVALID_CFG = 2
+EXIT_INVALID_ASSETS_CFG = 3

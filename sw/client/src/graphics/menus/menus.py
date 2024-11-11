@@ -1,10 +1,14 @@
+"""
+Module with pre-defined menus.
+"""
+
 from typing import List, Dict, Tuple, Union, Any
 from abc import ABC
 from graphics.menus.primitives import MenuOption, MenuTitle, TextInput
-from utils.loggers import get_temp_logger
-from utils.utils import get_rendered_text_with_size, color_highlight
+from util.loggers import get_temp_logger
+from util.graphics import get_rendered_text_with_size, color_highlight
 from graphics.viewport import Viewport
-from typedefs import IBAssets, PyGameEvents
+from typedefs import IBAssets
 import pygame
 
 tmp_logger = get_temp_logger('temp')
@@ -247,7 +251,7 @@ class SelectMenu(Viewport):
         # update and draw the background
         surface_width, surface_height = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_width, surface_height)
-        pygame.draw.rect(self.__surface, self.__assets['colors']['purple'], self.__background)
+        pygame.draw.rect(self.__surface, self.__assets['colors']['black'], self.__background)
 
         # draw the objects
         self.__draw_objects()

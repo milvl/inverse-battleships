@@ -77,17 +77,17 @@ class NullLogger:
         pass
 
 
-""" Dictionary with loggers. """
 __loggers: dict[str, logging.Logger] = {}
+"""Dictionary with loggers. """
 
-""" Implicit logger if needed. """
 __implicit_logger = None
+"""Implicit logger if needed. """
 
-""" Temporary loggers for debug session. """
 __temp_loggers: dict[str, logging.Logger|NullLogger] = {}
+"""Temporary loggers for debug session. """
 
-""" Flag if all loggers are ready for use. """
 __ready: bool = False
+"""Flag if all loggers are ready for use. """
 
 LOG_COLORS = {
             'DEBUG': 'light_blue',
@@ -97,6 +97,7 @@ LOG_COLORS = {
             'CRITICAL': 'red',
             '__TEMP': 'light_green'
     }
+"""Defined colors for logging levels. """
 
 
 class ColoredFormater(logging.Formatter):

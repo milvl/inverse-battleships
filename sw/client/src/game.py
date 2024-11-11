@@ -1,43 +1,27 @@
-from const import MAIN_LOGGER_NAME
-from utils import loggers
-from pprint import pformat
-from typing import List, Dict, Tuple, Union, Optional, Any, Callable
+"""
+Module that contains the main class of the game and 
+all the logic related to the game itself.    
+"""
+
+import json
+import os
+from const.paths import DEFAULT_USER_CONFIG_PATH
+from const.loggers import MAIN_LOGGER_NAME
+from util import loggers
+from typing import List, Dict, Any, Callable
 from graphics.menus.menus import InputMenu, SelectMenu, MenuTitle, MenuOption
-from utils.utils import maintains_min_window_size, color_make_seethrough
+from util.etc import maintains_min_window_size
+from util.path import get_project_root
 from typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
-import random
 from copy import deepcopy
-from player import IBPlayer
 import pygame
 from pygame.locals import *
 
 logger = loggers.get_logger(MAIN_LOGGER_NAME)
 # TODO remove
 tmp_logger = loggers.get_temp_logger('temp')
+PROJECT_ROOT_DIR = get_project_root()
 
-
-def debug_get_random_color() -> Tuple[int, int, int]:
-    """
-    Returns a random color.
-
-    :return: A random color that is represented as a tuple of three integers.
-    :rtype: Tuple[int, int, int]
-    """
-
-    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
-def __create_players(player_names: List[str]) -> List[IBPlayer]:
-    # TODO magic num
-    if len(player_names) != 2:
-        raise ValueError('The number of players must be 2.')
-    
-    players = []
-    is_left = True
-    for name in player_names:
-        players.append(IBPlayer(name, is_left))
-        is_left = not is_left
-    
-    return players
 
 class IBGameState:
     # TODO DOC
@@ -100,13 +84,26 @@ class IBGameState:
 
 
 class IBGame:
-    # TODO DOC
+    """
+    The main class that represents the game (using concept of state machine).
+    The main methods are start and update.
+    """
 
-    CLEAR_BACKGROUND = (0, 0, 0, 0)
+
     PLAYER_NICKNAME_MAX_LENGTH = 20
+    """The maximum length of the player's nickname."""
 
-    def __init__(self, config: Dict, assets: Dict):
-        # TODO DOC
+
+    def __init__(self, config: Dict[str, Any], assets: Dict[str, Any]):
+        """
+        Creates a new instance of the IBGame class.
+
+        :param config: The configuration of the game.
+        :type config: Dict[Any]
+        :param assets: The assets of the game.
+        :type assets: Dict[Any]
+        """
+
         self.config = deepcopy(config)
         self.assets = {'colors': deepcopy(assets['colors']), 'strings': deepcopy(assets['strings']), 'sprites': assets['sprites']}
 
@@ -115,7 +112,14 @@ class IBGame:
 
 
     def __get_debug_info_object(self):
-        # TODO DOC
+        """
+        Returns the debug info object. Used for debugging purposes.
+        It is a pygame.Surface object with the debug info.
+
+        :return: The debug info object.
+        :rtype: pygame.Surface
+        """
+
         if not pygame.get_init():
             raise ValueError('The pygame module has not been initialized.')
         if not pygame.font.get_init():
@@ -135,7 +139,12 @@ class IBGame:
 
 
     def start(self, window: pygame.Surface):
-        # TODO DOC
+        """
+        Initializes the game.
+
+        :param window: The window of the game.
+        :type window: pygame.Surface
+        """
 
         self.window = window
         pygame.init()
@@ -155,6 +164,9 @@ class IBGame:
             pygame.display.flip()
         
         self.context = None
+        self.player_name = None
+        self.server_ip = None
+        self.server_port = None
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -208,7 +220,8 @@ class IBGame:
         return events
 
 
-    def __proccess_input(self, events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
+    @staticmethod
+    def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
         """
         Processes the input events into a dictionary.
 
@@ -249,33 +262,88 @@ class IBGame:
         
         elif events.event_mousemotion:
             res['mouse_motion'] = events.event_mousemotion.pos
-            logger.debug(f'Processed mousemotion event: {events.event_mousemotion.pos}')
+            # logger.debug(f'Processed mousemotion event: {events.event_mousemotion.pos}')
         
         return res
     
 
-    def __update_game_session(self, events: PyGameEvents) -> IBGameUpdateResult:
+    @staticmethod
+    def __create_user_cfg(player_name: str):
+        """
+        Creates a new user configuration file.
+
+        :param player_name: The name of the player.
+        :type player_name: str
+        """
+
+        user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{player_name}.json')
+
+        default_user_cfg = {}
+        with open(DEFAULT_USER_CONFIG_PATH, 'r') as f:
+            default_user_cfg.update(json.load(f))
+        
+        # create dirs if needed
+        os.makedirs(os.path.dirname(user_cfg_path), exist_ok=True)
+        new_user_cfg = {
+            'nickname': player_name,
+        }
+        new_user_cfg.update(default_user_cfg)
+        with open(user_cfg_path, 'w') as f:
+            json.dump(new_user_cfg, f)
+    
+
+    def __set_up_user_session(self):
+        """
+        Prepares the data for the client session  
+        based on user.
+        """
+        
+        if not self.context:
+            raise ValueError('The context has not been initialized yet.')
+        if not self.context.text_input:
+            raise ValueError('The user input has not been set yet.')
+        
+        self.player_name = self.context.text_input
+        user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{self.player_name}.json')
+        if not os.path.exists(user_cfg_path):
+            logger.info(f'User configuration file does not exist, creating a new one: {user_cfg_path}')
+            __class__.__create_user_cfg(self.player_name)
+        
+        logger.debug(f'User configuration file found: {user_cfg_path}')
+        with open(user_cfg_path, 'r') as f:
+            user_cfg = json.load(f)
+        server_address = user_cfg['server_address'].split(':')
+        self.server_ip = server_address[0]
+        self.server_port = int(server_address[1])
+    
+
+    def __update_game_session(self, events: PyGameEvents):
         raise NotImplementedError('The __update_game_session method has not been implemented yet.')
 
 
-    def __update_lobby(self, events: PyGameEvents) -> IBGameUpdateResult:
+    def __update_lobby(self, events: PyGameEvents):
         raise NotImplementedError('The __update_lobby method has not been implemented yet.')
 
 
-    def __update_lobby_selection(self, events: PyGameEvents) -> IBGameUpdateResult:
+    def __update_lobby_selection(self, events: PyGameEvents):
         raise NotImplementedError('The __update_lobby_selection method has not been implemented yet.')
 
 
-    def __update_connection_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
+    def __update_connection_menu(self, events: PyGameEvents):
         raise NotImplementedError('The __update_connection_menu method has not been implemented yet.')
 
 
-    def __update_game_end(self, events: PyGameEvents) -> IBGameUpdateResult:
+    def __update_game_end(self, events: PyGameEvents):
         raise NotImplementedError('The __update_game_end method has not been implemented yet.')
 
 
     def __update_main_menu(self, events: PyGameEvents):
-        # TODO DOC
+        """
+        Handles the main menu state.
+
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
 
         # if no menu was drawn, prepare it and draw it
         if not self.context:
@@ -290,6 +358,9 @@ class IBGame:
             # draw the menu for the first time
             self.context.redraw()
             self.update_result.update_areas.append(True)
+            tmp_logger.debug('Main menu drawn for the first time')
+            tmp_logger.debug(f'Player nick: {self.player_name}')
+            tmp_logger.debug(f'Server address: {self.server_ip}:{self.server_port}')
 
         # if the user resized the window, redraw the menu
         if events.event_videoresize:
@@ -300,11 +371,14 @@ class IBGame:
         # process the input
         inputs = self.__proccess_input(events)
 
-        # catch update
+        # update the context and get the results
         res = self.context.update(inputs)
+
+        # handle graphics update (selection change)
         if res['graphics_update']:
             self.update_result.update_areas.extend(self.context.draw())
         
+        # handle option selection
         elif res['submit']:
             logger.debug(f'User selected the option: {self.context.selected_option_text}')
             if self.context.selected_option_text == self.assets['strings']['main_menu_option_play']:
@@ -333,6 +407,9 @@ class IBGame:
     def __update_init_state(self, events: PyGameEvents):
         """
         Handles the initialization state.
+        
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
         """
 
         # initialize the context as needed
@@ -355,14 +432,21 @@ class IBGame:
             self.context.surface = self.presentation_surface
             self.context.redraw()
 
+        # process the input
         inputs = self.__proccess_input(events, self.key_input_validator)
-            
+        
+        # update the context and get the results
         res = self.context.update(inputs)
-        if res.get('graphics_update', False):
+
+        # handle graphics update (text input)
+        if res['graphics_update']:
             update_rect = self.context.draw()
             self.update_result.update_areas.append(update_rect)
-        elif res.get('submit', False):
+        
+        # handle the user input
+        elif res['submit']:
             logger.info(f'User submitted the input: {self.context.text_input}')
+            self.__set_up_user_session()
             self.context = None
             self.game_state.state = IBGameState.MAIN_MENU
             logger.info('Changing the state to MAIN_MENU')
@@ -396,7 +480,13 @@ class IBGame:
 
         
     def update(self) -> IBGameUpdateResult:
-        # TODO DOC
+        """
+        Updates the game state. This method should be called in the main loop 
+        on each game tick. It uses priciples of state machine.
+
+        :return: The update result.
+        :rtype: IBGameUpdateResult
+        """
 
         # sanity check
         if not self.started:

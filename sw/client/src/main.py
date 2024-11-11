@@ -2,14 +2,17 @@
 # linux: python ./client/src/main.py -c ./client/cfg/debug_cfg.json -l ./client/cfg/debug_loggers_cfg.json
 
 import os
-from utils.init_setup import loggers, CFG_PATH, RESOURCES_DIR_PATH, EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG, LOGGER_NAME
+from const.paths import RESOURCES_DIR_PATH
+from util.init_setup import loggers, LOGGER_NAME
+from util.init_setup import CFG_PATH
+from const.exit_codes import EXIT_SUCCESS, EXIT_FAILURE, EXIT_INVALID_CFG, EXIT_INVALID_ASSETS_CFG
 from typing import Dict
 from pprint import pformat
-from utils.utils import load_json
+from util.file import load_json
 from typedefs import IBGameConfig, IBAssets, IBGameUpdateResult
 from pydantic import ValidationError
 import pygame
-from utils.assets_loader import AssetsLoader
+from util.assets_loader import AssetsLoader
 from game import IBGame
 
 # logger = loggers.NullLogger()

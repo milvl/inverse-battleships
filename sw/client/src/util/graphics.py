@@ -1,53 +1,10 @@
-from typing import Dict, Tuple, Union
-import json
+"""
+Module with graphics utilities (some dependent on Pygame).
+"""
+
+import random
+from typing import Tuple, Union
 import pygame
-
-def load_json(path: str) -> Dict:
-    """
-    Loads the JSON file from the given path.
-
-    :param path: The path to the JSON file.
-    :type path: str
-    :return: The JSON file as a dictionary.
-    :rtype: Dict
-    """
-
-    with open(path, 'r') as f:
-        return json.load(f)
-
-
-def hex_to_tuple(hex_str: str) -> tuple:
-    """
-    Converts a hexadecimal string to a tuple of integers.
-
-    :param hex_str: The hexadecimal string.
-    :type hex_str: str
-    :return: The tuple of integers.
-    :rtype: tuple
-    """
-
-    base = 16
-    interval = 2
-    iterable = (1, 3, 5)    # skip the '#' character
-    return tuple(int(hex_str[i:i + interval], base) for i in iterable)
-
-def maintains_min_window_size(width: int, height: int, min_width: int, min_height: int) -> bool:
-    """
-    Checks if the given width and height are greater than or equal to the given minimum width and height.
-
-    :param width: The width.
-    :type width: int
-    :param height: The height.
-    :type height: int
-    :param min_width: The minimum width.
-    :type min_width: int
-    :param min_height: The minimum height.
-    :type min_height: int
-    :return: True if the width and height are greater than or equal to the minimum width and height, False otherwise.
-    :rtype: bool
-    """
-    
-    return width >= min_width and height >= min_height
 
 
 def get_rendered_text_with_size(text: str, width: int, height: int, font_path: str = None, color: Tuple[int, int, int] = (255, 255, 255)) -> pygame.Surface:
@@ -86,14 +43,15 @@ def get_rendered_text_with_size(text: str, width: int, height: int, font_path: s
 
     return surface
 
+
 def color_highlight(color: Union[Tuple[int, int, int], Tuple[int, int, int, int]]) -> Union[Tuple[int, int, int], Tuple[int, int, int, int]]:
     """
     Highlights the given color by increasing or decreasing its brightness.
 
     :param color: The color to highlight.
-    :type color: _type_
-    :return: _description_
-    :rtype: _type_
+    :type color: Tuple[int, int, int]
+    :return: The highlighted color.
+    :rtype: Tuple[int, int, int]
     """
 
     # using the formula: 0.299*R + 0.587*G + 0.114*B
@@ -148,3 +106,14 @@ def color_make_seethrough(color: Union[Tuple[int, int, int], Tuple[int, int, int
         return color[:3] + (alpha,)
     else:
         raise ValueError("Invalid color tuple length")
+    
+
+def debug_get_random_color() -> Tuple[int, int, int]:
+    """
+    Returns a random color.
+
+    :return: A random color that is represented as a tuple of three integers.
+    :rtype: Tuple[int, int, int]
+    """
+
+    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))

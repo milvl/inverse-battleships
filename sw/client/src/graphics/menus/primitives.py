@@ -2,7 +2,7 @@ from abc import ABC
 import time
 from typing import Tuple, Union
 import pygame
-from utils.utils import color_highlight, get_rendered_text_with_size
+from util.graphics import color_highlight, get_rendered_text_with_size
 
 
 class RectText(ABC):

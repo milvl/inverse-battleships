@@ -1,7 +1,11 @@
-# TODO add doc
+"""
+Module for initial setup of the client application.
+"""
 
 import argparse
-from const import *
+from const.paths import DEFAULT_CONFIG_PATH, LOGGERS_CONFIG_PATH
+from const.loggers import MAIN_LOGGER_NAME
+
 args_parser = argparse.ArgumentParser(description='Client application for the game "Inverse Battleships"')
 args_parser.add_argument('-l', '--loggers_config', type=str, help='Path to the loggers configuration file')
 args_parser.add_argument('-c', '--config', type=str, help='Path to the configuration file')
@@ -12,7 +16,7 @@ LOGGERS_CFG_PATH = args.loggers_config if args.loggers_config else LOGGERS_CONFI
 CFG_PATH = args.config if args.config else DEFAULT_CONFIG_PATH
 LOGGER_NAME = args.name if args.name else MAIN_LOGGER_NAME
 
-from utils import loggers
+from util import loggers
 from time import sleep
 loggers.set_path_to_config_file(LOGGERS_CFG_PATH)
 while not loggers.is_ready():

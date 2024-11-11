@@ -1,15 +1,20 @@
+"""
+Module that handles loading assets for the game (based on Pygame).
+"""
+
 import os
 from typing import Dict
 
 import pygame
-from const import MAIN_LOGGER_NAME
-from utils import loggers
+from const.loggers import MAIN_LOGGER_NAME
+from util import loggers
 from pprint import pformat
-from utils.utils import load_json, hex_to_tuple
+from util.file import load_json
+from util.etc import hex_to_tuple
 
 STRINGS_FILE_PATH: str = 'strings.json'
 COLORS_FILE_PATH: str = 'colors.json'
-SPRITES_DIR_PATH: str = 'img/sprites'
+SPRITES_DIR_PATH: str = os.path.join('img', 'sprites')
 
 logger = loggers.get_logger(MAIN_LOGGER_NAME)
 
@@ -75,7 +80,7 @@ class AssetsLoader:
         for root, _, files in os.walk(path):
             for file in files:
                 sprite_name = file.split('.')[0]
-                res[sprite_name] = pygame.image.load(f'{root}/{file}')
+                res[sprite_name] = pygame.image.load(os.path.join(root, file))
                 logger.debug(f'Loaded sprite: {res[sprite_name]}')
 
         logger.info(f'Loaded sprites from: {path}.')
@@ -104,12 +109,12 @@ class AssetsLoader:
         """
 
         assets = {}
-        strings_path = os.path.abspath(f'{self.resources_dir_path}/{STRINGS_FILE_PATH}')
-        colors_path = os.path.abspath(f'{self.resources_dir_path}/{COLORS_FILE_PATH}')
-        sprites_path = os.path.abspath(f'{self.resources_dir_path}/{SPRITES_DIR_PATH}')
-        assets['strings'] = AssetsLoader.__load_text_resources(strings_path)
-        assets['colors'] = AssetsLoader.__load_colors(colors_path)
-        assets['sprites'] = AssetsLoader.__load_sprites(sprites_path)
+        strings_path = os.path.abspath(os.path.join(self.resources_dir_path, STRINGS_FILE_PATH))
+        colors_path = os.path.abspath(os.path.join(self.resources_dir_path, COLORS_FILE_PATH))
+        sprites_path = os.path.abspath(os.path.join(self.resources_dir_path, SPRITES_DIR_PATH))
+        assets['strings'] = __class__.__load_text_resources(strings_path)
+        assets['colors'] = __class__.__load_colors(colors_path)
+        assets['sprites'] = __class__.__load_sprites(sprites_path)
 
         logger.info(f'Loaded assets from: {self.resources_dir_path}.')
         logger.debug(f'Loaded assets: \n{pformat(assets, indent=4)}')

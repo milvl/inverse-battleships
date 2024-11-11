@@ -176,3 +176,6 @@ bonus01/client_debug.o
 bonus01/client.o
 .vscode/launch.json
 .vscode/settings.json
+sw/client/cfg/users/a.json
+sw/client/cfg/users/aaaa.json
+sw/client/cfg/users/milvl.json
