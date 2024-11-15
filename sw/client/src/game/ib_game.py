@@ -5,15 +5,15 @@ all the logic related to the game itself.
 
 import json
 import os
+import re
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
 from game.ib_game_state import IBGameState
 from graphics.menus.settings_menu import SettingsMenu
-from util import loggers
+from util import input_validators, loggers
 from typing import Dict, Any, Callable
 from graphics.menus.input_menu import InputMenu
 from graphics.menus.select_menu import SelectMenu
-# from graphics.menus.settings_menu import SettingsMenu
 from graphics.menus.primitives import MenuTitle, MenuOption
 from util.etc import maintains_min_window_size
 from util.path import get_project_root
@@ -43,7 +43,7 @@ class IBGame:
 
 
     @staticmethod
-    def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda x: x) -> Dict[str, Any]:
+    def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda y, x: x, self = None) -> Dict[str, Any]:
         """
         Processes the input events into a dictionary.
 
@@ -52,13 +52,15 @@ class IBGame:
         :param key_input_validator: Function to validate the keyboard input 
         and return a valid event.
         :type key_input_validator: Callable
+        :param self: The IBGame object (if needed), defaults to None
+        :type self: IBGame
         :return: The processed input events.
         :rtype: Dict[str, Any]
         """
         
         res = {}
         if events.event_keyup:
-            key_up = key_input_validator(events.event_keyup)
+            key_up = key_input_validator(self, events.event_keyup)
             if not key_up:
                 logger.debug('Invalid keyup event, skipping...')
                 return res
@@ -115,6 +117,22 @@ class IBGame:
 
         with open(user_cfg_path, 'w') as f:
             json.dump(new_user_cfg, f)
+
+        
+    @staticmethod
+    def __is_settings_input_valid(text_input):
+        """
+        Validates the server address input.
+
+        :param text_input: The text input to validate.
+        :type text_input: str
+        :return: True if the input is valid, False otherwise.
+        :rtype: bool
+        """
+
+        address_regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}"
+
+        return re.match(address_regex, text_input)
 
 
     def __init__(self, config: Dict[str, Any], assets: Dict[str, Any]):
@@ -268,194 +286,6 @@ class IBGame:
         self.server_port = int(server_address[1])
     
 
-    def __update_game_session(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_game_session method has not been implemented yet.')
-
-
-    def __update_lobby(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_lobby method has not been implemented yet.')
-
-
-    def __update_lobby_selection(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_lobby_selection method has not been implemented yet.')
-
-
-    def __update_connection_menu(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_connection_menu method has not been implemented yet.')
-
-
-    def __update_game_end(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
-
-
-    def __update_main_menu(self, events: PyGameEvents):
-        """
-        Handles the main menu state.
-
-        :param events: The PyGame user input events.
-        :type events: PyGameEvents
-        """
-
-        # if no menu was drawn, prepare it and draw it
-        if not self.context:
-            title = MenuTitle(self.assets['strings']['main_menu_title'])
-            options = [
-                MenuOption(self.assets['strings']['main_menu_option_play']),
-                MenuOption(self.assets['strings']['main_menu_option_settings']),
-                MenuOption(self.assets['strings']['main_menu_option_exit'])
-            ]
-            self.context = SelectMenu(self.presentation_surface, self.assets, title, options)
-
-            # draw the menu for the first time
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
-            tmp_logger.debug('Main menu drawn for the first time')
-            tmp_logger.debug(f'Player nick: {self.player_name}')
-            tmp_logger.debug(f'Server address: {self.server_ip}:{self.server_port}')
-
-        # if the user resized the window, redraw the menu
-        if events.event_videoresize:
-            self.context.surface = self.presentation_surface
-            self.context.redraw()
-            return
-
-        # process the input
-        inputs = self.__proccess_input(events)
-
-        # update the context and get the results
-        res = self.context.update(inputs)
-
-        # handle graphics update (selection change)
-        if res['graphics_update']:
-            self.update_result.update_areas.extend(self.context.draw())
-        
-        # handle option selection
-        elif res['submit']:
-            logger.debug(f'User selected the option: {self.context.selected_option_text}')
-            if self.context.selected_option_text == self.assets['strings']['main_menu_option_play']:
-                logger.info('Changing the state to LOBBY_SELECTION')
-                print('Changing the state to LOBBY_SELECTION')
-            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_settings']:
-                logger.info('Changing the state to SETTINGS_MENU')
-                self.game_state.state = IBGameState.SETTINGS_MENU
-                print('Changing the state to SETTINGS_MENU')
-            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_exit']:
-                logger.info('User requested to exit the game')
-                self.update_result.exit = True
-                return self.update_result
-            else:
-                logger.error('Unknown option selected.')
-                raise ValueError('Unknown option selected.')
-            
-            self.context = None
-            self.update_result.update_areas.append(True)
-            return
-
-
-    def __update_settings_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
-        # initialize the context as needed
-        if not self.context:
-            label_text = self.assets['strings']['settings_menu_label']
-            self.context = SettingsMenu(self.presentation_surface, self.assets, label_text)
-            def key_input_validator(key_event):
-                if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
-                    return key_event
-                
-                elif key_event.unicode.isnumeric() or key_event.unicode in ['.', ':'] and \
-                    len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
-                        return key_event
-                else:
-                    logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
-                
-            self.key_input_validator = key_input_validator
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
-        
-        if events.event_videoresize:
-            self.context.surface = self.presentation_surface
-            self.context.redraw()
-
-        # process the input
-        inputs = self.__proccess_input(events, self.key_input_validator)
-        
-        # update the context and get the results
-        res = self.context.update(inputs)
-
-        # handle graphics update (text input)
-        if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.append(update_rect)
-        
-        # handle the user input
-        elif res['submit']:
-            # TODO HERE better validate
-            if __class__.__is_settings_input_valid(self.context.text_input):
-                logger.info(f'User submitted the input: {self.context.text_input}')
-                __class__.__create_user_cfg(self.player_name, self.context.text_input)
-                ip, port = self.context.text_input.split(':')
-                self.server_ip = ip
-                self.server_port = int(port)
-                logger.info(f'Server address set to: {self.server_ip}:{self.server_port}')
-                logger.info('Changing the state to MAIN_MENU')
-                self.game_state.state = IBGameState.MAIN_MENU
-                self.context = None
-            
-            else:
-                logger.error('Invalid server address input.')
-                msg = {'invalid_input': True}
-                self.context.update(msg)
-                # will update in the next iteration
-
-    
-
-    def __update_init_state(self, events: PyGameEvents):
-        """
-        Handles the initialization state.
-        
-        :param events: The PyGame user input events.
-        :type events: PyGameEvents
-        """
-
-        # initialize the context as needed
-        if not self.context:
-            label_text = self.assets['strings']['init_state_label']
-            self.context = InputMenu(self.presentation_surface, self.assets, label_text)
-            def key_input_validator(key_event):
-                if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
-                    return key_event
-                elif key_event.unicode.isprintable() and len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
-                        return key_event
-                else:
-                    logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
-                
-            self.key_input_validator = key_input_validator
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
-
-        if events.event_videoresize:
-            self.context.surface = self.presentation_surface
-            self.context.redraw()
-
-        # process the input
-        inputs = self.__proccess_input(events, self.key_input_validator)
-        
-        # update the context and get the results
-        res = self.context.update(inputs)
-
-        # handle graphics update (text input)
-        if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.append(update_rect)
-        
-        # handle the user input
-        elif res['submit']:
-            logger.info(f'User submitted the input: {self.context.text_input}')
-            self.__set_up_user_session()
-            self.context = None
-            self.game_state.state = IBGameState.MAIN_MENU
-            logger.info('Changing the state to MAIN_MENU')
-            
-
     def __handle_window_resize(self, events) -> bool:
         """
         Handles the window resize event.
@@ -481,6 +311,320 @@ class IBGame:
             return True
         
         return False
+
+    
+    def __handle_context_resize(self):
+        """
+        Handles the context resize event.
+        """
+
+        self.context.surface = self.presentation_surface
+        self.context.redraw()
+
+    
+    def __prepare_init_state(self):
+        """
+        Prepares the initial state of the game.
+        """
+
+        label_text = self.assets['strings']['init_state_label']
+        self.context = InputMenu(self.presentation_surface, self.assets, label_text)
+            
+        self.key_input_validator = input_validators.init_menu_key_input_validator
+        self.context.redraw()
+        self.update_result.update_areas.append(True)
+
+
+    def __prepare_connection_menu(self):
+        """
+        Prepares the connection menu state of the game.
+        """
+
+        options = [
+            MenuOption(self.assets['strings']['connection_menu_lobby_select_label']),
+            MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])
+        ]
+        self.context = SelectMenu(self.presentation_surface, self.assets, options=options)
+
+        # draw the menu for the first time
+        self.context.redraw()
+        self.update_result.update_areas.append(True)
+    
+
+    def __prepare_main_menu(self):
+        """
+        Prepares the main menu state of the game.
+        """
+
+        title = MenuTitle(self.assets['strings']['main_menu_title'])
+        options = [
+            MenuOption(self.assets['strings']['main_menu_option_play']),
+            MenuOption(self.assets['strings']['main_menu_option_settings']),
+            MenuOption(self.assets['strings']['main_menu_option_exit'])
+        ]
+        self.context = SelectMenu(self.presentation_surface, self.assets, title, options)
+
+        # draw the menu for the first time
+        self.context.redraw()
+        self.update_result.update_areas.append(True)
+        tmp_logger.debug('Main menu drawn for the first time')
+        tmp_logger.debug(f'Player nick: {self.player_name}')
+        tmp_logger.debug(f'Server address: {self.server_ip}:{self.server_port}')
+
+
+    def __prepare_settings_menu(self):
+        """
+        Prepares the settings menu state of the game.
+        """
+
+        label_text = self.assets['strings']['settings_menu_label']
+        server_address = self.server_ip + ':' + str(self.server_port)
+        self.context = SettingsMenu(self.presentation_surface, self.assets, label_text, server_address)
+            
+        self.key_input_validator = input_validators.settings_key_input_validator
+        self.context.redraw()
+        self.update_result.update_areas.append(True)
+
+    
+    def __init_state_handle_update_feedback(self, res: Dict[str, Any]):
+        """
+        Handles the feedback from the update method in the INIT state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
+        """
+
+        # handle graphics update (text input)
+        if res['graphics_update']:
+            update_rect = self.context.draw()
+            self.update_result.update_areas.append(update_rect)
+        
+        # handle the user input
+        elif res['submit']:
+            logger.info(f'User submitted the input: {self.context.text_input}')
+            self.__set_up_user_session()
+            self.context = None
+            self.game_state.state = IBGameState.MAIN_MENU
+            logger.info('Changing the state to MAIN_MENU')
+
+
+    def __connection_menu_handle_update_feedback(self, res: Dict[str, Any]):
+        """
+        Handles the feedback from the update method in the CONNECTION_MENU state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
+        """
+
+        # handle graphics update (selection change)
+        if res['graphics_update']:
+            self.update_result.update_areas.extend(self.context.draw())
+        
+        # handle option selection
+        elif res['submit']:
+            logger.debug(f'User selected the option: {self.context.selected_option_text}')
+            
+            if self.context.selected_option_text == self.assets['strings']['connection_menu_lobby_select_label']:
+                logger.info('Changing the state to LOBBY_SELECTION')
+                self.game_state.state = IBGameState.LOBBY_SELECTION
+            
+            elif self.context.selected_option_text == self.assets['strings']['connection_menu_lobby_create_label']:
+                logger.info('Changing the state to LOBBY')
+                self.game_state.state = IBGameState.LOBBY
+
+            else:
+                logger.error('Unknown option selected.')
+                raise ValueError('Unknown option selected.')
+            
+            self.context = None
+            self.update_result.update_areas.append(True)
+        
+        elif res['escape']:
+            logger.info('Changing the state to MAIN_MENU')
+            self.game_state.state = IBGameState.MAIN_MENU
+            self.context = None
+            self.update_result.update_areas.append(True)
+
+
+    def __main_menu_handle_update_feedback(self, res: Dict[str, Any]):
+        """
+        Handles the feedback from the update method in the MAIN_MENU state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
+        :raises ValueError: If an unknown option is selected.
+        """
+
+        # handle graphics update (selection change)
+        if res['graphics_update']:
+            self.update_result.update_areas.extend(self.context.draw())
+        
+        # handle option selection
+        elif res['submit']:
+            logger.debug(f'User selected the option: {self.context.selected_option_text}')
+            
+            if self.context.selected_option_text == self.assets['strings']['main_menu_option_play']:
+                logger.info('Changing the state to LOBBY_SELECTION')
+                self.game_state.state = IBGameState.CONNECTION_MENU
+            
+            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_settings']:
+                logger.info('Changing the state to SETTINGS_MENU')
+                self.game_state.state = IBGameState.SETTINGS_MENU
+
+            elif self.context.selected_option_text == self.assets['strings']['main_menu_option_exit']:
+                logger.info('User requested to exit the game')
+                self.update_result.exit = True
+            
+            else:
+                logger.error('Unknown option selected.')
+                raise ValueError('Unknown option selected.')
+            
+            self.context = None
+            self.update_result.update_areas.append(True)
+    
+
+    def __settings_menu_handle_update_feedback(self, res: Dict[str, Any]):
+        """
+        Handles the feedback from the update method in the SETTINGS_MENU state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
+        """
+
+        # handle graphics update (text input)
+        if res['graphics_update']:
+            update_rect = self.context.draw()
+            self.update_result.update_areas.append(update_rect)
+        
+        # handle the user input
+        elif res['submit']:
+            # TODO HERE better validate
+            if __class__.__is_settings_input_valid(self.context.text_input):
+                logger.info(f'User submitted the input: {self.context.text_input}')
+                __class__.__create_user_cfg(self.player_name, self.context.text_input)
+                ip, port = self.context.text_input.split(':')
+                self.server_ip = ip
+                self.server_port = int(port)
+                logger.info(f'Server address set to: {self.server_ip}:{self.server_port}')
+                logger.info('Changing the state to MAIN_MENU')
+                self.game_state.state = IBGameState.MAIN_MENU
+                self.context = None
+            
+            else:
+                logger.error('Invalid server address input.')
+                msg = {'invalid_input': True}
+                self.context.update(msg)
+                # will update in the next iteration
+        
+        elif res['escape']:
+            logger.info('Changing the state to MAIN_MENU')
+            self.game_state.state = IBGameState.MAIN_MENU
+            self.context = None
+            self.update_result.update_areas.append(True)
+
+
+    def __update_init_state(self, events: PyGameEvents):
+        """
+        Handles the initialization state.
+        
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
+
+        # initialize the context as needed
+        if not self.context:
+            self.__prepare_init_state()
+
+        if events.event_videoresize:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events, self.key_input_validator, self)
+        
+        # update the context and get the results
+        res = self.context.update(inputs)
+        self.__init_state_handle_update_feedback(res)
+    
+
+    def __update_game_session(self, events: PyGameEvents):
+        raise NotImplementedError('The __update_game_session method has not been implemented yet.')
+    
+
+    def __update_connection_menu(self, events: PyGameEvents):
+        # TODO DOC
+
+        if not self.context:
+            self.__prepare_connection_menu()
+        
+        if events.event_videoresize:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        res = self.context.update(inputs)
+        self.__connection_menu_handle_update_feedback(res)
+
+
+    def __update_lobby(self, events: PyGameEvents):
+        raise NotImplementedError('The __update_lobby method has not been implemented yet.')
+
+
+    def __update_lobby_selection(self, events: PyGameEvents):
+        raise NotImplementedError('The __update_lobby_selection method has not been implemented yet.')
+
+
+    def __update_game_end(self, events: PyGameEvents):
+        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
+
+
+    def __update_main_menu(self, events: PyGameEvents):
+        """
+        Handles the main menu state.
+
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
+
+        # if no menu was drawn, prepare it and draw it
+        if not self.context:
+            self.__prepare_main_menu()
+
+        # if the user resized the window, redraw the menu
+        if events.event_videoresize:
+            self.__handle_context_resize()
+            # TODO figure it if return is needed here
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        res = self.context.update(inputs)
+        self.__main_menu_handle_update_feedback(res)
+
+
+    def __update_settings_menu(self, events: PyGameEvents):
+        """
+        Handles the settings menu state.
+
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
+
+        # initialize the context as needed
+        if not self.context:
+            self.__prepare_settings_menu()
+        
+        if events.event_videoresize:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events, self.key_input_validator, self)
+        
+        # update the context and get the results
+        res = self.context.update(inputs)
+        self.__settings_menu_handle_update_feedback(res)
 
         
     def update(self) -> IBGameUpdateResult:

@@ -32,14 +32,35 @@ def get_rendered_text_with_size(text: str, width: int, height: int, font_path: s
         raise SystemError("pygame.font has not been initialized")
 
     scale_ratio = 0.8
-
+    multiline = False
     font = pygame.font.Font(font_path, int(height))
-    
-    surface = font.render(text, False, color)
-    while surface.get_width() > width:
-        height *= scale_ratio
-        font = pygame.font.Font(font_path, int(height))
+
+    if '\n' in text:
+        multiline = True
+        text = text.split('\n')
+
+    if not multiline:    
         surface = font.render(text, False, color)
+        while surface.get_width() > width:
+            height *= scale_ratio
+            font = pygame.font.Font(font_path, int(height))
+            surface = font.render(text, False, color)
+    else:
+        # first calculate the font size for the longest line
+        height //= len(text)
+        font = pygame.font.Font(font_path, int(height))
+        longest_line = max(text, key=len)
+        surface = font.render(longest_line, False, color)
+        while surface.get_width() > width:
+            height *= scale_ratio
+            font = pygame.font.Font(font_path, int(height))
+            surface = font.render(longest_line, False, color)
+        
+        # then render each line separately
+        surface = pygame.Surface((width, height * len(text)))
+        for i, line in enumerate(text):
+            line_surface = font.render(line, False, color)
+            surface.blit(line_surface, (0, i * height))
 
     return surface
 

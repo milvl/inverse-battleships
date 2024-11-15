@@ -5,5 +5,7 @@
     "main_menu_option_settings": "Settings",
     "main_menu_option_exit": "Exit",
     "init_state_label": "Enter your name:",
-    "settings_menu_label": "Settings\n\nServer Address: "
+    "settings_menu_label": "Settings\nServer Address: ",
+    "connection_menu_lobby_select_label": "Select a lobby",
+    "connection_menu_lobby_create_label": "Create a lobby"
 }

@@ -95,15 +95,16 @@ class SelectMenu(Viewport):
             
 
     @staticmethod
-    def __draw_only_options(surface: pygame.Surface, options: List[MenuOption], assets: IBAssets):
+    def __draw_only_options(surface: pygame.Surface, options: List[MenuOption], assets: IBAssets, scale_option_rect_radius_to_surface_width: float = 0.1) -> List[pygame.Rect]:
         # TODO DOC
 
         update_rects = []
+        surface_width, surface_height = surface.get_size()
         option_height = surface.get_height() / (len(options) + len(options) + 1)
         option_width = surface.get_width() * 0.5
         option_x = surface.get_width() // 2
 
-        update_rects.extend(SelectMenu.__draw_options(surface, options, 0, option_height, option_width, option_x, assets))
+        update_rects.extend(SelectMenu.__draw_options(surface, options, 0, option_height, option_width, option_x, assets, scale_option_rect_radius_to_surface_width * surface_width))
         
         return update_rects
 
@@ -258,7 +259,8 @@ class SelectMenu(Viewport):
 
         result = {'graphics_update': False, 
                   'option_selected': -1, 
-                  'submit': False}
+                  'submit': False,
+                  'escape': False}
 
         result['option_selected'] = self.highlighted_option_index
 
@@ -276,7 +278,7 @@ class SelectMenu(Viewport):
                     break
         
         # handle possible option click
-        if events.get('mouse_click', False):
+        elif events.get('mouse_click', False):
             if self.__options[self.highlighted_option_index].rect.collidepoint(events['mouse_click']):
                 result['submit'] = True
                 return result
@@ -295,8 +297,13 @@ class SelectMenu(Viewport):
                 result['graphics_update'] = True
         
         # handle enter key
-        if events.get('return', False):
+        elif events.get('return', False) and self.highlighted_option_index != -1:
             result['submit'] = True
             return result
+        
+        elif events.get('escape', False):
+            result['escape'] = True
+            return result
+
 
         return result

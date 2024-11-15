@@ -110,7 +110,8 @@ def main():
 
             # updates only portions of the screen
             else:
-                logger.debug(f'Partial update detected, updating areas: \n{pformat(update_result.update_areas, indent=4)}')
+                # logger.debug(f'Partial update detected, updating areas: \n{pformat(update_result.update_areas, indent=4)}')
+                # TODO uncomment for production
                 pygame.display.update(update_result.update_areas)
 
         # add a delay to the game loop

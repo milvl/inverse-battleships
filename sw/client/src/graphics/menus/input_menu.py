@@ -55,7 +55,7 @@ class InputMenu(Viewport):
         label = get_rendered_text_with_size(obj.__label_text, 
                                             label_rect_desired_dimensions[0], 
                                             label_rect_desired_dimensions[1], 
-                                            color=obj.__assets['colors']['white'])
+                                            color=obj._assets['colors']['white'])
         
         # positionings
         label_input_gap_height = label.get_height() * __class__.__LBL_IN_GAP_H_SCALE_TO_BTTN_W
@@ -72,16 +72,17 @@ class InputMenu(Viewport):
         obj.__surface.blit(label, label_rect_position)
 
         # draw the input
-        obj.__input_rect.render(obj.__surface, 
+        color = obj._assets['colors']['black'] if not obj._custom_text_color else obj._custom_text_color
+        obj._input_rect.render(obj.__surface, 
                                 input_rect_position, 
                                 height=input_rect_dimensions[1], 
                                 width=input_rect_dimensions[0], 
                                 centered=False, 
-                                color=obj.__assets['colors']['black'], 
-                                background_color=obj.__assets['colors']['white'])
+                                color=color,
+                                background_color=obj._assets['colors']['white'])
         
-        # draw the submit button (sprite from __assets)
-        obj.__submit_button = pygame.transform.scale(obj.__assets['sprites']['ok'], (submit_button_dimensions[0], submit_button_dimensions[1]))
+        # draw the submit button (sprite from _assets)
+        obj.__submit_button = pygame.transform.scale(obj._assets['sprites']['ok'], (submit_button_dimensions[0], submit_button_dimensions[1]))
         obj.__surface.blit(obj.__submit_button, submit_button_position)
         
         objects_bounds_rect = pygame.Rect(objects_rect_position[0], objects_rect_position[1], objects_rect_dimensions[0], objects_rect_dimensions[1])
@@ -89,13 +90,72 @@ class InputMenu(Viewport):
         button_rect = pygame.Rect(submit_button_position[0], submit_button_position[1], submit_button_dimensions[0], submit_button_dimensions[1])
 
         return {'bounding_rect': objects_bounds_rect, 'input_rect': input_rect, 'button_rect': button_rect}
+
+
+    @staticmethod
+    def _user_submitted(events: Dict[str, Any], submit_button_bounds: pygame.Rect):
+        """
+        Tests if the user has submitted the input.
+
+        :param events: The events dictionary.
+        :type events: Dict[str, Any]
+        :param submit_button_bounds: The bounding rectangle of the submit button.
+        :type submit_button_bounds: pygame.Rect
+        :return: True if the user has submitted the input, False otherwise.
+        :rtype: bool
+        """
+
+        if events.get('mouse_click', False):
+            if submit_button_bounds.collidepoint(events['mouse_click']):
+                return True
+        elif events.get('return', False):
+            return True
+        
+
+    def _handle_backspace(self):
+        """
+        Handles the backspace event.
+        """
+
+        self.__text_input = self.__text_input[:-1]
+        if self._input_rect.text[-1] == TextInput.CURSOR:
+            self._input_rect.text = self._input_rect.text[:-2]
+        else:
+            self._input_rect.text = self._input_rect.text[:-1]
+
+    
+    def _handle_new_char(self, new_char: str):
+        """
+        Handles the new character event.
+
+        :param new_char: The new character to handle.
+        :type new_char: str
+        """
+
+        self.__text_input += new_char
+        if len(self._input_rect.text) > 0 and self._input_rect.text[-1] == TextInput.CURSOR:
+            self._input_rect.text = self._input_rect.text[:-1] + new_char
+        else:
+            self._input_rect.text += new_char
     
 
     def __init__(self, 
                  surface: pygame.Surface, 
                  assets: IBAssets, 
-                 label_text: str):
-        # TODO DOC
+                 label_text: str,
+                 initial_text: str = ''):
+        """
+        Creates an instance of the InputMenu class.
+
+        :param surface: The surface to render the input menu to.
+        :type surface: pygame.Surface
+        :param assets: The assets dictionary.
+        :type assets: IBAssets
+        :param label_text: The text of the input label.
+        :type label_text: str
+        :param initial_text: The initial text of the input field, defaults to ''.
+        :type initial_text: str, optional
+        """
         
 
         if not pygame.get_init():
@@ -108,14 +168,15 @@ class InputMenu(Viewport):
             raise ValueError('The pygame.display module has not have a surface to render to.')
         
         self.__surface = surface
-        self.__assets = assets
+        self._assets = assets
         self.__label_text = label_text
 
-        self.__text_input = ''
-        self.__input_rect = None
+        self.__text_input = initial_text
+        self._custom_text_color = None
+        self._input_rect = None
         self.__input_rect_bounds = None
-        self.__submit_button_bounds = None
-        self.__cursor_visible = None
+        self._submit_button_bounds = None
+        self._cursor_visible = None
 
         master_display = pygame.display.get_surface()
         self.__background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
@@ -148,7 +209,8 @@ class InputMenu(Viewport):
     @property
     def text_input(self):
         """
-        Getter for the text_input property.
+        Getter for the text_input property. Represents the 
+        text input of the input menu without the cursor.
 
         :return: The text input of the input menu.
         :rtype: str
@@ -166,15 +228,15 @@ class InputMenu(Viewport):
         # update and draw the background
         surface_dimensions = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_dimensions[0], surface_dimensions[1])
-        pygame.draw.rect(self.__surface, self.__assets['colors']['black'], self.__background)
+        pygame.draw.rect(self.__surface, self._assets['colors']['black'], self.__background)
 
-        if not self.__input_rect:
-            self.__input_rect = TextInput('', True)
-            self.__cursor_visible = self.__input_rect.is_cursor_visible
+        if not self._input_rect:
+            self._input_rect = TextInput(self.__text_input, True)
+            self._cursor_visible = self._input_rect.is_cursor_visible
 
         res = __class__.__draw_content(self)
         self.__input_rect_bounds = res['input_rect']
-        self.__submit_button_bounds = res['button_rect']
+        self._submit_button_bounds = res['button_rect']
     
     
     def draw(self):
@@ -187,46 +249,45 @@ class InputMenu(Viewport):
 
         res = __class__.__draw_content(self)
         self.__input_rect_bounds = res['input_rect']
-        self.__submit_button_bounds = res['button_rect']
+        self._submit_button_bounds = res['button_rect']
 
         return res['bounding_rect']
     
 
     def update(self, events: Dict[str, Any]):
-        # TODO DOC
+        """
+        Updates the input menu. Based on the events dictionary, the method
+        returns a dictionary with keys 
+        and values:
+            - 'graphics_update' (bool): True if the graphics need to be updated,
+            False otherwise.
+            - 'submit' (bool): True if the user has submitted the input, False
+            otherwise.
+
+        :param events: The events dictionary.
+        :type events: Dict[str, Any]
+        :return: A dictionary with the keys 'graphics_update' and 'submit'.
+        :rtype: Dict[str, Any]
+        """
 
         res = {'graphics_update': False, 'submit': False}
 
         # submitting the input
-        if events.get('mouse_click', False):
-            if self.__submit_button_bounds.collidepoint(events['mouse_click']):
-                res['submit'] = True
-                return res
-
-        elif events.get('return', False):
+        if __class__._user_submitted(events, self._submit_button_bounds) and len(self.__text_input) > 0:
             res['submit'] = True
-            return res
 
         # non state changing events
         elif events.get('new_char', False):
-            self.__text_input += events['new_char']
-            if len(self.__input_rect.text) > 0 and self.__input_rect.text[-1] == TextInput.CURSOR:
-                self.__input_rect.text = self.__input_rect.text[:-1] + events['new_char']
-            else:
-                self.__input_rect.text += events['new_char']
+            self._handle_new_char(events['new_char'])
             res['graphics_update'] = True
         
         elif events.get('backspace', False) and len(self.__text_input) > 0:
-            self.__text_input = self.__text_input[:-1]
-            if self.__input_rect.text[-1] == TextInput.CURSOR:
-                self.__input_rect.text = self.__input_rect.text[:-2]
-            else:
-                self.__input_rect.text = self.__input_rect.text[:-1]
+            self._handle_backspace()
             res['graphics_update'] = True
 
         # time to update the cursor
-        elif self.__cursor_visible != self.__input_rect.is_cursor_visible:
-            self.__cursor_visible = self.__input_rect.is_cursor_visible
+        elif self._cursor_visible != self._input_rect.is_cursor_visible:
+            self._cursor_visible = self._input_rect.is_cursor_visible
             res['graphics_update'] = True
 
         return res
