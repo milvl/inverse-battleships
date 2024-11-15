@@ -8,6 +8,7 @@ import os
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
 from game.ib_game_state import IBGameState
+from graphics.menus.settings_menu import SettingsMenu
 from util import loggers
 from typing import Dict, Any, Callable
 from graphics.menus.input_menu import InputMenu
@@ -89,7 +90,7 @@ class IBGame:
     
 
     @staticmethod
-    def __create_user_cfg(player_name: str):
+    def __create_user_cfg(player_name: str, server_address: str = None):
         """
         Creates a new user configuration file.
 
@@ -109,6 +110,9 @@ class IBGame:
             'nickname': player_name,
         }
         new_user_cfg.update(default_user_cfg)
+        if server_address:
+            new_user_cfg['server_address'] = server_address
+
         with open(user_cfg_path, 'w') as f:
             json.dump(new_user_cfg, f)
 
@@ -333,6 +337,7 @@ class IBGame:
                 print('Changing the state to LOBBY_SELECTION')
             elif self.context.selected_option_text == self.assets['strings']['main_menu_option_settings']:
                 logger.info('Changing the state to SETTINGS_MENU')
+                self.game_state.state = IBGameState.SETTINGS_MENU
                 print('Changing the state to SETTINGS_MENU')
             elif self.context.selected_option_text == self.assets['strings']['main_menu_option_exit']:
                 logger.info('User requested to exit the game')
@@ -349,23 +354,58 @@ class IBGame:
 
     def __update_settings_menu(self, events: PyGameEvents) -> IBGameUpdateResult:
         # initialize the context as needed
-        # if not self.context:
-        #     label_text = self.assets['strings']['settings_menu_label']
-        #     # self.context = SettingsMenu(self.presentation_surface, self.assets, label_text)
-        #     def key_input_validator(key_event):
-        #         if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
-        #             return key_event
+        if not self.context:
+            label_text = self.assets['strings']['settings_menu_label']
+            self.context = SettingsMenu(self.presentation_surface, self.assets, label_text)
+            def key_input_validator(key_event):
+                if key_event.key == pygame.K_RETURN or key_event.key == pygame.K_BACKSPACE:
+                    return key_event
                 
-        #         elif key_event.unicode.isnumeric() or key_event.unicode in ['.', ':'] and \
-        #             len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
-        #                 return key_event
-        #         else:
-        #             logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
+                elif key_event.unicode.isnumeric() or key_event.unicode in ['.', ':'] and \
+                    len(self.context.text_input) < IBGame.PLAYER_NICKNAME_MAX_LENGTH:
+                        return key_event
+                else:
+                    logger.debug(f'Invalid key pressed: {key_event.unicode} for the input: {self.context.text_input}')
                 
-        #     self.key_input_validator = key_input_validator
-        #     self.context.redraw()
-        #     self.update_result.update_areas.append(True)
-        pass
+            self.key_input_validator = key_input_validator
+            self.context.redraw()
+            self.update_result.update_areas.append(True)
+        
+        if events.event_videoresize:
+            self.context.surface = self.presentation_surface
+            self.context.redraw()
+
+        # process the input
+        inputs = self.__proccess_input(events, self.key_input_validator)
+        
+        # update the context and get the results
+        res = self.context.update(inputs)
+
+        # handle graphics update (text input)
+        if res['graphics_update']:
+            update_rect = self.context.draw()
+            self.update_result.update_areas.append(update_rect)
+        
+        # handle the user input
+        elif res['submit']:
+            # TODO HERE better validate
+            if __class__.__is_settings_input_valid(self.context.text_input):
+                logger.info(f'User submitted the input: {self.context.text_input}')
+                __class__.__create_user_cfg(self.player_name, self.context.text_input)
+                ip, port = self.context.text_input.split(':')
+                self.server_ip = ip
+                self.server_port = int(port)
+                logger.info(f'Server address set to: {self.server_ip}:{self.server_port}')
+                logger.info('Changing the state to MAIN_MENU')
+                self.game_state.state = IBGameState.MAIN_MENU
+                self.context = None
+            
+            else:
+                logger.error('Invalid server address input.')
+                msg = {'invalid_input': True}
+                self.context.update(msg)
+                # will update in the next iteration
+
     
 
     def __update_init_state(self, events: PyGameEvents):

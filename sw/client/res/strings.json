@@ -4,5 +4,6 @@
     "main_menu_option_play": "Play",
     "main_menu_option_settings": "Settings",
     "main_menu_option_exit": "Exit",
-    "init_state_label": "Enter your name:"
+    "init_state_label": "Enter your name:",
+    "settings_menu_label": "Settings\n\nServer Address: "
 }

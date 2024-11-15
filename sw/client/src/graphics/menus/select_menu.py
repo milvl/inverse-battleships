@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 import pygame
-from sw.client.src.graphics.viewport import Viewport
+from graphics.viewport import Viewport
 from const.typedefs import IBAssets
 from graphics.menus.primitives import MenuOption, MenuTitle
 
