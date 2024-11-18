@@ -22,16 +22,16 @@ const (
 	CRITICAL                      // 1 << 4 == 16
 )
 
-// Default allowed log levels
+// defaultAllowedLevels represents the default log levels
 const defaultAllowedLevels = DEBUG | INFO | WARNING | ERROR | CRITICAL
 
-// Default time format
+// defaultTimeFormat represents the default time format
 const defaultTimeFormat = "15:04:05.000000"
 
-// Default trace call
+// defaultDoTraceCall represents whether to trace the caller
 const defaultDoTraceCall = true
 
-// Mapping of colors to log levels
+// colors maps log levels to color codes
 var colors = map[LogLevel]string{
 	DEBUG:    "\033[36m", // cyan
 	INFO:     "\033[37m", // white
@@ -40,10 +40,10 @@ var colors = map[LogLevel]string{
 	CRITICAL: "\033[41m", // red background
 }
 
-// Reset color code
+// resetColor represents reset color code
 const resetColor = "\033[0m"
 
-// Mapping of log levels to string
+// logLevelStrings maps log levels to their string representations
 var logLevelStrings = map[LogLevel]string{
 	DEBUG:    "DEBUG",
 	INFO:     "INFO",
@@ -67,11 +67,6 @@ var (
 	defaultOut   = os.Stdout
 )
 
-// NewDefaultLogger creates a new logger instance with default configuration.
-func NewDefaultLogger() *Logger {
-	return NewLogger(defaultAllowedLevels, defaultTimeFormat, defaultDoTraceCall, defaultOut)
-}
-
 // NewLogger creates a new logger instance with the given configuration.
 // Argument enabledLevels is a bitmask of LogLevel values.
 // Example usage: "DEBUG" returns a logger that logs messages at the DEBUG level.
@@ -90,7 +85,12 @@ func NewLogger(enabledLevels LogLevel, timeFormat string, doTraceCall bool, stre
 	}
 }
 
-// Global logger instance
+// NewDefaultLogger creates a new logger instance with default configuration.
+func NewDefaultLogger() *Logger {
+	return NewLogger(defaultAllowedLevels, defaultTimeFormat, defaultDoTraceCall, defaultOut)
+}
+
+// getGlobalLogger returns the global logger instance
 func getGlobalLogger() *Logger {
 	once.Do(func() {
 		globalLogger = NewLogger(defaultAllowedLevels, defaultTimeFormat, defaultDoTraceCall, defaultOut)
@@ -99,12 +99,12 @@ func getGlobalLogger() *Logger {
 	return globalLogger
 }
 
-// Tells if the given level is allowed
+// isAllowed checks if the given level is allowed
 func isAllowed(enabledLevels LogLevel, level LogLevel) bool {
 	return (enabledLevels & level) != 0
 }
 
-// Colorizes a message with the given color
+// colorize colorizes a message with the given color
 func colorize(color string, message string) string {
 	return fmt.Sprintf("%s%s%s", color, message, resetColor)
 }
@@ -151,52 +151,52 @@ func (l *Logger) logMessage(level LogLevel, message string) {
 	l.Output.Println(message)
 }
 
-// Logs a message at the DEBUG level
+// Deebug logs a message at the DEBUG level for the given logger
 func (l *Logger) Debug(message string) {
 	l.logMessage(DEBUG, message)
 }
 
-// Logs a message at the INFO level
+// Info logs a message at the INFO level for the given logger
 func (l *Logger) Info(message string) {
 	l.logMessage(INFO, message)
 }
 
-// Logs a message at the WARNING level
+// Warn logs a message at the WARNING level for the given logger
 func (l *Logger) Warn(message string) {
 	l.logMessage(WARNING, message)
 }
 
-// Logs a message at the ERROR level
+// Error logs a message at the ERROR level for the given logger
 func (l *Logger) Error(message string) {
 	l.logMessage(ERROR, message)
 }
 
-// Logs a message at the CRITICAL level
+// Critical logs a message at the CRITICAL level for the given logger
 func (l *Logger) Critical(message string) {
 	l.logMessage(CRITICAL, message)
 }
 
-// Logs a message at the CRITICAL level
+// Debug logs a message at the CRITICAL level
 func Debug(message string) {
 	getGlobalLogger().logMessage(DEBUG, message)
 }
 
-// Logs a message at the INFO level
+// Info logs a message at the INFO level
 func Info(message string) {
 	getGlobalLogger().logMessage(INFO, message)
 }
 
-// Logs a message at the WARNING level
+// Warn logs a message at the WARNING level
 func Warn(message string) {
 	getGlobalLogger().logMessage(WARNING, message)
 }
 
-// Logs a message at the ERROR level
+// Error logs a message at the ERROR level
 func Error(message string) {
 	getGlobalLogger().logMessage(ERROR, message)
 }
 
-// Logs a message at the CRITICAL level
+// Critical logs a message at the CRITICAL level
 func Critical(message string) {
 	getGlobalLogger().logMessage(CRITICAL, message)
 }

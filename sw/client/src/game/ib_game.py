@@ -6,6 +6,7 @@ all the logic related to the game itself.
 import json
 import os
 import re
+from game.connection_manager import ConnectionManager
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
 from game.ib_game_state import IBGameState
@@ -130,7 +131,7 @@ class IBGame:
         :rtype: bool
         """
 
-        address_regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}"
+        address_regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}.\d{1,3}:\d{1,5}"
 
         return re.match(address_regex, text_input)
 
@@ -150,34 +151,7 @@ class IBGame:
 
         self.started = False
         self.debug_mode = False
-
-
-    def __get_debug_info_object(self):
-        """
-        Returns the debug info object. Used for debugging purposes.
-        It is a pygame.Surface object with the debug info.
-
-        :return: The debug info object.
-        :rtype: pygame.Surface
-        """
-
-        if not pygame.get_init():
-            raise ValueError('The pygame module has not been initialized.')
-        if not pygame.font.get_init():
-            raise ValueError('The pygame.font module has not been initialized.')
-
-        # display debug info in the bottom left corner of the window
-        # create a new font object
-        font = pygame.font.Font(None, int(pygame.display.get_desktop_sizes()[0][1] * 1/45))
-        # create a new text surface
-        text = font.render(str(self.debug_info), 
-                           True, 
-                           self.assets['colors']['white'], 
-                        #    color_make_seethrough(self.assets['colors']['black']))
-        )
-        
-        return text
-
+    
 
     def start(self, window: pygame.Surface):
         """
@@ -209,8 +183,37 @@ class IBGame:
         self.server_ip = None
         self.server_port = None
 
+        self.connection_manager = None
+
         self.update_result = IBGameUpdateResult()
         self.started = True
+
+
+    def __get_debug_info_object(self):
+        """
+        Returns the debug info object. Used for debugging purposes.
+        It is a pygame.Surface object with the debug info.
+
+        :return: The debug info object.
+        :rtype: pygame.Surface
+        """
+
+        if not pygame.get_init():
+            raise ValueError('The pygame module has not been initialized.')
+        if not pygame.font.get_init():
+            raise ValueError('The pygame.font module has not been initialized.')
+
+        # display debug info in the bottom left corner of the window
+        # create a new font object
+        font = pygame.font.Font(None, int(pygame.display.get_desktop_sizes()[0][1] * 1/45))
+        # create a new text surface
+        text = font.render(str(self.debug_info), 
+                           True, 
+                           self.assets['colors']['white'], 
+                        #    color_make_seethrough(self.assets['colors']['black']))
+        )
+        
+        return text
 
     
     def __get_pygame_events(self) -> PyGameEvents:
@@ -341,6 +344,7 @@ class IBGame:
         """
 
         options = [
+            MenuOption('Test connection'),# TODO remove
             MenuOption(self.assets['strings']['connection_menu_lobby_select_label']),
             MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])
         ]
@@ -431,6 +435,13 @@ class IBGame:
             elif self.context.selected_option_text == self.assets['strings']['connection_menu_lobby_create_label']:
                 logger.info('Changing the state to LOBBY')
                 self.game_state.state = IBGameState.LOBBY
+            
+            elif self.context.selected_option_text == 'Test connection':
+                logger.info('Testing connection')
+                self.connection_manager = ConnectionManager(self.server_ip, self.server_port)
+                with self.connection_manager as cm:
+                    if cm.test_connection():
+                        logger.info('Connection test successful')
 
             else:
                 logger.error('Unknown option selected.')
