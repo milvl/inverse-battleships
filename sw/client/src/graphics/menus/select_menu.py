@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 import pygame
 from graphics.viewport import Viewport
 from const.typedefs import IBAssets
@@ -10,23 +10,20 @@ class SelectMenu(Viewport):
     Represents the select menu.
     """
 
-
-    @staticmethod
-    def handle_exit(self):
-        # TODO DOC
-
-        self.update_result.exit = True
+    _TEXT_COLOR = (0, 0, 0)
+    _BACKGROUND_COLOR = (255, 255, 255)
 
 
     @staticmethod
-    def __draw_options(surface: pygame.Surface, 
+    def _draw_options(surface: pygame.Surface, 
                        options: List[MenuOption], 
                        top_offset: int, 
                        option_height: int, 
                        option_width: int, 
                        option_x: int, 
-                       assets: IBAssets, 
-                       radius: int = -1):
+                       radius: int = -1,
+                       color: Tuple[int, int, int] = _TEXT_COLOR,
+                       background_color: Tuple[int, int, int] = _BACKGROUND_COLOR) -> List[pygame.Rect]:
         # TODO DOC
 
         update_rects = []
@@ -41,8 +38,8 @@ class SelectMenu(Viewport):
                                         width=option_width, 
                                         radius=radius,
                                         centered=True,
-                                        color=assets['colors']['black'],
-                                        background_color=assets['colors']['white'])
+                                        color=color,
+                                        background_color=background_color)
             update_rects.append(update_rect)
         
         return update_rects
@@ -81,21 +78,22 @@ class SelectMenu(Viewport):
         
         option_x = surface.get_width() // 2
         update_rects.extend(
-            SelectMenu.__draw_options(surface, 
-                                      options, 
-                                      title_area_height, 
-                                      option_height, 
-                                      option_width, 
-                                      option_x, 
-                                      assets, 
-                                      scale_option_rect_radius_to_surface_width * surface_width)
+            SelectMenu._draw_options(surface, 
+                                     options, 
+                                     title_area_height, 
+                                     option_height, 
+                                     option_width, 
+                                     option_x,
+                                     scale_option_rect_radius_to_surface_width * surface_width,
+                                     assets['colors']['black'],
+                                     assets['colors']['white'])
         )
 
         return update_rects
             
 
     @staticmethod
-    def __draw_only_options(surface: pygame.Surface, options: List[MenuOption], assets: IBAssets, scale_option_rect_radius_to_surface_width: float = 0.1) -> List[pygame.Rect]:
+    def _draw_only_options(surface: pygame.Surface, options: List[MenuOption], assets: IBAssets, scale_option_rect_radius_to_surface_width: float = 0.1) -> List[pygame.Rect]:
         # TODO DOC
 
         update_rects = []
@@ -104,13 +102,36 @@ class SelectMenu(Viewport):
         option_width = surface.get_width() * 0.5
         option_x = surface.get_width() // 2
 
-        update_rects.extend(SelectMenu.__draw_options(surface, options, 0, option_height, option_width, option_x, assets, scale_option_rect_radius_to_surface_width * surface_width))
+        update_rects.extend(
+            SelectMenu._draw_options(surface, 
+                                     options, 
+                                     0, 
+                                     option_height, 
+                                     option_width, 
+                                     option_x, 
+                                     scale_option_rect_radius_to_surface_width * surface_width,
+                                     assets['colors']['black'],
+                                     assets['colors']['white'])
+        )
         
         return update_rects
 
 
     def __init__(self, surface: pygame.Surface, assets: IBAssets, title: MenuTitle = None, options: List[MenuOption] = None, scale_title_area_to_screen_height: float = 0.25):
-        # TODO DOC
+        """
+        Constructor method.
+
+        :param surface: The screen to draw the select menu on.
+        :type surface: pygame.Surface
+        :param assets: The assets of the game.
+        :type assets: IBAssets
+        :param title: The title of the select menu, default is None.
+        :type title: MenuTitle
+        :param options: The options of the select menu, default is None.
+        :type options: List[MenuOption]
+        :param scale_title_area_to_screen_height: The scale of the title area to the screen height, default is 0.25.
+        :type scale_title_area_to_screen_height: float
+        """
 
         if not pygame.get_init():
             raise ValueError('The pygame module has not been initialized.')
@@ -121,31 +142,31 @@ class SelectMenu(Viewport):
         if not pygame.display.get_surface():
             raise ValueError('The pygame.display module has not have a surface to render to.')
         
-        self.__surface = surface
-        self.__assets = assets
+        self._surface = surface
+        self._assets = assets
 
         master_display = pygame.display.get_surface()
-        self.__background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
+        self._background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
 
         self.__title = title
-        self.__options = options
-        self.__highlighted_option_index = -1
+        self._options = options
+        self._highlighted_option_index = -1
 
         # if both title and options are present
-        if self.__title and self.__options:
-            self.__draw_objects = \
-                lambda: SelectMenu.__draw_title_and_options(self.__surface, 
+        if self.__title and self._options:
+            self._draw_objects = \
+                lambda: SelectMenu.__draw_title_and_options(self._surface, 
                                                             self.__title, 
-                                                            self.__options, 
+                                                            self._options, 
                                                             scale_title_area_to_screen_height=scale_title_area_to_screen_height, 
-                                                            assets=self.__assets)
+                                                            assets=self._assets)
 
         # else if only options are present
-        elif self.__options:
-            self.__draw_objects = \
-                lambda: SelectMenu.__draw_only_options(self.__surface, 
-                                                       self.__options, 
-                                                       self.__assets)
+        elif self._options:
+            self._draw_objects = \
+                lambda: SelectMenu._draw_only_options(self._surface, 
+                                                       self._options, 
+                                                       self._assets)
         
         # else if only title is present
         else:
@@ -161,7 +182,7 @@ class SelectMenu(Viewport):
         :rtype: pygame.Surface
         """
 
-        return self.__surface
+        return self._surface
     
 
     @property
@@ -173,7 +194,7 @@ class SelectMenu(Viewport):
         :rtype: str
         """
 
-        return self.__options[self.highlighted_option_index].text
+        return self._options[self.highlighted_option_index].text
     
 
     @surface.setter
@@ -185,7 +206,7 @@ class SelectMenu(Viewport):
         :type surface: pygame.Surface
         """
 
-        self.__surface = surface
+        self._surface = surface
 
     
     @property
@@ -197,7 +218,7 @@ class SelectMenu(Viewport):
         :rtype: int
         """
 
-        return self.__highlighted_option_index
+        return self._highlighted_option_index
     
 
     def set_highlighted_option_index(self, index: int):
@@ -209,11 +230,11 @@ class SelectMenu(Viewport):
         :type index: int
         """
 
-        if self.__highlighted_option_index != -1:
-            self.__options[self.__highlighted_option_index].highlighted = False
-        index = index % len(self.__options)
-        self.__highlighted_option_index = index
-        self.__options[self.__highlighted_option_index].highlighted = True
+        if self._highlighted_option_index != -1:
+            self._options[self._highlighted_option_index].highlighted = False
+        index = index % len(self._options)
+        self._highlighted_option_index = index
+        self._options[self._highlighted_option_index].highlighted = True
     
 
     def unset_highlighted_option_index(self):
@@ -221,15 +242,20 @@ class SelectMenu(Viewport):
         Unsets the highlighted option index.
         """
 
-        if self.__highlighted_option_index != -1:
-            self.__options[self.__highlighted_option_index].highlighted = False
-            self.__highlighted_option_index = -1
+        if self._highlighted_option_index != -1:
+            self._options[self._highlighted_option_index].highlighted = False
+            self._highlighted_option_index = -1
 
 
     def draw(self):
-        # TODO DOC
+        """
+        Draws the select menu.
 
-        return self.__draw_objects()
+        :return: The select menu.
+        :rtype: pygame.Surface
+        """
+
+        return self._draw_objects()
         
 
     def redraw(self):
@@ -239,12 +265,12 @@ class SelectMenu(Viewport):
         """
 
         # update and draw the background
-        surface_width, surface_height = self.__surface.get_size()
-        self.__background = pygame.Rect(0, 0, surface_width, surface_height)
-        pygame.draw.rect(self.__surface, self.__assets['colors']['black'], self.__background)
+        surface_width, surface_height = self._surface.get_size()
+        self._background = pygame.Rect(0, 0, surface_width, surface_height)
+        pygame.draw.rect(self._surface, self._assets['colors']['black'], self._background)
 
         # draw the objects
-        self.__draw_objects()
+        self._draw_objects()
 
 
     def update(self, events: Dict[str, Any]) -> Dict[str, Any]:
@@ -270,7 +296,7 @@ class SelectMenu(Viewport):
                 self.unset_highlighted_option_index()
                 result['graphics_update'] = True
 
-            for i, option in enumerate(self.__options):
+            for i, option in enumerate(self._options):
                 if option.rect.collidepoint(events['mouse_motion']):
                     if not option.highlighted:
                         self.set_highlighted_option_index(i)
@@ -279,7 +305,7 @@ class SelectMenu(Viewport):
         
         # handle possible option click
         elif events.get('mouse_click', False):
-            if self.__options[self.highlighted_option_index].rect.collidepoint(events['mouse_click']):
+            if self._options[self.highlighted_option_index].rect.collidepoint(events['mouse_click']):
                 result['submit'] = True
                 return result
 

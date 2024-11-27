@@ -17,7 +17,7 @@ const timeout = 10 * time.Second
 
 // Server is the main structure that holds the TCP server's state.
 type Server struct {
-	Address    string        // address the server listens on (e.g., "localhost:8080")
+	Address    string        // address the server listens on (e.g., "127.0.0.1:8080")
 	p_listener *net.Listener // TCP listener
 }
 
@@ -74,6 +74,13 @@ func (s *Server) AcceptConnection() (net.Conn, error) {
 
 	conn, err := (*s.p_listener).Accept()
 	if err != nil {
+		// gracefully handle timeout
+		nErr, assertion_ok := err.(net.Error)
+		if assertion_ok && nErr.Timeout() {
+			return nil, err
+		}
+
+		// some other error occurred
 		return nil, fmt.Errorf("failed to accept connection: %w", err)
 	}
 
@@ -105,10 +112,17 @@ func (s *Server) ReadMessage(conn net.Conn) (string, error) {
 	// set timeout for reading messages
 	conn.SetReadDeadline(time.Now().Add(timeout))
 
-	// TODO make buffer size dynamic based on message type
+	// NOTE maybe make buffer size dynamic based on message type
 	buffer := make([]byte, bufferSize)
 	n, err := conn.Read(buffer)
 	if err != nil {
+		// gracefully handle timeout
+		nErr, assertion_ok := err.(net.Error)
+		if assertion_ok && nErr.Timeout() {
+			return "", err
+		}
+
+		// some other error occurred
 		return "", fmt.Errorf("failed to read message: %w", err)
 	}
 

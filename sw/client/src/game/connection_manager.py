@@ -49,7 +49,12 @@ class ConnectionManager:
         :rtype: str
         """
 
-        # TODO escape special characters
+        for i, part in enumerate(parts):
+            if __class__.__MSG_TERMINATOR in part:
+                raise ValueError(f"Message part {i}: '{part}' contains the message terminator '{__class__.__MSG_TERMINATOR}'")
+            parts[i] = part.replace(__class__.__MSG_DELIMITER, f"\\{__class__.__MSG_DELIMITER}")
+
+        
         return f"{__class__.__MSG_HEADER}{__class__.__MSG_DELIMITER}{__class__.__MSG_DELIMITER.join(parts)}{__class__.__MSG_TERMINATOR}"
     
 
@@ -64,8 +69,8 @@ class ConnectionManager:
         :rtype: str
         """
 
-        # TODO here
-        return message.replace(__class__.__MSG_TERMINATOR, f"\\n")
+        # NOTE: UTF-8 encoding maybe will be changed to ASCII
+        return message.encode('unicode_escape').decode('utfs-8') 
 
 
     def __init__(self, server_ip: str, server_port: int):
@@ -84,9 +89,9 @@ class ConnectionManager:
     @property
     def is_running(self) -> bool:
         """
-        Checks if the connection manager is running.
+        Checks if the connection manager is running and is connected to the server.
 
-        :return: True if the connection manager is running, False otherwise.
+        :return: True if the connection manager is running and is connected to the server, false otherwise.
         :rtype: bool
         """
 

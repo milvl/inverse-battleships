@@ -1,9 +1,11 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"inverse-battleships-server/logging"
 	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -22,6 +24,8 @@ const (
 	cmdLeaveAck      = "BYE"
 )
 
+const sleepTime = 1 * time.Millisecond
+
 // Client represents a TCP client.
 type Client struct {
 	conn       net.Conn
@@ -29,19 +33,38 @@ type Client struct {
 	lastTime   time.Time
 }
 
+// Lobby represents a game lobby.
+type Lobby struct {
+	id       string
+	clients  []*Client
+	rw_mutex sync.RWMutex
+}
+
 // Server represents a TCP server.
 type ClientManager struct {
-	server  *Server            // server pointer
-	clients map[string]*Client // map of clients with their addresses as keys
-	mutex   sync.Mutex         // mutex to lock the client manager
+	p_server *Server            // server pointer
+	clients  map[string]*Client // map of clients with their addresses as keys
+	lobbies  map[string]*Lobby  // Manage lobbies
+	mutex    sync.Mutex         // mutex to lock the client manager
 }
 
 // ToNetMessage converts a list of strings to a network message.
-// TODO escape special characters
 func ToNetMessage(parts []string) (string, error) {
 	// sanity check
 	if parts == nil {
 		return "", fmt.Errorf("parts is nil")
+	}
+
+	for i, part := range parts {
+		// part must not contain the terminator anywhere in the string
+		if strings.Contains(part, msgTerminator) {
+			return "", fmt.Errorf("part contains terminator")
+		}
+
+		// escape the delimiter if present
+		if strings.Contains(part, msgDelimiter) {
+			parts[i] = strings.ReplaceAll(part, msgDelimiter, "\\"+msgDelimiter)
+		}
 	}
 
 	msg := ""
@@ -59,30 +82,31 @@ func ToNetMessage(parts []string) (string, error) {
 // It requires a server pointer as a parameter.
 func NewClientManager(server *Server) *ClientManager {
 	return &ClientManager{
-		server:  server,
-		clients: make(map[string]*Client),
+		p_server: server,
+		clients:  make(map[string]*Client),
+		lobbies:  make(map[string]*Lobby),
 	}
 }
 
 // startServer starts the TCP server.
 func (cm *ClientManager) startServer() error {
 	// sanity check
-	if cm.server == nil {
+	if cm.p_server == nil {
 		return fmt.Errorf("server is nil")
 	}
 
-	cm.server.Start()
+	cm.p_server.Start()
 	return nil
 }
 
 // stopServer stops the TCP server.
 func (cm *ClientManager) stopServer() error {
 	// sanity check
-	if cm.server == nil {
+	if cm.p_server == nil {
 		return fmt.Errorf("server is nil")
 	}
 
-	cm.server.Stop()
+	cm.p_server.Stop()
 	return nil
 }
 
@@ -147,164 +171,7 @@ func (cm *ClientManager) setNickname(conn net.Conn, nickname string) error {
 	return nil
 }
 
-func testTryHandshake(cm *ClientManager, conn net.Conn) error {
-	// sanity check
-	if conn == nil {
-		return fmt.Errorf("connection is nil")
-	}
-
-	// read the message
-	message, err := cm.server.ReadMessage(conn)
-	if err != nil {
-		return fmt.Errorf("failed to read message: %w", err)
-	}
-
-	// validate the message
-	expectedResp, err := ToNetMessage([]string{cmdHandshakeReqv})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	if message != expectedResp {
-		return fmt.Errorf("invalid message: %s", message)
-	}
-	logging.Info(fmt.Sprintf("Client %s has sent a handshake request", conn.RemoteAddr().String()))
-
-	// send the handshake response
-	resp, err := ToNetMessage([]string{cmdHandshakeResp})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	err = cm.server.SendMessage(conn, resp)
-	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
-	}
-	logging.Info(fmt.Sprintf("Client %s has received a handshake response", conn.RemoteAddr().String()))
-
-	// wait for the handshake acknowledgment
-	message, err = cm.server.ReadMessage(conn)
-	if err != nil {
-		return fmt.Errorf("failed to read message: %w", err)
-	}
-
-	expectedResp, err = ToNetMessage([]string{cmdHandshakeAck})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	if message != expectedResp {
-		return fmt.Errorf("invalid message: %s", message)
-	}
-
-	logging.Info(fmt.Sprintf("Client %s has been validated", conn.RemoteAddr().String()))
-	return nil
-}
-
-func testTryPong(cm *ClientManager, conn net.Conn) error {
-	// sanity check
-	if conn == nil {
-		return fmt.Errorf("connection is nil")
-	}
-
-	// read the message
-	message, err := cm.server.ReadMessage(conn)
-	if err != nil {
-		return fmt.Errorf("failed to read message: %w", err)
-	}
-
-	// validate the message
-	expectedResp, err := ToNetMessage([]string{cmdPing})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	if message != expectedResp {
-		return fmt.Errorf("invalid message: %s", message)
-	}
-	logging.Info(fmt.Sprintf("Client %s has sent a ping", conn.RemoteAddr().String()))
-
-	// send the pong
-	resp, err := ToNetMessage([]string{cmdPong})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	err = cm.server.SendMessage(conn, resp)
-	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
-	}
-	logging.Info(fmt.Sprintf("Pong has been sent to client %s", conn.RemoteAddr().String()))
-
-	return nil
-}
-
-func testTryDisconnect(cm *ClientManager, conn net.Conn) error {
-	// sanity check
-	if conn == nil {
-		return fmt.Errorf("connection is nil")
-	}
-
-	// read the message
-	message, err := cm.server.ReadMessage(conn)
-	if err != nil {
-		return fmt.Errorf("failed to read message: %w", err)
-	}
-
-	// validate the message
-	expectedResp, err := ToNetMessage([]string{cmdLeave})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	if message != expectedResp {
-		return fmt.Errorf("invalid message: %s", message)
-	}
-	logging.Info(fmt.Sprintf("Client %s has sent a leave request", conn.RemoteAddr().String()))
-
-	// send the leave acknowledgment
-	resp, err := ToNetMessage([]string{cmdLeaveAck})
-	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
-	}
-
-	err = cm.server.SendMessage(conn, resp)
-	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
-	}
-	logging.Info(fmt.Sprintf("Leave acknowledgment has been sent to client %s", conn.RemoteAddr().String()))
-
-	return nil
-}
-
-// testValidateClient validates a client by waiting for a handshake request.
-func testValidateClient(cm *ClientManager, conn net.Conn) error {
-	// sanity check
-	if conn == nil {
-		return fmt.Errorf("connection is nil")
-	}
-
-	err := testTryHandshake(cm, conn)
-	if err != nil {
-		return fmt.Errorf("failed to handshake: %w", err)
-	}
-
-	err = testTryPong(cm, conn)
-	if err != nil {
-		return fmt.Errorf("failed to pong: %w", err)
-	}
-
-	err = testTryDisconnect(cm, conn)
-	if err != nil {
-		return fmt.Errorf("failed to disconnect: %w", err)
-	}
-
-	return nil
-}
-
-// testHandleConnection handles a new connection. It adds the client to the client manager.
-// It requires a client manager and a connection as parameters.
-func testHandleConnection(cm *ClientManager, conn net.Conn) {
+func (cm *ClientManager) handleConnection(conn net.Conn) {
 	logging.Debug(fmt.Sprintf("Handling connection from %s", conn.RemoteAddr().String()))
 
 	// add the client
@@ -315,52 +182,76 @@ func testHandleConnection(cm *ClientManager, conn net.Conn) {
 		return
 	}
 	cm.mutex.Unlock()
-
 	logging.Info(fmt.Sprintf("Client %s has connected", conn.RemoteAddr().String()))
 
-	// validate the client (wait for handshake request)
-	err = testValidateClient(cm, conn)
-	if err != nil {
-		logging.Error(fmt.Sprintf("failed to validate client: %v", err))
+	// infinite loop to handle messages
+	for {
+		// read message
+		msg, err := cm.p_server.ReadMessage(conn)
+		if err != nil {
+			// gracefully handle timeout
+			nErr, ok := err.(net.Error)
+			if ok && nErr.Timeout() {
+				continue
+			}
+
+			// some other error occurred
+			logging.Error(fmt.Sprintf("failed to read message: %v", err))
+			break
+		}
+
+		// TODO HERE
+		msg2 := msg
+		msg = msg2
+		// sleep to prevent busy waiting
+		time.Sleep(sleepTime)
+		break
 	}
 
-	// remove the client
-	cm.mutex.Lock()
-	err = cm.removeClient(conn)
-	if err != nil {
-		logging.Error(fmt.Sprintf("failed to remove client: %v", err))
-	}
-	cm.mutex.Unlock()
-
-	// close the connection
-	err = cm.server.CloseConnection(conn)
-	if err != nil {
-		logging.Error(fmt.Sprintf("failed to close connection: %v", err))
-	}
-
-	logging.Info(fmt.Sprintf("Client %s has disconnected", conn.RemoteAddr().String()))
 }
 
-func (cm *ClientManager) Test() {
-	// start the server
+// HandleServer manages the whole server. It starts the server and accepts connections.
+// It handles each connection in a separate goroutine.
+// It requires a client manager as a parameter.
+func (cm *ClientManager) ManageServer(ctx context.Context) error {
 	err := cm.startServer()
 	if err != nil {
-		logging.Error(fmt.Sprintf("failed to start server: %v", err))
-		return
+		return fmt.Errorf("failed to start server: %w", err)
 	}
-
-	// to stop the server after the function ends
-	defer cm.stopServer()
+	defer cm.stopServer() // to stop the server after the function ends
 
 	// infinite loop to accept connections
 	for {
-		// accept new connection
-		conn, err := cm.server.AcceptConnection()
-		if err != nil {
-			logging.Info(fmt.Sprintf("failed to accept connection: %v", err))
-			continue
-		}
+		select {
+		// check if the context has been cancelled (ctrl+c to stop the server)
+		case <-ctx.Done():
+			return nil
 
-		go testHandleConnection(cm, conn)
+		default:
+			// accept new connection
+			conn, err := cm.p_server.AcceptConnection()
+			if err != nil {
+				// check if the error is timeout (will be returned explicitly)
+				nErr, ok := err.(net.Error)
+				if ok && nErr.Timeout() {
+					continue
+				}
+
+				// error is probably unrecoverable
+				return fmt.Errorf("failed to accept connection: %w", err)
+			}
+
+			// handle each connection in a separate goroutine
+			go func() {
+				// safety measure to recover from panics (exceptions)
+				defer func() {
+					if r := recover(); r != nil {
+						logging.Error(fmt.Sprintf("Recovered from panic in connection handler: %v", r))
+					}
+				}()
+
+				cm.handleConnection(conn) // NOTE: feasible for hundreds of clients; for thousands of clients, a worker pool would be used
+			}()
+		}
 	}
 }

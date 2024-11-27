@@ -148,6 +148,7 @@ class GenericClient:
             self.__is_running = False
             self.__server_socket.close()
             self.__server_socket = None
+            raise ConnectionError(f"Error connecting to the server at {self.server_address}: {e}")
     
 
     def stop(self):

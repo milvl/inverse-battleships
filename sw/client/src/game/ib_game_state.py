@@ -13,7 +13,14 @@ logger = loggers.get_logger(MAIN_LOGGER_NAME)
 
 
 class IBGameState:
-    # TODO DOC
+    """
+    Class that represents the state of the game.
+
+    :raises ValueError: If the state to set is invalid.
+    :return: The state of the game.
+    :rtype: int
+    """
+
     INIT = -1
     MAIN_MENU = 0
     SETTINGS_MENU = 1
@@ -22,10 +29,14 @@ class IBGameState:
     LOBBY = 4
     GAME_SESSION = 5
     GAME_END = 6
+    ALERT = 7
 
 
     def __init__(self):
-        # TODO DOC
+        """
+        Constructor method.
+        """
+
         self.__state = IBGameState.INIT
         self.__state_names = {
             IBGameState.INIT: 'INIT',
@@ -35,20 +46,29 @@ class IBGameState:
             IBGameState.LOBBY_SELECTION: 'LOBBY_SELECTION',
             IBGameState.LOBBY: 'LOBBY',
             IBGameState.GAME_SESSION: 'GAME_SESSION',
-            IBGameState.GAME_END: 'GAME_END'
+            IBGameState.GAME_END: 'GAME_END',
+            IBGameState.ALERT: 'ALERT'
         }
         logger.debug(f'IBGameState initialized with state: {str(self)}')
 
 
     @property
     def state(self) -> int:
-        # TODO DOC
+        """
+        Represents the current state of the game.
+        """
+
         return self.__state
 
 
     @state.setter
     def state(self, new_state: int):
-        # TODO DOC
+        """
+        Sets the state of the game.
+
+        :param new_state: The new state of the game.
+        :type new_state: int
+        """
 
         # sanity check simplified based on contract
         if new_state > IBGameState.GAME_END or new_state < IBGameState.INIT:
