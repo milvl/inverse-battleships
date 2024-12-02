@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"inverse-battleships-server/logging"
 	"net"
@@ -12,8 +13,12 @@ const connectionType = "tcp"
 
 // bufferSize represents the size of the buffer used to read messages
 const bufferSize = 1024 // 1024 bytes == 1024 characters == 1KiB
+
 // timeout represents the time to wait for a connection
-const timeout = 10 * time.Second
+const timeout = 5 * time.Second
+
+// connectionTimeout represents the time to wait for a connection
+const connectionTimeout = 100 * time.Millisecond
 
 // Server is the main structure that holds the TCP server's state.
 type Server struct {
@@ -70,13 +75,13 @@ func (s *Server) AcceptConnection() (net.Conn, error) {
 	}
 
 	// set timeout for accepting connections
-	(*s.p_listener).(*net.TCPListener).SetDeadline(time.Now().Add(timeout))
+	(*s.p_listener).(*net.TCPListener).SetDeadline(time.Now().Add(connectionTimeout))
 
 	conn, err := (*s.p_listener).Accept()
 	if err != nil {
 		// gracefully handle timeout
-		nErr, assertion_ok := err.(net.Error)
-		if assertion_ok && nErr.Timeout() {
+		var nErr net.Error
+		if errors.As(err, &nErr) && nErr.Timeout() {
 			return nil, err
 		}
 
@@ -117,8 +122,8 @@ func (s *Server) ReadMessage(conn net.Conn) (string, error) {
 	n, err := conn.Read(buffer)
 	if err != nil {
 		// gracefully handle timeout
-		nErr, assertion_ok := err.(net.Error)
-		if assertion_ok && nErr.Timeout() {
+		var nErr net.Error
+		if errors.As(err, &nErr) && nErr.Timeout() {
 			return "", err
 		}
 

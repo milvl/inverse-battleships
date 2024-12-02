@@ -6,9 +6,12 @@ all the logic related to the game itself.
 import json
 import os
 import re
+import socket
 import threading
 import time
-from game.connection_manager import ConnectionManager
+from util.generic_client import GenericClient
+from const.server_communication import *
+from game.connection_manager import ConnectionManager, ServerResponse
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
 from game.ib_game_state import IBGameState
@@ -142,12 +145,29 @@ class IBGame:
 
 
     @staticmethod
-    def __attempt_connection(connection_manager: ConnectionManager, ready_event: threading.Event, failed_event: threading.Event):
+    def __attempt_connection(connection_manager: ConnectionManager):
         """
         Attempts to connect to the server.
 
         :param connection_manager: The connection manager.
         :type connection_manager: ConnectionManager
+        """
+
+        try:
+            connection_manager.start()
+        except Exception as e:
+            raise ConnectionError(f'Failed to connect to the server: {e}')
+        
+
+    @staticmethod
+    def __establish_connection(connection_manager: ConnectionManager, player_name: str, ready_event: threading.Event, failed_event: threading.Event):
+        """
+        Establishes the connection to the server.
+
+        :param connection_manager: The connection manager.
+        :type connection_manager: ConnectionManager
+        :param player_name: The name of the player.
+        :type player_name: str
         :param ready_event: The event that signals that the connection is ready.
         :type ready_event: threading.Event
         :param failed_event: The event that signals that the connection has failed.
@@ -156,14 +176,60 @@ class IBGame:
 
         try:
             tmp_logger.debug('Thread: Attempting to connect to the server...')
-            connection_manager.start()
+            __class__.__attempt_connection(connection_manager)
             tmp_logger.debug('Thread: Connection successful')
+
+            # request the player to join the server
+            res = connection_manager.login(player_name)
+            if not res:
+                raise ConnectionError('Failed to login to the server')
+            
             ready_event.set()
             failed_event.clear()
+
         except Exception as e:
             tmp_logger.error(f'Thread: Connection attempt failed: {e}')
             logger.error(f'Connection attempt failed: {e}')
             failed_event.set()
+
+
+    @staticmethod
+    def __handle_server_communication_connection_menu(connection_manager: ConnectionManager, stop: threading.Event):
+        """
+        Handles the server communication in the CONNECTION_MENU state.
+
+        :param connection_manager: The connection manager.
+        :type connection_manager: ConnectionManager
+        :param stop: The event that signals that the game should exit.
+        :type stop: threading.Event
+        """
+
+        while not stop.is_set():
+            # keep alive
+            if time.time() - connection_manager.last_time_reply > 5:        # TODO MAGIC NUMBER
+                logger.debug('Connection timeout, pinging the server...')
+                try:
+                    connection_manager.ping()
+                except Exception as e:
+                    raise ConnectionError(f'Failed to send ping to the server: {e}')
+
+            # listen for messages
+            else: 
+                resp: ServerResponse = None
+                try:
+                    resp = connection_manager.receive_message()
+                except ConnectionError as e:
+                    logger.error(f'Error occurred while receiving message from the server: {e}')
+                    raise ConnectionError(f'Error occurred while receiving message from the server: {e}')
+                except TimeoutError:
+                    continue
+                    
+                command = resp.command
+                if command == CMD_PING:
+                    try:
+                        connection_manager.pong()
+                    except Exception as e:
+                        raise ConnectionError(f'Failed to send pong to the server: {e}')
 
 
     def __init__(self, config: Dict[str, Any], assets: Dict[str, Any]):
@@ -213,7 +279,9 @@ class IBGame:
         self.server_ip = None
         self.server_port = None
 
-        self.connection_manager = None
+        self.__connection_manager = None
+        self.__exit = threading.Event()
+        self.__exit.clear()
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -403,7 +471,7 @@ class IBGame:
         self.update_result.update_areas.append(True)
 
     
-    def __init_state_handle_update_feedback(self, res: Dict[str, Any]):
+    def __handle_update_feedback_init_state(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the INIT state.
 
@@ -425,7 +493,7 @@ class IBGame:
             logger.info('Changing the state to MAIN_MENU')
 
 
-    def __connection_menu_handle_update_feedback(self, res: Dict[str, Any]):
+    def __handle_update_feedback_connection_menu(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the CONNECTION_MENU state.
 
@@ -441,7 +509,7 @@ class IBGame:
                 self.game_state.state = IBGameState.MAIN_MENU
                 self.context = None
                 self.__connection_failed_event = None
-                self.connection_manager = None
+                self.__connection_manager = None
                 self.update_result.update_areas.append(True)
                 return
         
@@ -475,12 +543,15 @@ class IBGame:
         
         elif res['escape']:
             logger.info('Changing the state to MAIN_MENU')
+            self.__exit.set()
+            self.__connection_manager.stop()
+            self.__connection_manager = None
             self.game_state.state = IBGameState.MAIN_MENU
             self.context = None
             self.update_result.update_areas.append(True)
 
 
-    def __main_menu_handle_update_feedback(self, res: Dict[str, Any]):
+    def __handle_update_feedback_main_menu(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the MAIN_MENU state.
 
@@ -517,7 +588,7 @@ class IBGame:
             self.update_result.update_areas.append(True)
     
 
-    def __settings_menu_handle_update_feedback(self, res: Dict[str, Any]):
+    def __handle_update_feedback_settings_menu(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the SETTINGS_MENU state.
 
@@ -577,7 +648,7 @@ class IBGame:
         
         # update the context and get the results
         res = self.context.update(inputs)
-        self.__init_state_handle_update_feedback(res)
+        self.__handle_update_feedback_init_state(res)
     
 
     def __update_game_session(self, events: PyGameEvents):
@@ -587,28 +658,39 @@ class IBGame:
     def __update_connection_menu(self, events: PyGameEvents):
         # TODO DOC
 
-        if not self.context and not self.connection_manager:
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['attempt_connection_msg'])
-            self.connection_manager = ConnectionManager(self.server_ip, self.server_port)
+        # if no context was drawn => no connection attempt was made yet so try to connect
+        if not self.context and not self.__connection_manager:
+            self.context = InfoScreen(self.presentation_surface, 
+                                      self.assets, 
+                                      self.assets['strings']['attempt_connection_msg'])
+            self.__connection_manager = ConnectionManager(self.server_ip, self.server_port)
             self.__connection_ready_event = threading.Event()
             self.__connection_failed_event = threading.Event()
-            self.__connection_thread = threading.Thread(target=__class__.__attempt_connection, 
-                                                        args=(self.connection_manager, self.__connection_ready_event, self.__connection_failed_event))
+            self.__connection_thread = threading.Thread(target=__class__.__establish_connection, 
+                                                        args=(self.__connection_manager, 
+                                                             self.player_name, 
+                                                             self.__connection_ready_event, 
+                                                             self.__connection_failed_event))
+
             self.__connection_thread.start()
             self.context.redraw()
             self.update_result.update_areas.append(True)
         
-        # connection attempt was successful
+        # connection attempt was successful => show the lobby selection menu
         if self.__connection_thread and self.__connection_ready_event and self.__connection_ready_event.is_set():
             self.context = SelectMenu(self.presentation_surface, 
                                       self.assets, 
                                       None,
-                                      [MenuOption(self.assets['strings']['connection_menu_lobby_select_label']), 
-                                       MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])])
+                                      [MenuOption(self.assets['strings']['connection_menu_lobby_select_label']), MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])])
             self.__connection_thread.join()
             self.__connection_ready_event = None
             self.__connection_failed_event = None
-            self.__connection_thread = None
+
+            # define connection thread to handle server requests
+            self.__connection_thread = threading.Thread(target=__class__.__handle_server_communication_connection_menu, 
+                                                        args=(self.__connection_manager,
+                                                              self.__exit))
+            self.__connection_thread.start()
             self.context.redraw()
             self.update_result.update_areas.append(True)
         
@@ -623,14 +705,14 @@ class IBGame:
 
         
         if events.event_videoresize:
-            self.__handle_context_resize()
+            self.__handle_context_resize() 
 
         # process the input
         inputs = self.__proccess_input(events)
 
         # update the context and get the results
         res = self.context.update(inputs)
-        self.__connection_menu_handle_update_feedback(res)
+        self.__handle_update_feedback_connection_menu(res)
 
     def __update_lobby(self, events: PyGameEvents):
         raise NotImplementedError('The __update_lobby method has not been implemented yet.')
@@ -666,7 +748,7 @@ class IBGame:
 
         # update the context and get the results
         res = self.context.update(inputs)
-        self.__main_menu_handle_update_feedback(res)
+        self.__handle_update_feedback_main_menu(res)
 
 
     def __update_settings_menu(self, events: PyGameEvents):
@@ -689,7 +771,7 @@ class IBGame:
         
         # update the context and get the results
         res = self.context.update(inputs)
-        self.__settings_menu_handle_update_feedback(res)
+        self.__handle_update_feedback_settings_menu(res)
 
         
     def update(self) -> IBGameUpdateResult:
@@ -713,8 +795,11 @@ class IBGame:
         
         # user requests to quit
         if events.event_quit:
-            self.update_result.exit = True
             logger.info('User requested to exit the game')
+            self.__exit.set()
+            self.update_result.exit = True
+            if self.__connection_thread:
+                self.__connection_thread.join()
             return self.update_result
             
         # user attempts to resize the window

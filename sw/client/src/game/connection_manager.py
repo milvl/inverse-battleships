@@ -2,8 +2,14 @@
 This module is responsible for managing the connection between the client and the server for the game Inverse Battleships.
 """
 
-from typing import List
+from dataclasses import dataclass
+import socket
+import threading
+import time
+import re
+from typing import Any, List
 from util.generic_client import GenericClient
+from const.server_communication import *
 from util.loggers import get_logger
 from const.loggers import MAIN_LOGGER_NAME
 
@@ -11,32 +17,22 @@ from const.loggers import MAIN_LOGGER_NAME
 logger = get_logger(MAIN_LOGGER_NAME)
 
 
+@dataclass
+class ServerResponse:
+    """
+    This class represents a response from the server.
+    """
+
+    command: str
+    """The response from the server."""
+    params: List[Any]
+    """Parameters of the response from the server."""
+
+
 class ConnectionManager:
     """
     This class is responsible for managing the connection between the client and the server for the game Inverse Battleships.
     """
-
-    __MSG_DELIMITER = ';'
-    """The delimiter used to separate the parts of the messages sent between the server and the clients."""
-    __MSG_TERMINATOR = '\n'
-    """The terminator used to mark the end of the messages sent between the server and the clients."""
-    __MSG_HEADER = 'IBGAME'
-    """The header of the messages sent between the server and the clients."""
-    __CMD_PING = 'PING'
-    """The ping command."""
-    __CMD_PONG = 'PONG'
-    """The pong command."""
-    __CMD_TRY_VALID = 'HAND'
-    """The hand command."""
-    __CMD_ACKW_VALID = 'SHAKE'
-    """The shake command."""
-    __CMD_CONFIRM_VALID = 'DEAL'
-    """The deal command."""
-    __CMD_LEAVE = 'LEAVE'
-    """The leave command."""
-    __CMD_CONFIRM_LEAVE = 'BYE'
-    """The bye command."""
-
 
     @staticmethod
     def __to_net_message(parts: List[str]) -> str:
@@ -50,12 +46,56 @@ class ConnectionManager:
         """
 
         for i, part in enumerate(parts):
-            if __class__.__MSG_TERMINATOR in part:
-                raise ValueError(f"Message part {i}: '{part}' contains the message terminator '{__class__.__MSG_TERMINATOR}'")
-            parts[i] = part.replace(__class__.__MSG_DELIMITER, f"\\{__class__.__MSG_DELIMITER}")
+            if MSG_TERMINATOR in part:
+                raise ValueError(f"Message part {i}: '{part}' contains the message terminator '{MSG_TERMINATOR}'")
+            parts[i] = part.replace(MSG_DELIMITER, f"\\{MSG_DELIMITER}")
 
         
-        return f"{__class__.__MSG_HEADER}{__class__.__MSG_DELIMITER}{__class__.__MSG_DELIMITER.join(parts)}{__class__.__MSG_TERMINATOR}"
+        return f"{MSG_HEADER}{MSG_DELIMITER}{MSG_DELIMITER.join(parts)}{MSG_TERMINATOR}"
+    
+
+    @staticmethod
+    def __from_net_message(message: str) -> List[str]:
+        """
+        Returns the parts of the message from the network communication.
+
+        :param message: The message.
+        :type message: str
+        :return: The parts of the message.
+        :rtype: List[str]
+        """
+
+        if not message.startswith(MSG_HEADER):
+            raise ValueError(f"Invalid message header: '{message[:len(MSG_HEADER)]}'")
+        
+        parts = []
+        part = []
+        do_escape = False
+        for char in message[(len(MSG_HEADER) + 1):]:    # skip the header and the first delimiter
+            # end of part encountered
+            if char == MSG_TERMINATOR:
+                parts.append(''.join(part))
+                break
+            
+            # escape character encountered
+            if char == '\\':
+                do_escape = True
+                continue
+            
+            # escaping sequence
+            if do_escape:
+                part.append(char)
+                do_escape = False
+                continue
+            # regular sequence
+            else:
+                if char == MSG_DELIMITER:
+                    parts.append(''.join(part))
+                    part = []
+                else:
+                    part.append(char)
+        
+        return parts
     
 
     @staticmethod
@@ -70,7 +110,33 @@ class ConnectionManager:
         """
 
         # NOTE: UTF-8 encoding maybe will be changed to ASCII
-        return message.encode('unicode_escape').decode('utfs-8') 
+        return message.encode('unicode_escape').decode('utf-8') 
+    
+
+    @staticmethod
+    def __parse_parts(parts: List[str]) -> ServerResponse:
+        """
+        Parses the parts of a message from the server.
+
+        :param parts: The parts of the message.
+        :type parts: List[str]
+        :return: The parsed message.
+        :rtype: ServerResponse
+        """
+
+        if len(parts) == 0:
+            raise ValueError("Empty message received")
+        
+        # NOTE: should always recieve valid commands (server response)
+        command = parts[CMD_INDEX]
+
+        if command in [CMD_PING, CMD_PONG, CMD_ACKW_VALID, CMD_CONFIRM_LEAVE, 
+                       CMD_LOBBIES, CMD_RES_MISS, CMD_RES_ACKW, CMD_GAME_LOSE, CMD_GAME_WIN, 
+                       CMD_WAIT, CMD_CONTINUE, CMD_TKO]:
+            return ServerResponse(command, None)
+        
+        
+        raise ValueError(f"Invalid command received: '{command}'")
 
 
     def __init__(self, server_ip: str, server_port: int):
@@ -84,6 +150,8 @@ class ConnectionManager:
         """
 
         self.__client = GenericClient(server_ip, server_port)
+        self.__last_time_reply = None
+        self.__lock = threading.RLock()
 
 
     @property
@@ -95,7 +163,8 @@ class ConnectionManager:
         :rtype: bool
         """
 
-        return self.__client.is_running
+        with self.__lock:
+            return self.__client.is_running
     
 
     @property
@@ -134,6 +203,83 @@ class ConnectionManager:
         return self.__client.server_address
     
 
+    @property
+    def last_time_reply(self):
+        """
+        Getter for last_time_reply.
+
+        :return: The time of the last reply from the server.
+        :rtype: float
+        """
+
+        return self.__last_time_reply
+    
+
+    def start(self):
+        """
+        Connects to the server.
+        """
+
+        with self.__lock:
+            try:
+                self.__client.start()
+                self.__last_time_reply = time.time()
+            except Exception as e:
+                raise ConnectionError(f"Error connecting to the server at {self.server_address}: {e}")
+    
+
+    def __try_disconnect(self) -> bool:
+        """
+        Sends a disconnect message to the game server.
+
+        :return: True if the disconnect message was sent successfully, false otherwise.
+        :rtype: bool
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot disconnect from the server at {self.server_address}: not connected")
+            
+            try:
+                # send disconnect message
+                self.__send_cmd([CMD_LEAVE])
+            except Exception as e:
+                logger.error(f"Error sending disconnect message to the server at {self.server_address}: {e}")
+                return False
+
+            # wait for the server to respond
+            try:
+                res = self.__receive_expected_response([CMD_CONFIRM_LEAVE])
+            except Exception as e:
+                logger.error(f"Error receiving 'BYE' message from the server at {self.server_address}: {e}")
+                return False
+
+        if not res:
+            logger.critical(f"Error receiving 'BYE' message from the server at {self.server_address}")
+            return False
+        
+        return True
+            
+
+    def stop(self):
+        """
+        Disconnects from the server.
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot disconnect from the server at {self.server_address}: not connected")
+        
+            if not self.__try_disconnect():
+                logger.error(f"Error disconnecting properly from the server at {self.server_address}. Forcing disconnection.")
+
+            try:
+                self.__client.stop()
+            except ConnectionError as e:
+                logger.error(f"Error disconnecting from the server at {self.server_address}: {e}")
+                logger.warning(f"Attempted to disconnect from the server at {self.server_address}, but no active connection")
+    
+
     def __send_cmd(self, parts: List[str]):
         """
         Sends a command to the game server.
@@ -142,17 +288,18 @@ class ConnectionManager:
         :type parts: List[str]
         """
 
-        if not self.is_running:
-            raise ConnectionError(f"Cannot send message to the server at {self.server_address}: not connected")
-        
-        message = __class__.__to_net_message(parts)
-        
-        try:
-            self.__client.send_message(message)
-            logger.debug(f"Sent message to the server at {self.server_address}: {__class__.__escape_net_message(message)}")
-        except ConnectionError as e:
-            logger.critical(f"Could not send message to the server at {self.server_address}: {e}")
-            self.__client.stop()
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send message to the server at {self.server_address}: not connected")
+            
+            message = __class__.__to_net_message(parts)
+    
+            try:
+                self.__client.send_message(message)
+                logger.debug(f"Sent message to the server at {self.server_address}: {__class__.__escape_net_message(message)}")
+            
+            except ConnectionError as e:
+                raise e
     
 
     def __receive_expected_response(self, expected_parts: List[str]) -> bool:
@@ -165,26 +312,27 @@ class ConnectionManager:
         :rtype: bool
         """
 
-        if not self.is_running:
-            raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
-        
-        expected_resp = __class__.__to_net_message(expected_parts)
-        try:
-            if self.__client.receive_expected_message(expected_resp):
-                return True
-            else:
-                logger.critical(f"Received unexpected response from the server at {self.server_address}")
-                logger.debug(f"Expected: {__class__.__escape_net_message(expected_resp)}")
-                logger.debug(f"Received: {__class__.__escape_net_message(self.__client.last_received_message)}")
-                return False
-        
-        except Exception as e:
-            logger.critical(f"Error receiving message from the server at {self.server_address}: {e}")
-            self.__client.stop()
-            return False
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
+            
+            expected_resp = __class__.__to_net_message(expected_parts)
+
+            try:
+                if self.__client.receive_expected_message(expected_resp):
+                    self.__last_time_reply = time.time()
+                    return True
+                else:
+                    logger.debug(f"Invalid message received. Expected: {__class__.__escape_net_message(expected_resp)}")
+                    logger.critical(f"Received unexpected response from the server at {self.server_address}")
+                    # logger.debug(f"Received: {__class__.__escape_net_message(self.__client.last_received_message)}")
+                    return False
+            
+            except Exception as e:
+                raise e
         
     
-    def __ping(self) -> bool:
+    def ping(self) -> bool:
         """
         Sends a ping message to the game server.
 
@@ -192,59 +340,40 @@ class ConnectionManager:
         :rtype: bool
         """
 
-        if self.is_running:
-            try:
-                self.__send_cmd([__class__.__CMD_PING])
-                
-                if not self.__receive_expected_response([__class__.__CMD_PONG]):
-                    logger.error(f"Error receiving pong message from the server at {self.server_address}")
-                    self.stop()
-                    return False
-                
-                return True
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send ping message to the server at {self.server_address}: not connected")
 
+            try:
+                self.__send_cmd([CMD_PING])
             except Exception as e:
-                logger.critical(f"Error sending ping message to the server at {self.server_address}: {e}")
-                self.stop()
-                return False
+                raise ConnectionError(f"Error sending ping message to the server at {self.server_address}: {e}")
+                
+            try:
+                res = self.__receive_expected_response([CMD_PONG])
+                if not res:
+                    logger.error(f"Error receiving pong message from the server at {self.server_address}")
+                    return False
+            except Exception as e:
+                raise ConnectionError(f"Error receiving pong message from the server at {self.server_address}: {e}")
+                
+        return True
+
     
 
-    def __pong(self):
+    def pong(self):
         """
         Sends a pong message to the game server.
         """
 
-        if self.is_running:
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send pong message to the server at {self.server_address}: not connected")
+
             try:
-                self.__send_cmd([__class__.__CMD_PONG])
+                self.__send_cmd([CMD_PONG])
             except Exception as e:
-                logger.critical(f"Error sending pong message to the server at {self.server_address}: {e}")
-                self.stop()
-    
-
-    def __try_disconnect(self) -> bool:
-        """
-        Sends a disconnect message to the game server.
-
-        :return: True if the disconnect message was sent successfully, false otherwise.
-        :rtype: bool
-        """
-
-        if self.is_running:
-            try:
-                # send disconnect message
-                self.__send_cmd([__class__.__CMD_LEAVE])
-
-                # wait for the server to respond
-                if not self.__receive_expected_response([__class__.__CMD_CONFIRM_LEAVE]):
-                    logger.critical(f"Error receiving 'BYE' message from the server at {self.server_address}")
-                    return False
-                
-                return True
-                
-            except Exception as e:
-                logger.error(f"Error sending disconnect message to the server at {self.server_address}: {e}")
-                return False
+                raise ConnectionError(f"Error sending pong message to the server at {self.server_address}: {e}")
     
 
     def __validate_connection(self) -> bool:
@@ -257,105 +386,131 @@ class ConnectionManager:
         :rtype: bool
         """
 
-        if not self.is_running:
-            raise ConnectionError(f"Cannot validate connection with the server at {self.server_address}: not connected")
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot validate connection with the server at {self.server_address}: not connected")
         
-        try:
             # send authentication message
-            self.__send_cmd([__class__.__CMD_TRY_VALID])
+            try:
+                self.__send_cmd([CMD_TRY_VALID])
+            except Exception as e:
+                raise ConnectionError(f"Error sending 'HAND' message to the server at {self.server_address}: {e}")
 
             # wait for the server to respond
-            if not self.__receive_expected_response([__class__.__CMD_ACKW_VALID]):
-                logger.critical(f"Error receiving 'SHAKE' message from the server at {self.server_address}")
-                return False
+            try:
+                res = self.__receive_expected_response([CMD_ACKW_VALID])
+                if not res:
+                    logger.critical(f"Error receiving 'SHAKE' message from the server at {self.server_address}")
+                    return False
+            except Exception as e:
+                raise ConnectionError(f"Error receiving 'SHAKE' message from the server at {self.server_address}: {e}")
             
-            self.__send_cmd([__class__.__CMD_CONFIRM_VALID])
-            return True
-            
-        except Exception as e:
-            logger.critical(f"Error validating connection with the server at {self.server_address}: {e}")
-            self.stop()
-            return False
+            # send confirmation message
+            try:
+                self.__send_cmd([CMD_CONFIRM_VALID])
+            except Exception as e:
+                raise ConnectionError(f"Error sending 'DEAL' message to the server at {self.server_address}: {e}")
+        
+        return True
         
 
-    def start(self):
+    def receive_message(self) -> ServerResponse:
         """
-        Connects to the server.
+        Receives a message from the game server.
+        Is blocking until a message is received or an error occurs or timeout.
+
+        :return: The received message.
+        :rtype: ServerResponse
         """
 
-        try:
-            self.__client.start()
-            logger.info(f"Connected to the server at {self.server_address}")
-        except Exception as e:
-            logger.critical(f"Error connecting to the server at {self.server_address}: {e}")
-            self.__client.stop()
-    
-
-    def stop(self):
-        """
-        Disconnects from the server.
-        """
-
-        if not self.is_running:
-            raise ConnectionError(f"Cannot disconnect from the server at {self.server_address}: not connected")
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
         
-        if not self.__try_disconnect():
-            logger.error(f"Error disconnecting properly from the server at {self.server_address}. Forcing disconnection.")
-
-        try:
-            self.__client.stop()
-        except ConnectionError as e:
-            logger.error(f"Error disconnecting from the server at {self.server_address}: {e}")
-            logger.warning(f"Attempted to disconnect from the server at {self.server_address}, but no active connection")
-    
-
-    def __enter__(self):
-        """
-        Called when entering the context manager.
-        """
-
-        self.start()
-        return self
-    
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """
-        Called when exiting the context manager.
-        """
-
-        try:
-            self.stop()
-        except Exception as e:
-            logger.error(e)
+            try:
+                message = self.__client.receive_message()
+            except TimeoutError:
+                raise TimeoutError()
+            except Exception as e:
+                raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
         
+        self.__last_time_reply = time.time()
+        logger.debug(f"Received message from the server at {self.server_address}: {__class__.__escape_net_message(message)}")
+        
+        i_end = message.find(MSG_TERMINATOR)
+        if i_end == -1:
+            raise ValueError(f"Invalid message received from the server at {self.server_address}: no message terminator")
+        if i_end != len(message) - 1:
+            logger.warning(f"Invalid message received from the server at {self.server_address}: message terminator not at the end")
+            message = message[:i_end]
 
-    def test_connection(self) -> bool:
+        parts = __class__.__from_net_message(message)
+        res = None
+        try:
+            res = __class__.__parse_parts(parts)
+        except ValueError as e:
+            raise ValueError(f"Validation failed while parsing message from the server at {self.server_address}: {e}")
+
+        return res
+    
+
+    def login(self, username: str) -> bool:
         """
-        Tests the connection with the server.
+        Logs in to the game server with the given username.
 
-        :return: True if the connection is valid and responsive, false otherwise.
+        :param username: The username to log in with.
+        :type username: str
+        :return: True if the login was successful, false otherwise.
         :rtype: bool
         """
 
-        if not self.is_running:
-            raise ConnectionError(f"Cannot test connection with the server at {self.server_address}: not connected")
-        
-        try:
-            if self.__validate_connection():
-                logger.info(f"Connection with the server at {self.server_address} is valid")
-            else:
-                logger.critical(f"Connection with the server at {self.server_address} is invalid")
-                return False
-            
-            if self.__ping():
-                logger.info(f"Connection with the server at {self.server_address} is responsive")
-            else:
-                logger.critical(f"Connection with the server at {self.server_address} is unresponsive")
-                return False
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot login to the server at {self.server_address}: not connected")
+    
+            try:
+                self.__send_cmd([CMD_TRY_VALID, username])
+            except Exception as e:
+                logger.error(f"Error sending login message to the server at {self.server_address}: {e}")
+                
+            try:
+                res = self.__receive_expected_response([CMD_ACKW_VALID])
+                if not res:
+                    logger.error(f"Error logging in to the server at {self.server_address} - invalid server response")
+                    return False
+            except Exception as e:
+                raise ConnectionError(f"Error receiving 'SHAKE' message from the server at {self.server_address}: {e}")
 
-            # context manager will handle the disconnection
-            return True
+            try:    
+                self.__send_cmd([CMD_CONFIRM_VALID])
+            except Exception as e:
+                raise ConnectionError(f"Error sending 'DEAL' message to the server at {self.server_address}: {e}")
             
-        except Exception as e:
-            logger.critical(f"Error testing connection with the server at {self.server_address}: {e}")
-            return False
+        return True
+        
+
+    def logout(self) -> bool:
+        """
+        Logs out from the game server.
+
+        :return: True if the logout was successful, false otherwise.
+        :rtype: bool
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot logout from the server at {self.server_address}: not connected")
+        
+            try:
+                self.__send_cmd([CMD_LEAVE])
+            except Exception as e:
+                raise ConnectionError(f"Error sending logout message to the server at {self.server_address}: {e}")
+
+            try:
+                res = self.__receive_expected_response([CMD_CONFIRM_LEAVE])
+                if not res:
+                    raise ConnectionError(f"Error logging out from the server at {self.server_address} - invalid server response")
+            except Exception as e:
+                raise ConnectionError(f"Error receiving 'BYE' message from the server at {self.server_address}: {e}")
+        
+        return True
