@@ -1,0 +1,5 @@
+# Powers of 2
+
+|0-10|11-20|
+|--|--|
+|<table> <tr><th>Power</th><th>Value</th></tr><tr><td>2<sup><b>0</b></sup></td><td>1</td></tr><tr><td>2<sup><b>1</b></sup></td><td>2</td></tr><tr><td>2<sup><b>2</b></sup></td><td>4</td></tr><tr><td>2<sup><b>3</b></sup></td><td>8</td></tr><tr><td>2<sup><b>4</b></sup></td><td>16</td></tr><tr><td>2<sup><b>5</b></sup></td><td>32</td></tr><tr><td>2<sup><b>6</b></sup></td><td>64</td></tr><tr><td>2<sup><b>7</b></sup></td><td>128</td></tr><tr><td>2<sup><b>8</b></sup></td><td>256</td></tr><tr><td>2<sup><b>9</b></sup></td><td>512</td></tr></table>|<table> <tr><th>Power</th><th>Value</th></tr><tr><td>2<sup><b>10</b></sup></td><td>1024</td></tr><tr><td>2<sup><b>11</b></sup></td><td>2048</td></tr><tr><td>2<sup><b>12</b></sup></td><td>4096</td></tr><tr><td>2<sup><b>13</b></sup></td><td>8192</td></tr><tr><td>2<sup><b>14</b></sup></td><td>16384</td></tr><tr><td>2<sup><b>15</b></sup></td><td>32768</td></tr><tr><td>2<sup><b>16</b></sup></td><td>65536</td></tr><tr><td>2<sup><b>17</b></sup></td><td>131072</td></tr><tr><td>2<sup><b>18</b></sup></td><td>262144</td></tr><tr><td>2<sup><b>19</b></sup></td><td>524288</td></tr></table>|
