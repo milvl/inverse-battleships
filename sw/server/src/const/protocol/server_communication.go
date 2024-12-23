@@ -1,5 +1,7 @@
 package protocol
 
+import "time"
+
 // validCmds is a list of valid commands.
 const (
 	CmdHandshakeReqv = "HAND"  // 0
@@ -32,9 +34,13 @@ func IsValidCmd(cmd string) bool {
 const (
 	MsgDelimiter    = ";"
 	MsgTerminator   = "\n"
+	MsgEscape       = "\\"
 	MsgHeader       = "IBGAME"
 	HeaderPartIndex = 0
 	CmdPartIndex    = 1
 	MinPartsCount   = 2
 	NicknameIndex   = 0
 )
+
+// CompleteMsgTimeout is the time to wait for a valid message.
+const CompleteMsgTimeout = 5 * time.Second

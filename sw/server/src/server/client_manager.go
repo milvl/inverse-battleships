@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"inverse-battleships-server/const/custom_errors"
 	"inverse-battleships-server/const/protocol"
 	"inverse-battleships-server/logging"
 	"inverse-battleships-server/util/cmd_validator"
 	"inverse-battleships-server/util/msg_parser"
 	"io"
 	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -19,6 +21,8 @@ type Client struct {
 	conn     net.Conn
 	nickname string
 	lastTime time.Time
+	isAuth   bool
+	msgBuff  string
 }
 
 // Lobby represents a game lobby.
@@ -32,7 +36,8 @@ type Lobby struct {
 // Server represents a TCP server.
 type ClientManager struct {
 	p_server      *Server            // server pointer
-	clients       map[string]*Client // map of clients with their addresses as keys
+	pendClients   map[string]*Client // map of pending clients with their addresses as keys
+	authClients   map[string]*Client // map of authenticated clients with their nicknames as keys
 	lobbies       map[string]*Lobby  // manage lobbies
 	playerToLobby map[string]*Lobby  // map of players to their lobbies
 	mutex         sync.Mutex         // mutex to lock the client manager
@@ -43,10 +48,68 @@ type ClientManager struct {
 func NewClientManager(server *Server) *ClientManager {
 	return &ClientManager{
 		p_server:      server,
-		clients:       make(map[string]*Client),
+		authClients:   make(map[string]*Client),
 		lobbies:       make(map[string]*Lobby),
 		playerToLobby: make(map[string]*Lobby),
+		pendClients:   make(map[string]*Client),
 	}
+}
+
+// getCompleteMsg checks if the message is complete.
+// It returns a boolean indicating if the message is complete,
+// the whole message, and additional parts of queued messages.
+func getCompleteMsg(msg string) (bool, string, string) {
+	isWhole := false
+	wholeMsg := ""
+	additional := ""
+
+	// check if the message is complete
+	if strings.Contains(msg, protocol.MsgTerminator) {
+		isWhole = true
+
+		// find the terminator index
+		terminatorIndex := strings.Index(msg, protocol.MsgTerminator)
+		wholeMsg = msg[:terminatorIndex+1]
+		if len(msg) > terminatorIndex+1 {
+			additional = msg[terminatorIndex+1:]
+		}
+	}
+
+	return isWhole, wholeMsg, additional
+}
+
+// handleClientError handles client errors.
+// It returns two booleans: one indicating if the error was caused by a timeout,
+// and the other indicating if the error means the client should be disconnected.
+func (cm *ClientManager) handleClientError(pClient *Client, err error) (bool, bool) {
+	// handle timeout or disconnection
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		logging.Debug(fmt.Sprintf("Timeout for client %s, pinging...", pClient.conn.RemoteAddr().String()))
+		isAlive, inErr := cm.checkAlive(pClient)
+		if inErr != nil {
+			logging.Error(fmt.Sprintf("failed to check if client is alive: %v", err))
+			return true, true
+		}
+		if !isAlive {
+			logging.Warn(fmt.Sprintf("Client %s is not alive, disconnecting...", pClient.conn.RemoteAddr().String()))
+			return true, true
+		}
+
+		// client is alive, continue
+		logging.Debug(fmt.Sprintf("Client %s is alive", pClient.conn.RemoteAddr().String()))
+		return true, false
+	}
+
+	// handle EOF (graceful or abrupt disconnection)
+	if errors.Is(err, io.EOF) {
+		logging.Warn(fmt.Sprintf("Client %s disconnected abruptly", pClient.conn.RemoteAddr().String()))
+
+		// some other error occurred
+	} else {
+		logging.Error(fmt.Sprintf("Error reading from client %s: %v", pClient.conn.RemoteAddr().String(), err))
+	}
+	return false, true
 }
 
 // startServer starts the TCP server.
@@ -71,37 +134,86 @@ func (cm *ClientManager) stopServer() error {
 	return nil
 }
 
-// addClient adds a new client to the client manager.
-func (cm *ClientManager) addClient(conn net.Conn, nickname string) error {
+// addClient adds a new unauthenticated client to the client manager.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) addClient(conn net.Conn) (*Client, error) {
 	// sanity check
 	if conn == nil {
-		return fmt.Errorf("connection is nil")
+		return nil, fmt.Errorf("connection is nil")
 	}
 
-	client := &Client{
+	pClient := &Client{
 		conn:     conn,
+		isAuth:   false,
+		msgBuff:  "",
 		lastTime: time.Now(),
 	}
 
-	cm.clients[nickname] = client
-	logging.Info(fmt.Sprintf("Client %s:%s has been added", conn.RemoteAddr().String(), nickname))
+	cm.pendClients[conn.RemoteAddr().String()] = pClient
+	logging.Info(fmt.Sprintf("Client %s has been added to pending", conn.RemoteAddr().String()))
+	return pClient, nil
+}
+
+// authenticateClient adds a new authenticated client to the client manager.
+// It returns the nickname of the client upon successful authentication.
+// It returns an error if the nickname is already taken.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) authenticateClient(pClient *Client, nickname string) error {
+	// sanity checks
+	if pClient == nil {
+		return custom_errors.ErrNilPointer
+	}
+
+	_, exists := cm.authClients[nickname]
+	if exists {
+		return fmt.Errorf("nickname is already taken")
+	}
+
+	// add the client to authenticated clients
+	pClient.nickname = nickname
+	pClient.isAuth = true
+	cm.authClients[nickname] = pClient
+
+	// remove the client from pending clients
+	delete(cm.pendClients, pClient.conn.RemoteAddr().String())
+	logging.Info(fmt.Sprintf("Client %s:%s has been authenticated", pClient.conn.RemoteAddr().String(), nickname))
 	return nil
 }
 
 // removeClient removes a client from the client manager.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
 func (cm *ClientManager) removeClient(nickname string) error {
 	// sanity check
 	if nickname == "" {
 		return fmt.Errorf("nickname is empty")
 	}
-	_, exists := cm.clients[nickname]
+	_, exists := cm.authClients[nickname]
 	if !exists {
 		return fmt.Errorf("client not found")
 	}
 
-	addr := cm.clients[nickname].conn.RemoteAddr().String()
-	delete(cm.clients, nickname)
+	addr := cm.authClients[nickname].conn.RemoteAddr().String()
+	delete(cm.authClients, nickname)
 	logging.Info(fmt.Sprintf("Client %s:%s has been removed", addr, nickname))
+	return nil
+}
+
+// removePendingClient removes a pending client from the client manager.
+func (cm *ClientManager) removePendingClient(addr string) error {
+	// sanity check
+	if addr == "" {
+		return fmt.Errorf("address is empty")
+	}
+	_, exists := cm.pendClients[addr]
+	if !exists {
+		return fmt.Errorf("client not found")
+	}
+
+	delete(cm.pendClients, addr)
+	logging.Info(fmt.Sprintf("Client %s has been removed", addr))
 	return nil
 }
 
@@ -112,7 +224,7 @@ func (cm *ClientManager) getClient(nickname string) (*Client, error) {
 		return nil, fmt.Errorf("nickname is empty")
 	}
 
-	client, exists := cm.clients[nickname]
+	client, exists := cm.authClients[nickname]
 	if !exists {
 		return nil, fmt.Errorf("client not found")
 	}
@@ -120,17 +232,44 @@ func (cm *ClientManager) getClient(nickname string) (*Client, error) {
 	return client, nil
 }
 
-// readValidMessage reads a message from the client.
-func (cm *ClientManager) readValidMessage(conn net.Conn) (*cmd_validator.IncomingMessage, error) {
-	// sanity check
-	if conn == nil {
-		return nil, fmt.Errorf("connection is nil")
+// readCompleteMessage reads a message from the client.
+func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.IncomingMessage, error) {
+	// sanity checks
+	if pClient == nil {
+		return nil, custom_errors.ErrNilPointer
+	}
+	if pClient.conn == nil {
+		return nil, custom_errors.ErrNilConn
 	}
 
-	// read the message
-	msg, err := cm.p_server.ReadMessage(conn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read message from client: %w", err)
+	// try to read until a whole message is received
+	fullMsgDeadline := time.Now().Add(protocol.CompleteMsgTimeout)
+	msg := ""
+	for {
+		// handle timeout
+		if time.Now().After(fullMsgDeadline) {
+			return nil, fmt.Errorf("client did not send whole message in time")
+		}
+
+		// check for any queued messages
+		if pClient.msgBuff != "" {
+			msg = pClient.msgBuff
+			pClient.msgBuff = ""
+		}
+
+		isComplete, recv, additional := getCompleteMsg(msg)
+		if isComplete {
+			// buffer any additional parts
+			pClient.msgBuff += additional
+			msg = recv
+			break
+		}
+
+		recv, err := cm.p_server.ReadMessage(pClient.conn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read message from client: %w", err)
+		}
+		msg += recv
 	}
 
 	// check if the message is a valid message
@@ -140,12 +279,12 @@ func (cm *ClientManager) readValidMessage(conn net.Conn) (*cmd_validator.Incomin
 	}
 
 	// validate the message for generic format
-	p_command, err := cmd_validator.GetCommand(parts)
+	pCommand, err := cmd_validator.GetCommand(parts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract valid command: %w", err)
 	}
 
-	return p_command, nil
+	return pCommand, nil
 }
 
 // sendMessage sends a message to the client.
@@ -171,21 +310,24 @@ func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
 }
 
 // checkAlive checks if the client is alive by sending a ping message and waiting for a pong message.
-func (cm *ClientManager) checkAlive(conn net.Conn) (bool, error) {
-	// sanity check
-	if conn == nil {
-		return false, fmt.Errorf("connection is nil")
+func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
+	// sanity checks
+	if pClient == nil {
+		return false, custom_errors.ErrNilPointer
+	}
+	if pClient.conn == nil {
+		return false, custom_errors.ErrNilConn
 	}
 
 	// send the ping message
 	parts := []string{protocol.CmdPing}
-	err := cm.sendMessage(conn, parts)
+	err := cm.sendMessage(pClient.conn, parts)
 	if err != nil {
 		return false, fmt.Errorf("failed to send ping message: %w", err)
 	}
 
 	// read the pong message
-	p_command, err := cm.readValidMessage(conn)
+	p_command, err := cm.readCompleteMessage(pClient)
 	if err != nil {
 		return false, fmt.Errorf("failed to read pong message: %w", err)
 	}
@@ -200,15 +342,18 @@ func (cm *ClientManager) checkAlive(conn net.Conn) (bool, error) {
 }
 
 // sendHandshakeReply sends a handshake reply to the client.
-func (cm *ClientManager) sendHandshakeReply(conn net.Conn) error {
-	// sanity check
-	if conn == nil {
-		return fmt.Errorf("connection is nil")
+func (cm *ClientManager) sendHandshakeReply(pClient *Client) error {
+	// sanity checks
+	if pClient == nil {
+		return custom_errors.ErrNilPointer
+	}
+	if pClient.conn == nil {
+		return custom_errors.ErrNilConn
 	}
 
 	// send the handshake reply
 	parts := []string{protocol.CmdHandshakeResp}
-	err := cm.sendMessage(conn, parts)
+	err := cm.sendMessage(pClient.conn, parts)
 	if err != nil {
 		return fmt.Errorf("failed to send handshake reply: %w", err)
 	}
@@ -218,102 +363,105 @@ func (cm *ClientManager) sendHandshakeReply(conn net.Conn) error {
 
 // validateConnection validates a new connection.
 // Returns the nickname of the client upon successful validation.
-func (cm *ClientManager) validateConnection(conn net.Conn) (string, error) {
-	// sanity check
-	if conn == nil {
-		return "", fmt.Errorf("connection is nil")
+func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
+	// sanity checks
+	if pClient == nil {
+		return "", custom_errors.ErrNilPointer
+	}
+	if pClient.conn == nil {
+		return "", custom_errors.ErrNilConn
 	}
 
 	// read the handshake message
-	p_command, err := cm.readValidMessage(conn)
+	pValidMsg, err := cm.readCompleteMessage(pClient)
 	if err != nil {
 		return "", fmt.Errorf("failed to read handshake message: %w", err)
 	}
-	err = cmd_validator.ValidateHandshake(p_command)
+	err = cmd_validator.ValidateHandshake(pValidMsg)
 	if err != nil {
 		return "", fmt.Errorf("invalid handshake message: %w", err)
 	}
+	nickname := pValidMsg.Params[protocol.NicknameIndex]
 
-	nickname := p_command.Parts[protocol.NicknameIndex]
-
-	err = cm.sendHandshakeReply(conn)
+	// send the handshake reply
+	err = cm.sendHandshakeReply(pClient)
 	if err != nil {
 		return "", fmt.Errorf("failed to send handshake reply: %w", err)
 	}
 
 	// await confirmation
-	p_command, err = cm.readValidMessage(conn)
+	pValidMsg, err = cm.readCompleteMessage(pClient)
 	if err != nil {
 		return "", fmt.Errorf("failed to read confirmation message: %w", err)
 	}
-	err = cmd_validator.ValidateHandshakeConfirmation(p_command)
+	err = cmd_validator.ValidateHandshakeConfirmation(pValidMsg)
 	if err != nil {
 		return "", fmt.Errorf("invalid confirmation message: %w", err)
 	}
+
+	// authenticate the client
+	cm.mutex.Lock()
+	err = cm.authenticateClient(pClient, nickname)
+	if err != nil {
+		return "", fmt.Errorf("failed to authenticate client - code error: %w", err)
+	}
+	cm.mutex.Unlock()
 
 	return nickname, nil
 }
 
 func (cm *ClientManager) handleConnection(conn net.Conn) {
 	// TODO HERE
-	logging.Debug(fmt.Sprintf("Handling connection from %s", conn.RemoteAddr().String()))
-
-	// validate the connection
-	nickname, err := cm.validateConnection(conn)
-	if err != nil {
-		logging.Error(fmt.Sprintf("failed to validate connection: %v", err))
-		return
-	}
+	logging.Debug(fmt.Sprintf("Handling connection from %s.", conn.RemoteAddr().String()))
 
 	// add the client
 	cm.mutex.Lock()
-	err = cm.addClient(conn, nickname)
+	pClient, err := cm.addClient(conn)
 	if err != nil {
 		logging.Error(fmt.Sprintf("failed to add client: %v", err))
 		return
 	}
 	cm.mutex.Unlock()
-	logging.Info(fmt.Sprintf("Client %s has connected", conn.RemoteAddr().String()))
+
+	// validate the connection
+	nickname, err := cm.validateConnection(pClient)
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to validate connection: %v", err))
+		// remove the client
+		cm.mutex.Lock()
+		err = cm.removePendingClient(conn.RemoteAddr().String())
+		if err != nil {
+			logging.Error(fmt.Sprintf("failed to remove pending client: %v", err))
+		}
+		cm.mutex.Unlock()
+
+		// close the connection
+		err = conn.Close()
+		if err != nil {
+			logging.Error(fmt.Sprintf("failed to close connection: %v", err))
+		}
+		logging.Info(fmt.Sprintf("Client %s was disconnected", conn.RemoteAddr().String()))
+		return
+	}
 
 	// infinite loop to handle messages
 	for {
 		// read message (busy waiting is prevented by the timeout)
-		p_command, err := cm.readValidMessage(conn)
+		pCommand, err := cm.readCompleteMessage(pClient)
 		if err != nil {
-			// TODO decompose handling
-			// handle timeout or disconnection
-			var netErr net.Error
-			if errors.As(err, &netErr) && netErr.Timeout() {
-				logging.Debug(fmt.Sprintf("Timeout for client %s, pinging...", conn.RemoteAddr().String()))
-				isAlive, err := cm.checkAlive(conn)
-				if err != nil {
-					logging.Error(fmt.Sprintf("failed to check if client is alive: %v", err))
-					break
-				}
-				if !isAlive {
-					logging.Warn(fmt.Sprintf("Client %s is not alive, disconnecting...", conn.RemoteAddr().String()))
-					break
-				}
-
-				// client is alive, continue
-				logging.Debug(fmt.Sprintf("Client %s is alive", conn.RemoteAddr().String()))
+			timeout, disconnect := cm.handleClientError(pClient, err)
+			// if the client is disconnected, break the loop
+			if disconnect {
+				break
+			}
+			if timeout {
 				continue
 			}
-
-			// handle EOF (graceful or abrupt disconnection)
-			if errors.Is(err, io.EOF) {
-				logging.Warn(fmt.Sprintf("Client %s disconnected abruptly", conn.RemoteAddr().String()))
-
-				// some other error occurred
-			} else {
-				logging.Error(fmt.Sprintf("Error reading from client %s: %v", conn.RemoteAddr().String(), err))
-			}
-			break
 		}
 
 		// PLACEHOLDER: now just print the message
-		logging.Debug(fmt.Sprintf("Received message from %s: %s", conn.RemoteAddr().String(), (*p_command).ToString()))
-		if (*p_command).Command == protocol.CmdLeave {
+		logging.Debug(fmt.Sprintf("Received message from %s: %s", conn.RemoteAddr().String(), (*pCommand).ToString()))
+		if (*pCommand).Command == protocol.CmdLeave {
 			err = cm.sendMessage(conn, []string{protocol.CmdLeaveAck})
 			if err != nil {
 				logging.Error(fmt.Sprintf("failed to send leave ack: %v", err))
@@ -361,24 +509,25 @@ func (cm *ClientManager) ManageServer(ctx context.Context) error {
 			// try to accept a new connection
 			conn, err := cm.p_server.AcceptConnection()
 			if err != nil {
-				// check if the error is timeout (will be returned explicitly)
+				// if the error is timeout (will be returned explicitly)
 				var nErr net.Error
 				if errors.As(err, &nErr) && nErr.Timeout() {
 					continue
 				}
 
-				// error is probably unrecoverable
+				// else error is probably unrecoverable
 				return fmt.Errorf("failed to accept connection: %w", err)
 			}
 
 			// handle each connection in a separate goroutine
 			go func() {
-				// safety measure to recover from panics (exceptions)
-				defer func() {
-					if r := recover(); r != nil {
-						logging.Error(fmt.Sprintf("Recovered from panic in connection handler: %v", r))
-					}
-				}()
+				// TODO: Uncomment
+				// // safety measure to recover from panics (exceptions)
+				// defer func() {
+				// 	if r := recover(); r != nil {
+				// 		logging.Error(fmt.Sprintf("Recovered from panic in connection handler: %v", r))
+				// 	}
+				// }()
 
 				cm.handleConnection(conn) // NOTE: feasible for hundreds of clients; for thousands of clients, a worker pool would be used
 			}()

@@ -7,7 +7,7 @@ import socket
 import threading
 import time
 import re
-from typing import Any, List
+from typing import Any, List, Tuple
 from util.generic_client import GenericClient
 from const.server_communication import *
 from util.loggers import get_logger
@@ -29,10 +29,40 @@ class ServerResponse:
     """Parameters of the response from the server."""
 
 
+@dataclass
+class ConnectionStatus:
+    """
+    This class represents the status of the connection.
+    """
+
+    NOT_RUNNING = 0
+    """The connection is not running."""
+    CONNECTING = 1
+    """The connection is being established."""
+    CONNECTED = 2
+    """The connection is established."""
+    CONNECTED_IN_PROGRESS = 3
+    """The connection is in progress."""
+    FAILED = 4
+    """The connection failed."""
+    FAIL_IN_PROGRESS = 5
+    """The connection is failing."""
+    DISCONNECTING = 6
+    """The connection is being disconnected."""
+    DISCONNECTED = 7
+    """The connection is disconnected."""
+
+    status: int = NOT_RUNNING
+    """The status of the connection."""
+
+
 class ConnectionManager:
     """
     This class is responsible for managing the connection between the client and the server for the game Inverse Battleships.
     """
+
+    __WHOLE_MSG_TIMEOUT = 5
+    """The timeout for receiving a whole message from the server."""
 
     @staticmethod
     def __to_net_message(parts: List[str]) -> str:
@@ -152,6 +182,7 @@ class ConnectionManager:
         self.__client = GenericClient(server_ip, server_port)
         self.__last_time_reply = None
         self.__lock = threading.RLock()
+        self.__pending_messages = ""
 
 
     @property
@@ -319,13 +350,14 @@ class ConnectionManager:
             expected_resp = __class__.__to_net_message(expected_parts)
 
             try:
-                if self.__client.receive_expected_message(expected_resp):
-                    self.__last_time_reply = time.time()
+                recv_message = self.__client.receive_message()
+                if recv_message == expected_resp:
                     return True
+
                 else:
                     logger.debug(f"Invalid message received. Expected: {__class__.__escape_net_message(expected_resp)}")
-                    logger.critical(f"Received unexpected response from the server at {self.server_address}")
-                    # logger.debug(f"Received: {__class__.__escape_net_message(self.__client.last_received_message)}")
+                    logger.debug(f"Received: {__class__.__escape_net_message(recv_message)}")
+                    logger.critical("Received unexpected response from the server.")
                     return False
             
             except Exception as e:
@@ -412,6 +444,28 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending 'DEAL' message to the server at {self.server_address}: {e}")
         
         return True
+    
+
+    def __get_complete_message(self, message: str) -> Tuple[bool, str, str]:
+        """
+        Checks if the message is complete and returns the complete message and the tail of the message.
+
+        :param message: The message.
+        :type message: str
+        :return: True if the message is complete, the complete message and the tail of the message.
+        :rtype: Tuple[bool, str, str]
+        """
+
+        i_end = message.find(MSG_TERMINATOR)
+        if i_end == -1:
+            return False, message, ""
+        
+        if i_end == len(message) - 1:
+            return True, message[:i_end+1], ""      # include the terminator
+        
+        else:
+            logger.warning(f"Received message with multiple parts: {__class__.__escape_net_message(message)}")
+            return True, message[:i_end+1], message[(i_end + 1):]       # include the terminator
         
 
     def receive_message(self) -> ServerResponse:
@@ -423,27 +477,39 @@ class ConnectionManager:
         :rtype: ServerResponse
         """
 
-        with self.__lock:
-            if not self.is_running:
-                raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
-        
-            try:
-                message = self.__client.receive_message()
-            except TimeoutError:
-                raise TimeoutError()
-            except Exception as e:
-                raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
-        
-        self.__last_time_reply = time.time()
-        logger.debug(f"Received message from the server at {self.server_address}: {__class__.__escape_net_message(message)}")
-        
-        i_end = message.find(MSG_TERMINATOR)
-        if i_end == -1:
-            raise ValueError(f"Invalid message received from the server at {self.server_address}: no message terminator")
-        if i_end != len(message) - 1:
-            logger.warning(f"Invalid message received from the server at {self.server_address}: message terminator not at the end")
-            message = message[:i_end]
+        message = ""
+        time_start = time.time()
+        while (True):
+            if time.time() - time_start > __class__.__WHOLE_MSG_TIMEOUT:
+                raise TimeoutError("Timeout while receiving whole message from the server")
+            
+            # handle any pending messages
+            if self.__pending_messages:
+                message += self.__pending_messages
+                self.__pending_messages = ""
 
+            # queue up any tail messages
+            is_complete, parsed_msg, tail = self.__get_complete_message(message)
+            if is_complete:
+                message = parsed_msg
+                self.__pending_messages = tail
+                break
+
+            # message is not complete, receive more data
+            with self.__lock:
+                if not self.is_running:
+                    raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
+            
+                try:
+                    message += self.__client.receive_message()
+                except TimeoutError:
+                    raise TimeoutError()
+                except Exception as e:
+                    raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
+        
+            self.__last_time_reply = time.time()
+        
+        logger.debug(f"Received complete message from the server: \"{__class__.__escape_net_message(message)}\"")
         parts = __class__.__from_net_message(message)
         res = None
         try:

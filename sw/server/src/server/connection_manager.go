@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"inverse-battleships-server/logging"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -24,6 +25,22 @@ const connectionTimeout = 100 * time.Millisecond
 type Server struct {
 	Address    string        // address the server listens on (e.g., "127.0.0.1:8080")
 	p_listener *net.Listener // TCP listener
+}
+
+// escapeSpecialSymbols escapes special symbols in a string.
+func escapeSpecialSymbols(input string) string {
+	// Define a replacer to handle escape sequences
+	replacer := strings.NewReplacer(
+		"\\", "\\\\", // backslash
+		"\n", "\\n", // newline
+		"\t", "\\t", // tab
+		"\r", "\\r", // carriage return
+		// "\"", "\\\"", // double quote
+		// "'", "\\'", // single quote
+	)
+
+	// Replace all special symbols
+	return replacer.Replace(input)
 }
 
 // NewServer initializes and returns a new Server instance.
@@ -131,7 +148,7 @@ func (s *Server) ReadMessage(conn net.Conn) (string, error) {
 		return "", fmt.Errorf("failed to read message: %w", err)
 	}
 
-	logging.Debug(fmt.Sprintf("Received message: \"%s\"", string(buffer[:n])))
+	logging.Debug(fmt.Sprintf("Received message: \"%s\" from %s", escapeSpecialSymbols(string(buffer[:n])), conn.RemoteAddr().String()))
 	return string(buffer[:n]), nil
 }
 
@@ -154,6 +171,6 @@ func (s *Server) SendMessage(conn net.Conn, message string) error {
 		return fmt.Errorf("failed to send message: %w", err)
 	}
 
-	logging.Debug(fmt.Sprintf("Sent message: \"%s\"", message))
+	logging.Debug(fmt.Sprintf("Sent message: \"%s\" to %s", escapeSpecialSymbols(message), conn.RemoteAddr().String()))
 	return nil
 }

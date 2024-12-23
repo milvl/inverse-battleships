@@ -62,7 +62,7 @@ func FromNetMessage(msg string) ([]string, error) {
 		}
 
 		// check for escape character
-		if !doEscape && char == '\\' {
+		if !doEscape && string(char) == protocol.MsgEscape {
 			doEscape = true
 			continue
 		}

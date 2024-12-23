@@ -11,7 +11,7 @@ import threading
 import time
 from util.generic_client import GenericClient
 from const.server_communication import *
-from game.connection_manager import ConnectionManager, ServerResponse
+from game.connection_manager import ConnectionManager, ConnectionStatus, ServerResponse
 from const.paths import DEFAULT_USER_CONFIG_PATH
 from const.loggers import MAIN_LOGGER_NAME
 from game.ib_game_state import IBGameState
@@ -160,7 +160,10 @@ class IBGame:
         
 
     @staticmethod
-    def __establish_connection(connection_manager: ConnectionManager, player_name: str, ready_event: threading.Event, failed_event: threading.Event):
+    def __establish_connection(connection_manager: ConnectionManager, 
+                               player_name: str, 
+                               connection_status: ConnectionStatus,
+                               lock: threading.Lock):
         """
         Establishes the connection to the server.
 
@@ -168,11 +171,14 @@ class IBGame:
         :type connection_manager: ConnectionManager
         :param player_name: The name of the player.
         :type player_name: str
-        :param ready_event: The event that signals that the connection is ready.
-        :type ready_event: threading.Event
-        :param failed_event: The event that signals that the connection has failed.
-        :type failed_event: threading.Event
+        :param connection_status: The status of the connection.
+        :type connection_status: threading.Event
+        :param lock: The lock for the thread.
+        :type lock: threading.Lock
         """
+
+        with lock:
+            connection_status.status = ConnectionStatus.CONNECTING
 
         try:
             tmp_logger.debug('Thread: Attempting to connect to the server...')
@@ -183,28 +189,32 @@ class IBGame:
             res = connection_manager.login(player_name)
             if not res:
                 raise ConnectionError('Failed to login to the server')
-            
-            ready_event.set()
-            failed_event.clear()
 
         except Exception as e:
             tmp_logger.error(f'Thread: Connection attempt failed: {e}')
             logger.error(f'Connection attempt failed: {e}')
-            failed_event.set()
+            with lock:
+                connection_status.status = ConnectionStatus.FAILED
+
+        # set the connection status
+        with lock:
+            connection_status.status = ConnectionStatus.CONNECTED
 
 
     @staticmethod
-    def __handle_server_communication_connection_menu(connection_manager: ConnectionManager, stop: threading.Event):
+    def __handle_server_communication_connection_menu(connection_manager: ConnectionManager, stop: threading.Event, exit: threading.Event):
         """
         Handles the server communication in the CONNECTION_MENU state.
 
         :param connection_manager: The connection manager.
         :type connection_manager: ConnectionManager
-        :param stop: The event that signals that the game should exit.
+        :param stop: The event that signals that the connection should stop.
         :type stop: threading.Event
+        :param exit: The event that signals that the connection should exit.
+        :type exit: threading.Event
         """
 
-        while not stop.is_set():
+        while not stop.is_set() and not exit.is_set():
             # keep alive
             if time.time() - connection_manager.last_time_reply > 5:        # TODO MAGIC NUMBER
                 logger.debug('Connection timeout, pinging the server...')
@@ -280,6 +290,11 @@ class IBGame:
         self.server_port = None
 
         self.__connection_manager = None
+        self.__lock = threading.Lock()
+        self.__connection_status = ConnectionStatus
+        self.__connection_thread = None
+        self.__stop_connection = threading.Event()
+        self.__stop_connection.clear()
         self.__exit = threading.Event()
         self.__exit.clear()
 
@@ -502,19 +517,19 @@ class IBGame:
         """
 
         # handle connection attempt failed
-        if self.__connection_failed_event and self.__connection_failed_event.is_set():
+        if self.__connection_status.status == ConnectionStatus.FAILED:
             if res['submit'] or res['escape']:
                 logger.debug('User requested to go back to the main menu from failed connection')
                 logger.info('Changing the state to MAIN_MENU')
                 self.game_state.state = IBGameState.MAIN_MENU
-                self.context = None
-                self.__connection_failed_event = None
                 self.__connection_manager = None
+                self.__connection_thread = None
+                self.context = None
                 self.update_result.update_areas.append(True)
                 return
         
         # let the connection attempt finish
-        elif self.__connection_ready_event or self.__connection_failed_event:
+        elif self.__connection_status.status == ConnectionStatus.CONNECTING:
             return
 
 
@@ -543,9 +558,14 @@ class IBGame:
         
         elif res['escape']:
             logger.info('Changing the state to MAIN_MENU')
-            self.__exit.set()
+            self.__stop_connection.set()
+            self.__connection_thread.join()
             self.__connection_manager.stop()
             self.__connection_manager = None
+            self.__stop_connection.clear()
+            self.__connection_thread = None
+            with self.__lock:
+                self.__connection_status.status = ConnectionStatus.NOT_RUNNING
             self.game_state.state = IBGameState.MAIN_MENU
             self.context = None
             self.update_result.update_areas.append(True)
@@ -658,51 +678,53 @@ class IBGame:
     def __update_connection_menu(self, events: PyGameEvents):
         # TODO DOC
 
-        # if no context was drawn => no connection attempt was made yet so try to connect
-        if not self.context and not self.__connection_manager:
-            self.context = InfoScreen(self.presentation_surface, 
-                                      self.assets, 
-                                      self.assets['strings']['attempt_connection_msg'])
-            self.__connection_manager = ConnectionManager(self.server_ip, self.server_port)
-            self.__connection_ready_event = threading.Event()
-            self.__connection_failed_event = threading.Event()
-            self.__connection_thread = threading.Thread(target=__class__.__establish_connection, 
-                                                        args=(self.__connection_manager, 
-                                                             self.player_name, 
-                                                             self.__connection_ready_event, 
-                                                             self.__connection_failed_event))
+        with self.__lock:
+            if self.__connection_status.status == ConnectionStatus.NOT_RUNNING:
+                tmp_logger.debug('Establishing the connection...')
+                self.context = InfoScreen(self.presentation_surface, 
+                                          self.assets, 
+                                          self.assets['strings']['attempt_connection_msg']
+                                         )
+                self.__connection_manager = ConnectionManager(self.server_ip, self.server_port)
+                self.__connection_thread = threading.Thread(target=__class__.__establish_connection, 
+                                                            args=(self.__connection_manager, 
+                                                                  self.player_name, 
+                                                                  self.__connection_status,
+                                                                  self.__lock))
+                self.__connection_thread.start()
 
-            self.__connection_thread.start()
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
+                # update the graphics
+                self.context.redraw()
+                self.update_result.update_areas.append(True)
         
-        # connection attempt was successful => show the lobby selection menu
-        if self.__connection_thread and self.__connection_ready_event and self.__connection_ready_event.is_set():
-            self.context = SelectMenu(self.presentation_surface, 
-                                      self.assets, 
-                                      None,
-                                      [MenuOption(self.assets['strings']['connection_menu_lobby_select_label']), MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])])
-            self.__connection_thread.join()
-            self.__connection_ready_event = None
-            self.__connection_failed_event = None
-
-            # define connection thread to handle server requests
-            self.__connection_thread = threading.Thread(target=__class__.__handle_server_communication_connection_menu, 
-                                                        args=(self.__connection_manager,
-                                                              self.__exit))
-            self.__connection_thread.start()
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
-        
-        # connection attempt failed
-        elif self.__connection_thread and self.__connection_failed_event and self.__connection_failed_event.is_set():
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
-            self.__connection_thread.join()
-            self.__connection_thread = None
-            self.__connection_ready_event = None
-            self.context.redraw()
-            self.update_result.update_areas.append(True)
-
+            elif self.__connection_status.status == ConnectionStatus.CONNECTED:
+                logger.debug('Connection established')
+                self.__connection_thread.join()
+                self.context = SelectMenu(self.presentation_surface,
+                                          self.assets,
+                                          None,
+                                          [
+                                              MenuOption(self.assets['strings']['connection_menu_lobby_select_label']),
+                                              MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])
+                                          ]
+                                         )
+                self.__connection_thread = threading.Thread(target=__class__.__handle_server_communication_connection_menu,
+                                                            args=(self.__connection_manager, self.__stop_connection, self.__exit))
+                self.__connection_thread.start()
+                self.__connection_status.status = ConnectionStatus.CONNECTED_IN_PROGRESS
+                self.context.redraw()
+                self.update_result.update_areas.append(True)
+                pass
+            
+            elif self.__connection_status.status == ConnectionStatus.FAILED:
+                logger.debug('Connection attempt failed')
+                self.__connection_thread.join()
+                self.context = InfoScreen(self.presentation_surface, 
+                                          self.assets, 
+                                          self.assets['strings']['connection_failed_msg'])
+                self.update_result.update_areas.append(True)
+                self.context.redraw()
+                pass
         
         if events.event_videoresize:
             self.__handle_context_resize() 

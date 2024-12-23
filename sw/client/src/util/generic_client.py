@@ -161,39 +161,39 @@ class GenericClient:
             raise ConnectionError(f"Error sending message to the server at {self.server_address}: {e}")
 
 
-    def receive_expected_message(self, expected_message: str) -> bool:
-        """
-        Receives a message from the server and returns it if it matches the expected message.
+    # def receive_expected_message(self, expected_message: str) -> bool:
+    #     """
+    #     Receives a message from the server and returns it if it matches the expected message.
 
-        :param expected_message: The expected message.
-        :type expected_message: str
-        :return: True if the message matches the expected message, false otherwise.
-        :rtype: bool
-        :raises ConnectionError: If an error occurs while receiving the message
-        """
+    #     :param expected_message: The expected message.
+    #     :type expected_message: str
+    #     :return: True if the message matches the expected message, false otherwise.
+    #     :rtype: bool
+    #     :raises ConnectionError: If an error occurs while receiving the message
+    #     """
 
-        message = ""
-        if not self.is_running:
-            raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
+    #     message = ""
+    #     if not self.is_running:
+    #         raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
         
-        try:
-            expected_size = len(expected_message)
-            data = b""
-            while len(data) < expected_size:
-                chunk = self.__server_socket.recv(expected_size - len(data))
-                if not chunk:  # connection closed
-                    break
-                data += chunk
-            message = data.decode()
+    #     try:
+    #         expected_size = len(expected_message)
+    #         data = b""
+    #         while len(data) < expected_size:
+    #             chunk = self.__server_socket.recv(expected_size - len(data))
+    #             if not chunk:  # connection closed
+    #                 break
+    #             data += chunk
+    #         message = data.decode()
 
-        except socket.error as e:
-            raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")    
+    #     except socket.error as e:
+    #         raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")    
             
-        if message == expected_message:
-            return True
-        else:
-            logger.error(f"Unexpected message from the server at {self.server_address}: \"{message}\", expected \"{expected_message}\"")
-            return False
+    #     if message == expected_message:
+    #         return True
+    #     else:
+    #         logger.error(f"Unexpected message from the server at {self.server_address}: \"{message}\", expected \"{expected_message}\"")
+    #         return False
     
 
     def receive_message(self) -> str:
@@ -222,7 +222,7 @@ class GenericClient:
         # will not happen
         # if not data:
         #     raise ValueError(f"Error receiving message from the server at {self.server_address}: no data received")
-                
+
         message = data.decode()
         return message
     

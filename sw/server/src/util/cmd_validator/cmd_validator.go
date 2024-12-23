@@ -2,6 +2,7 @@ package cmd_validator
 
 import (
 	"fmt"
+	"inverse-battleships-server/const/custom_errors"
 	"inverse-battleships-server/const/protocol"
 	"unicode"
 )
@@ -13,12 +14,12 @@ const (
 // IncomingMessage represents a message received from a client.
 type IncomingMessage struct {
 	Command string
-	Parts   []string
+	Params  []string
 }
 
 // ToString returns a string representation of the message.
 func (p_im *IncomingMessage) ToString() string {
-	return fmt.Sprintf("Command: %s, Parts: %v", p_im.Command, p_im.Parts)
+	return fmt.Sprintf("Command: %s, Params: %v", p_im.Command, p_im.Params)
 }
 
 // GetCommand validates a client response.
@@ -67,36 +68,36 @@ func GetCommand(parts []string) (*IncomingMessage, error) {
 	}
 
 	// return only real parts (use slicing)
-	return &IncomingMessage{Command: selectedCmd, Parts: parts[protocol.MinPartsCount:]}, nil
+	return &IncomingMessage{Command: selectedCmd, Params: parts[protocol.MinPartsCount:]}, nil
 }
 
-func validateCommand(p_im *IncomingMessage, expectedCmd string) error {
+func validateCommand(pIm *IncomingMessage, expectedCmd string) error {
 	// sanity check
-	if p_im == nil {
-		return fmt.Errorf("incoming message is nil")
+	if pIm == nil {
+		return custom_errors.ErrNilPointer
 	}
 	if expectedCmd == "" {
 		return fmt.Errorf("expected command is empty")
 	}
 
 	// check if the message is a valid handshake request
-	if (*p_im).Command != expectedCmd {
-		return fmt.Errorf("command is invalid - expected %s, got %s", expectedCmd, (*p_im).Command)
+	if (*pIm).Command != expectedCmd {
+		return fmt.Errorf("command is invalid - expected %s, got %s", expectedCmd, (*pIm).Command)
 	}
 
 	return nil
 }
 
 // ValidateHandshake validates a handshake request.
-func ValidateHandshake(p_im *IncomingMessage) error {
+func ValidateHandshake(pIm *IncomingMessage) error {
 	// sanity check
-	err := validateCommand(p_im, protocol.CmdHandshakeReqv)
+	err := validateCommand(pIm, protocol.CmdHandshakeReqv)
 	if err != nil {
 		return err
 	}
 
 	// check if the nickname is valid
-	nickname := (*p_im).Parts[protocol.NicknameIndex]
+	nickname := (*pIm).Params[protocol.NicknameIndex]
 	if nickname == "" {
 		return fmt.Errorf("nickname is empty")
 	}
@@ -113,9 +114,9 @@ func ValidateHandshake(p_im *IncomingMessage) error {
 }
 
 // ValidatePing validates a ping message.
-func ValidatePong(p_im *IncomingMessage) error {
+func ValidatePong(pIm *IncomingMessage) error {
 	// sanity check
-	err := validateCommand(p_im, protocol.CmdPong)
+	err := validateCommand(pIm, protocol.CmdPong)
 	if err != nil {
 		return err
 	}
@@ -124,14 +125,14 @@ func ValidatePong(p_im *IncomingMessage) error {
 }
 
 // ValidateHandshakeConfirmation validates a handshake confirmation.
-func ValidateHandshakeConfirmation(p_im *IncomingMessage) error {
+func ValidateHandshakeConfirmation(pIm *IncomingMessage) error {
 	// sanity check
-	if p_im == nil {
-		return fmt.Errorf("incoming message is nil")
+	if pIm == nil {
+		return custom_errors.ErrNilPointer
 	}
 
 	// check if the message is a valid handshake request
-	if (*p_im).Command != protocol.CmdHandshakeAck {
+	if (*pIm).Command != protocol.CmdHandshakeAck {
 		return fmt.Errorf("handshake request is invalid")
 	}
 
