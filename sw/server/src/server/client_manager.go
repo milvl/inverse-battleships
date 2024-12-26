@@ -35,7 +35,7 @@ type Lobby struct {
 
 // Server represents a TCP server.
 type ClientManager struct {
-	p_server      *Server            // server pointer
+	pServer       *Server            // server pointer
 	pendClients   map[string]*Client // map of pending clients with their addresses as keys
 	authClients   map[string]*Client // map of authenticated clients with their nicknames as keys
 	lobbies       map[string]*Lobby  // manage lobbies
@@ -47,7 +47,7 @@ type ClientManager struct {
 // It requires a server pointer as a parameter.
 func NewClientManager(server *Server) *ClientManager {
 	return &ClientManager{
-		p_server:      server,
+		pServer:       server,
 		authClients:   make(map[string]*Client),
 		lobbies:       make(map[string]*Lobby),
 		playerToLobby: make(map[string]*Lobby),
@@ -82,22 +82,9 @@ func getCompleteMsg(msg string) (bool, string, string) {
 // It returns two booleans: one indicating if the error was caused by a timeout,
 // and the other indicating if the error means the client should be disconnected.
 func (cm *ClientManager) handleClientError(pClient *Client, err error) (bool, bool) {
-	// handle timeout or disconnection
+	// handle i/o timeout
 	var netErr net.Error
 	if errors.As(err, &netErr) && netErr.Timeout() {
-		logging.Debug(fmt.Sprintf("Timeout for client %s, pinging...", pClient.conn.RemoteAddr().String()))
-		isAlive, inErr := cm.checkAlive(pClient)
-		if inErr != nil {
-			logging.Error(fmt.Sprintf("failed to check if client is alive: %v", err))
-			return true, true
-		}
-		if !isAlive {
-			logging.Warn(fmt.Sprintf("Client %s is not alive, disconnecting...", pClient.conn.RemoteAddr().String()))
-			return true, true
-		}
-
-		// client is alive, continue
-		logging.Debug(fmt.Sprintf("Client %s is alive", pClient.conn.RemoteAddr().String()))
 		return true, false
 	}
 
@@ -115,22 +102,22 @@ func (cm *ClientManager) handleClientError(pClient *Client, err error) (bool, bo
 // startServer starts the TCP server.
 func (cm *ClientManager) startServer() error {
 	// sanity check
-	if cm.p_server == nil {
+	if cm.pServer == nil {
 		return fmt.Errorf("server is nil")
 	}
 
-	cm.p_server.Start()
+	cm.pServer.Start()
 	return nil
 }
 
 // stopServer stops the TCP server.
 func (cm *ClientManager) stopServer() error {
 	// sanity check
-	if cm.p_server == nil {
+	if cm.pServer == nil {
 		return fmt.Errorf("server is nil")
 	}
 
-	cm.p_server.Stop()
+	cm.pServer.Stop()
 	return nil
 }
 
@@ -265,11 +252,12 @@ func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.In
 			break
 		}
 
-		recv, err := cm.p_server.ReadMessage(pClient.conn)
+		recv, err := cm.pServer.ReadMessage(pClient.conn)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read message from client: %w", err)
 		}
 		msg += recv
+		pClient.lastTime = time.Now()
 	}
 
 	// check if the message is a valid message
@@ -301,7 +289,7 @@ func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
 	}
 
 	// send the message
-	err = cm.p_server.SendMessage(conn, msg)
+	err = cm.pServer.SendMessage(conn, msg)
 	if err != nil {
 		return fmt.Errorf("failed to send message: %w", err)
 	}
@@ -446,6 +434,19 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 
 	// infinite loop to handle messages
 	for {
+		// keep alive
+		if time.Since(pClient.lastTime) > protocol.KeepAliveTimeout {
+			alive, err := cm.checkAlive(pClient)
+			if err != nil {
+				logging.Error(fmt.Sprintf("failed to check if client is alive: %v", err))
+				break
+			}
+			if !alive {
+				logging.Info(fmt.Sprintf("Client %s is not alive", conn.RemoteAddr().String()))
+				break
+			}
+		}
+
 		// read message (busy waiting is prevented by the timeout)
 		pCommand, err := cm.readCompleteMessage(pClient)
 		if err != nil {
@@ -507,7 +508,7 @@ func (cm *ClientManager) ManageServer(ctx context.Context) error {
 		// server logic
 		default:
 			// try to accept a new connection
-			conn, err := cm.p_server.AcceptConnection()
+			conn, err := cm.pServer.AcceptConnection()
 			if err != nil {
 				// if the error is timeout (will be returned explicitly)
 				var nErr net.Error

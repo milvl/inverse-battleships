@@ -29,6 +29,27 @@ class ServerResponse:
     """Parameters of the response from the server."""
 
 
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the server response.
+
+        :return: The string representation of the server response.
+        :rtype: str
+        """
+
+        res = ""
+        res += f"{MSG_HEADER}"
+        res += f"{MSG_DELIMITER}"
+        res += f"{self.command}"
+
+        if self.params:
+            res += f"{MSG_DELIMITER}"
+            res += f"{MSG_DELIMITER.join([str(param) for param in self.params])}"
+        res += f"{MSG_TERMINATOR}"
+
+        return res
+
+
 @dataclass
 class ConnectionStatus:
     """
@@ -75,11 +96,13 @@ class ConnectionManager:
         :rtype: str
         """
 
+        if not parts:
+            return f"ERR;NONE{MSG_TERMINATOR}"
+
         for i, part in enumerate(parts):
             if MSG_TERMINATOR in part:
                 raise ValueError(f"Message part {i}: '{part}' contains the message terminator '{MSG_TERMINATOR}'")
             parts[i] = part.replace(MSG_DELIMITER, f"\\{MSG_DELIMITER}")
-
         
         return f"{MSG_HEADER}{MSG_DELIMITER}{MSG_DELIMITER.join(parts)}{MSG_TERMINATOR}"
     
@@ -163,7 +186,9 @@ class ConnectionManager:
         if command in [CMD_PING, CMD_PONG, CMD_ACKW_VALID, CMD_CONFIRM_LEAVE, 
                        CMD_LOBBIES, CMD_RES_MISS, CMD_RES_ACKW, CMD_GAME_LOSE, CMD_GAME_WIN, 
                        CMD_WAIT, CMD_CONTINUE, CMD_TKO]:
-            return ServerResponse(command, None)
+            return ServerResponse(command, parts[CMD_INDEX + 1:])
+        
+        # TODO parse various types
         
         
         raise ValueError(f"Invalid command received: '{command}'")
@@ -327,7 +352,7 @@ class ConnectionManager:
     
             try:
                 self.__client.send_message(message)
-                logger.debug(f"Sent message to the server at {self.server_address}: {__class__.__escape_net_message(message)}")
+                logger.debug(f"Sent message to the server at {self.server_address}: '{__class__.__escape_net_message(message)}'")
             
             except ConnectionError as e:
                 raise e
@@ -347,21 +372,21 @@ class ConnectionManager:
             if not self.is_running:
                 raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
             
-            expected_resp = __class__.__to_net_message(expected_parts)
+        expected_resp = __class__.__to_net_message(expected_parts)
+        
+        try:
+            recv_message = str(self.receive_message())      # already uses lock  # TODO this raises
+            if recv_message == expected_resp:
+                return True
 
-            try:
-                recv_message = self.__client.receive_message()
-                if recv_message == expected_resp:
-                    return True
-
-                else:
-                    logger.debug(f"Invalid message received. Expected: {__class__.__escape_net_message(expected_resp)}")
-                    logger.debug(f"Received: {__class__.__escape_net_message(recv_message)}")
-                    logger.critical("Received unexpected response from the server.")
-                    return False
-            
-            except Exception as e:
-                raise e
+            else:
+                logger.debug(f"Invalid message received. Expected: {__class__.__escape_net_message(expected_resp)}")
+                logger.debug(f"Received: {__class__.__escape_net_message(recv_message)}")
+                logger.critical("Received unexpected response from the server.")
+                return False
+        
+        except Exception as e:
+            raise e
         
     
     def ping(self) -> bool:
@@ -509,7 +534,7 @@ class ConnectionManager:
         
             self.__last_time_reply = time.time()
         
-        logger.debug(f"Received complete message from the server: \"{__class__.__escape_net_message(message)}\"")
+        logger.debug(f"Received complete message from the server: '{__class__.__escape_net_message(message)}'")
         parts = __class__.__from_net_message(message)
         res = None
         try:
@@ -532,12 +557,12 @@ class ConnectionManager:
 
         with self.__lock:
             if not self.is_running:
-                raise ConnectionError(f"Cannot login to the server at {self.server_address}: not connected")
+                raise ConnectionError(f"Cannot login to the server at {self.server_address} - not connected")
     
             try:
                 self.__send_cmd([CMD_TRY_VALID, username])
             except Exception as e:
-                logger.error(f"Error sending login message to the server at {self.server_address}: {e}")
+                logger.error(f"Error sending login message to the server at {self.server_address} - {e}")
                 
             try:
                 res = self.__receive_expected_response([CMD_ACKW_VALID])
@@ -545,12 +570,12 @@ class ConnectionManager:
                     logger.error(f"Error logging in to the server at {self.server_address} - invalid server response")
                     return False
             except Exception as e:
-                raise ConnectionError(f"Error receiving 'SHAKE' message from the server at {self.server_address}: {e}")
+                raise ConnectionError(f"Error receiving 'SHAKE' message from the server at {self.server_address} - {e}")
 
             try:    
                 self.__send_cmd([CMD_CONFIRM_VALID])
             except Exception as e:
-                raise ConnectionError(f"Error sending 'DEAL' message to the server at {self.server_address}: {e}")
+                raise ConnectionError(f"Error sending 'DEAL' message to the server at {self.server_address} - {e}")
             
         return True
         

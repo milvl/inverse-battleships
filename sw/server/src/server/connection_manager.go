@@ -15,8 +15,8 @@ const connectionType = "tcp"
 // bufferSize represents the size of the buffer used to read messages
 const bufferSize = 1024 // 1024 bytes == 1024 characters == 1KiB
 
-// timeout represents the time to wait for a connection
-const timeout = 5 * time.Second
+// timeout represents the time for reading a message
+const timeout = 1 * time.Second
 
 // connectionTimeout represents the time to wait for a connection
 const connectionTimeout = 100 * time.Millisecond

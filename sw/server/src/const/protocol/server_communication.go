@@ -44,3 +44,6 @@ const (
 
 // CompleteMsgTimeout is the time to wait for a valid message.
 const CompleteMsgTimeout = 5 * time.Second
+
+// KeepAliveTimeout is the time to wait for a keep-alive message.
+const KeepAliveTimeout = 5 * time.Second

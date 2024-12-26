@@ -191,7 +191,6 @@ class IBGame:
                 raise ConnectionError('Failed to login to the server')
 
         except Exception as e:
-            tmp_logger.error(f'Thread: Connection attempt failed: {e}')
             logger.error(f'Connection attempt failed: {e}')
             with lock:
                 connection_status.status = ConnectionStatus.FAILED
@@ -216,7 +215,7 @@ class IBGame:
 
         while not stop.is_set() and not exit.is_set():
             # keep alive
-            if time.time() - connection_manager.last_time_reply > 5:        # TODO MAGIC NUMBER
+            if time.time() - connection_manager.last_time_reply > 10:        # TODO MAGIC NUMBER
                 logger.debug('Connection timeout, pinging the server...')
                 try:
                     connection_manager.ping()
