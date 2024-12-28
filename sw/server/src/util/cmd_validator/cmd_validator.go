@@ -29,7 +29,7 @@ func GetCommand(parts []string) (*IncomingMessage, error) {
 		return nil, fmt.Errorf("parts is nil")
 	}
 
-	// check if the message is a valid handshake request
+	// check if the message is a valid response
 	if len(parts) < protocol.MinPartsCount {
 		return nil, fmt.Errorf("invalid format - not enough parts")
 	}
@@ -53,6 +53,8 @@ func GetCommand(parts []string) (*IncomingMessage, error) {
 	case protocol.CmdPing:
 		fallthrough
 	case protocol.CmdPong:
+		fallthrough
+	case protocol.CmdLobbies:
 		if len(parts) < protocol.MinPartsCount {
 			return nil, fmt.Errorf("invalid format - not enough parts")
 		}

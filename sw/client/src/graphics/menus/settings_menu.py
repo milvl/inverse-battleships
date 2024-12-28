@@ -61,7 +61,14 @@ class SettingsMenu(InputMenu):      # Only one setting is needed for this game. 
     
 
     def update(self, events: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO DOC
+        """
+        Updates the settings menu based on the given events.
+
+        :param events: The events to update the settings menu with.
+        :type events: Dict[str, Any]
+        :return: A dictionary containing the following
+        :rtype: Dict[str, Any]
+        """
         
         res = {'graphics_update': False, 'submit': False, 'escape': False}
 

@@ -4,13 +4,14 @@ import "time"
 
 // validCmds is a list of valid commands.
 const (
-	CmdHandshakeReqv = "HAND"  // 0
-	CmdHandshakeResp = "SHAKE" // 1
-	CmdHandshakeAck  = "DEAL"  // 2
-	CmdPing          = "PING"  // 3
-	CmdPong          = "PONG"  // 4
-	CmdLeave         = "LEAVE" // 5
-	CmdLeaveAck      = "BYE"   // 6
+	CmdHandshakeReqv = "HAND"    // 0
+	CmdHandshakeResp = "SHAKE"   // 1
+	CmdHandshakeAck  = "DEAL"    // 2
+	CmdPing          = "PING"    // 3
+	CmdPong          = "PONG"    // 4
+	CmdLeave         = "LEAVE"   // 5
+	CmdLeaveAck      = "BYE"     // 6
+	CmdLobbies       = "LOBBIES" // 7
 )
 
 // validCmdsMap is a map of valid commands.
@@ -22,6 +23,7 @@ var validCmdsMap = map[string]int{
 	CmdPong:          4,
 	CmdLeave:         5,
 	CmdLeaveAck:      6,
+	CmdLobbies:       7,
 }
 
 // IsValidCmd checks if a command is valid.

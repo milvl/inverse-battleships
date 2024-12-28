@@ -50,37 +50,13 @@ class ServerResponse:
         return res
 
 
-@dataclass
-class ConnectionStatus:
-    """
-    This class represents the status of the connection.
-    """
-
-    NOT_RUNNING = 0
-    """The connection is not running."""
-    CONNECTING = 1
-    """The connection is being established."""
-    CONNECTED = 2
-    """The connection is established."""
-    CONNECTED_IN_PROGRESS = 3
-    """The connection is in progress."""
-    FAILED = 4
-    """The connection failed."""
-    FAIL_IN_PROGRESS = 5
-    """The connection is failing."""
-    DISCONNECTING = 6
-    """The connection is being disconnected."""
-    DISCONNECTED = 7
-    """The connection is disconnected."""
-
-    status: int = NOT_RUNNING
-    """The status of the connection."""
-
-
 class ConnectionManager:
     """
     This class is responsible for managing the connection between the client and the server for the game Inverse Battleships.
     """
+
+    KEEP_ALIVE_TIMEOUT = 10
+    """The timeout for keeping the connection alive."""
 
     __WHOLE_MSG_TIMEOUT = 5
     """The timeout for receiving a whole message from the server."""
@@ -433,6 +409,34 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending pong message to the server at {self.server_address}: {e}")
     
 
+    def get_lobbies(self) -> List[str]:
+        """
+        Requests the list of lobbies from the game server.
+
+        :return: The list of lobbies.
+        :rtype: List[str]
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot request lobbies from the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_LOBBIES])
+            except Exception as e:
+                raise ConnectionError(f"Error sending lobbies request to the server at {self.server_address}: {e}")
+            
+            try:
+                res = self.receive_message()
+                if res.command != CMD_LOBBIES:
+                    logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}")
+                    return []
+            except Exception as e:
+                raise ConnectionError(f"Error receiving lobbies from the server at {self.server_address}: {e}")
+        
+        return res.params
+
+
     def __validate_connection(self) -> bool:
         """
         Authenticates the connection with the game server.
@@ -532,6 +536,7 @@ class ConnectionManager:
                 except Exception as e:
                     raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
         
+        with self.__lock:
             self.__last_time_reply = time.time()
         
         logger.debug(f"Received complete message from the server: '{__class__.__escape_net_message(message)}'")

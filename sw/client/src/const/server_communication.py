@@ -31,7 +31,7 @@ CMD_LEAVE = 'LEAVE'
 CMD_CONFIRM_LEAVE = 'BYE'
 """The bye command."""
 
-CMD_LOBBIES = 'SHOW_LOBBIES'
+CMD_LOBBIES = 'LOBBIES'
 """The lobbies command."""
 
 CMD_LOBBY_WAIT = 'PAIRING'

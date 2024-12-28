@@ -1,5 +1,6 @@
 {
     "window_title": "KIV/UPS - Inverse Battleships",
+    "not_yet_implemented_msg": "This feature is not yet implemented.",
     "main_menu_title": "Inverse Battleships",
     "main_menu_option_play": "Play",
     "main_menu_option_settings": "Settings",
@@ -9,5 +10,7 @@
     "connection_menu_lobby_select_label": "Select a lobby",
     "connection_menu_lobby_create_label": "Create a lobby",
     "attempt_connection_msg": "Attempting to connect to the server...",
-    "connection_failed_msg": "Could not connect to the server."
+    "connection_failed_msg": "Could not connect to the server.",
+    "getting_lobbies_msg": "Getting lobbies...",
+    "no_lobbies_msg": "No lobbies available."
 }

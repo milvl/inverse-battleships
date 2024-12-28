@@ -30,7 +30,6 @@ type Lobby struct {
 	id       string
 	player01 string
 	player02 string
-	rw_mutex sync.RWMutex
 }
 
 // Server represents a TCP server.
@@ -40,7 +39,7 @@ type ClientManager struct {
 	authClients   map[string]*Client // map of authenticated clients with their nicknames as keys
 	lobbies       map[string]*Lobby  // manage lobbies
 	playerToLobby map[string]*Lobby  // map of players to their lobbies
-	mutex         sync.Mutex         // mutex to lock the client manager
+	rwMutex       sync.RWMutex       // mutex to lock the client manager
 }
 
 // NewClientManager creates a new ClientManager.
@@ -106,8 +105,10 @@ func (cm *ClientManager) startServer() error {
 		return fmt.Errorf("server is nil")
 	}
 
-	cm.pServer.Start()
-	return nil
+	var err error = nil
+
+	err = cm.pServer.Start()
+	return err
 }
 
 // stopServer stops the TCP server.
@@ -184,7 +185,7 @@ func (cm *ClientManager) removeClient(nickname string) error {
 
 	addr := cm.authClients[nickname].conn.RemoteAddr().String()
 	delete(cm.authClients, nickname)
-	logging.Info(fmt.Sprintf("Client %s:%s has been removed", addr, nickname))
+	logging.Info(fmt.Sprintf("Client %s - %s has been removed", addr, nickname))
 	return nil
 }
 
@@ -297,6 +298,54 @@ func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
 	return nil
 }
 
+// sendPong sends a pong message to the client.
+// Expects the client to be valid.
+func (cm *ClientManager) sendPong(pClient *Client) error {
+	// send the pong message
+	parts := []string{protocol.CmdPong}
+	err := cm.sendMessage(pClient.conn, parts)
+	if err != nil {
+		return fmt.Errorf("failed to send pong message: %w", err)
+	}
+
+	return nil
+}
+
+// sendLeaveAck sends a leave acknowledgment message to the client.
+// Expects the client to be valid.
+func (cm *ClientManager) sendLeaveAck(pClient *Client) error {
+	// send the leave acknowledgment message
+	parts := []string{protocol.CmdLeaveAck}
+	err := cm.sendMessage(pClient.conn, parts)
+	if err != nil {
+		return fmt.Errorf("failed to send leave acknowledgment message: %w", err)
+	}
+
+	return nil
+}
+
+// sendLobbyList sends a list of lobbies to the client.
+func (cm *ClientManager) sendLobbyList(pClient *Client) error {
+	lobbies := make([]string, 0)
+
+	// get the list of lobbies
+	cm.rwMutex.RLock()
+	for _, lobby := range cm.lobbies {
+		lobbies = append(lobbies, lobby.id)
+	}
+	cm.rwMutex.RUnlock()
+
+	// send the list of lobbies
+	parts := append([]string{protocol.CmdLobbies}, lobbies...)
+
+	err := cm.sendMessage(pClient.conn, parts)
+	if err != nil {
+		return fmt.Errorf("failed to send lobby list: %w", err)
+	}
+
+	return nil
+}
+
 // checkAlive checks if the client is alive by sending a ping message and waiting for a pong message.
 func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
 	// sanity checks
@@ -388,40 +437,70 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	}
 
 	// authenticate the client
-	cm.mutex.Lock()
+	cm.rwMutex.Lock()
 	err = cm.authenticateClient(pClient, nickname)
 	if err != nil {
 		return "", fmt.Errorf("failed to authenticate client - code error: %w", err)
 	}
-	cm.mutex.Unlock()
+	cm.rwMutex.Unlock()
 
 	return nickname, nil
 }
 
+// handleCommand handles a command from the client. It returns a boolean indicating if the client should stay connected.
+// If error is not nil, the stayConnected boolean returned is not defined.
+func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.IncomingMessage) (bool, error) {
+	// sanity checks
+	if pClient == nil {
+		return false, custom_errors.ErrNilPointer
+	}
+	if pCommand == nil {
+		return false, custom_errors.ErrNilPointer
+	}
+
+	var err error = nil
+	stayConnected := true
+
+	// handle the command
+	switch pCommand.Command {
+	case protocol.CmdPing:
+		err = cm.sendPong(pClient)
+	case protocol.CmdLeave:
+		logging.Info(fmt.Sprintf("Client %s - %s has requested to leave.", pClient.conn.RemoteAddr().String(), pClient.nickname))
+		stayConnected = false
+		err = cm.sendLeaveAck(pClient)
+	case protocol.CmdLobbies:
+		err = cm.sendLobbyList(pClient)
+	}
+
+	return stayConnected, err
+}
+
+// handleCommand handles a command from the client.
 func (cm *ClientManager) handleConnection(conn net.Conn) {
 	// TODO HERE
 	logging.Debug(fmt.Sprintf("Handling connection from %s.", conn.RemoteAddr().String()))
 
 	// add the client
-	cm.mutex.Lock()
+	cm.rwMutex.Lock()
 	pClient, err := cm.addClient(conn)
 	if err != nil {
 		logging.Error(fmt.Sprintf("failed to add client: %v", err))
 		return
 	}
-	cm.mutex.Unlock()
+	cm.rwMutex.Unlock()
 
 	// validate the connection
 	nickname, err := cm.validateConnection(pClient)
 	if err != nil {
 		logging.Error(fmt.Sprintf("failed to validate connection: %v", err))
 		// remove the client
-		cm.mutex.Lock()
+		cm.rwMutex.Lock()
 		err = cm.removePendingClient(conn.RemoteAddr().String())
 		if err != nil {
 			logging.Error(fmt.Sprintf("failed to remove pending client: %v", err))
 		}
-		cm.mutex.Unlock()
+		cm.rwMutex.Unlock()
 
 		// close the connection
 		err = conn.Close()
@@ -460,24 +539,22 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 			}
 		}
 
-		// PLACEHOLDER: now just print the message
-		logging.Debug(fmt.Sprintf("Received message from %s: %s", conn.RemoteAddr().String(), (*pCommand).ToString()))
-		if (*pCommand).Command == protocol.CmdLeave {
-			err = cm.sendMessage(conn, []string{protocol.CmdLeaveAck})
-			if err != nil {
-				logging.Error(fmt.Sprintf("failed to send leave ack: %v", err))
-			}
-			break // leave the loop (end the connection)
+		stayConnected, err := cm.handleCommand(pClient, pCommand)
+		if err != nil {
+			logging.Error(fmt.Sprintf("failed to handle command: %v", err))
+		}
+		if !stayConnected {
+			break
 		}
 	}
 
 	// remove the client
-	cm.mutex.Lock()
+	cm.rwMutex.Lock()
 	err = cm.removeClient(nickname)
 	if err != nil {
 		logging.Error(fmt.Sprintf("failed to remove client: %v", err))
 	}
-	cm.mutex.Unlock()
+	cm.rwMutex.Unlock()
 
 	// close the connection
 	err = conn.Close()

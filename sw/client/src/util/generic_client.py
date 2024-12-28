@@ -214,14 +214,12 @@ class GenericClient:
     
         try:
             data = self.__server_socket.recv(self.BUFFER_SIZE)
+            if not data:
+                raise ConnectionError(f"Error receiving message from the server at {self.server_address}: no data received - connection was probably lost")
         except TimeoutError:
             raise TimeoutError()
         except socket.error as e:
             raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")    
-            
-        # will not happen
-        # if not data:
-        #     raise ValueError(f"Error receiving message from the server at {self.server_address}: no data received")
 
         message = data.decode()
         return message
