@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"inverse-battleships-server/const/custom_errors"
 	"inverse-battleships-server/const/protocol"
+	"inverse-battleships-server/logging"
 	"unicode"
 )
 
@@ -73,6 +74,7 @@ func GetCommand(parts []string) (*IncomingMessage, error) {
 	return &IncomingMessage{Command: selectedCmd, Params: parts[protocol.MinPartsCount:]}, nil
 }
 
+// validateCommand validates a command.
 func validateCommand(pIm *IncomingMessage, expectedCmd string) error {
 	// sanity check
 	if pIm == nil {
@@ -84,7 +86,8 @@ func validateCommand(pIm *IncomingMessage, expectedCmd string) error {
 
 	// check if the message is a valid handshake request
 	if (*pIm).Command != expectedCmd {
-		return fmt.Errorf("command is invalid - expected %s, got %s", expectedCmd, (*pIm).Command)
+		logging.Debug(fmt.Sprintf("Expected: %s, Got: %s", expectedCmd, (*pIm).Command))
+		return custom_errors.ErrInvalidCommand
 	}
 
 	return nil

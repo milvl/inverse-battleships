@@ -281,7 +281,7 @@ class ConnectionManager:
 
             # wait for the server to respond
             try:
-                res = self.__receive_expected_response([CMD_CONFIRM_LEAVE])
+                res = self.__receive_command_response(CMD_CONFIRM_LEAVE)
             except Exception as e:
                 logger.error(f"Error receiving 'BYE' message from the server at {self.server_address}: {e}")
                 return False
@@ -332,37 +332,6 @@ class ConnectionManager:
             
             except ConnectionError as e:
                 raise e
-    
-
-    def __receive_expected_response(self, expected_parts: List[str]) -> bool:
-        """
-        Receives a response from the game server and returns it if it matches the expected format.
-
-        :param expected_parts: The expected parts of the command.
-        :type expected_parts: List[str]
-        :return: True if the response matches the expected format, false otherwise.
-        :rtype: bool
-        """
-
-        with self.__lock:
-            if not self.is_running:
-                raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
-            
-        expected_resp = __class__.__to_net_message(expected_parts)
-        
-        try:
-            recv_message = str(self.receive_message())      # already uses lock  # TODO this raises
-            if recv_message == expected_resp:
-                return True
-
-            else:
-                logger.debug(f"Invalid message received. Expected: {__class__.__escape_net_message(expected_resp)}")
-                logger.debug(f"Received: {__class__.__escape_net_message(recv_message)}")
-                logger.critical("Received unexpected response from the server.")
-                return False
-        
-        except Exception as e:
-            raise e
         
     
     def ping(self) -> bool:
@@ -383,7 +352,7 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending ping message to the server at {self.server_address}: {e}")
                 
             try:
-                res = self.__receive_expected_response([CMD_PONG])
+                res = self.__receive_command_response(CMD_PONG, check_for_ping=False)
                 if not res:
                     logger.error(f"Error receiving pong message from the server at {self.server_address}")
                     return False
@@ -427,7 +396,7 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending lobbies request to the server at {self.server_address}: {e}")
             
             try:
-                res = self.receive_message()
+                res = self.__receive_command_response(CMD_LOBBIES_RESP)
                 if res.command != CMD_LOBBIES:
                     logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}")
                     return []
@@ -459,7 +428,7 @@ class ConnectionManager:
 
             # wait for the server to respond
             try:
-                res = self.__receive_expected_response([CMD_ACKW_VALID])
+                res = self.__receive_command_response(CMD_ACKW_VALID)
                 if not res:
                     logger.critical(f"Error receiving 'SHAKE' message from the server at {self.server_address}")
                     return False
@@ -550,6 +519,38 @@ class ConnectionManager:
         return res
     
 
+    def __receive_command_response(self, expected_command: str, check_for_ping: bool = True) -> ServerResponse:
+        """
+        Receives a response from the game server and returns it if it matches the expected command.
+        It also handles the case when the server sends a ping message before the expected response.
+
+        :param expected_command: The expected command.
+        :type expected_command: str
+        :return: The received response.
+        :rtype: ServerResponse
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot receive message from the server at {self.server_address}: not connected")
+        
+            try:
+                res = self.receive_message()
+                # handle edge case when the server manages to send a ping message before the expected response
+                if check_for_ping and res.command == CMD_PING:
+                    self.pong()
+                    res = self.receive_message()
+
+                if res.command != expected_command:
+                    logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}")
+                    return None
+                
+            except Exception as e:
+                raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
+        
+        return res
+    
+
     def login(self, username: str) -> bool:
         """
         Logs in to the game server with the given username.
@@ -570,7 +571,7 @@ class ConnectionManager:
                 logger.error(f"Error sending login message to the server at {self.server_address} - {e}")
                 
             try:
-                res = self.__receive_expected_response([CMD_ACKW_VALID])
+                res = self.__receive_command_response(CMD_ACKW_VALID, check_for_ping=False)
                 if not res:
                     logger.error(f"Error logging in to the server at {self.server_address} - invalid server response")
                     return False
@@ -603,7 +604,7 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending logout message to the server at {self.server_address}: {e}")
 
             try:
-                res = self.__receive_expected_response([CMD_CONFIRM_LEAVE])
+                res = self.__receive_command_response(CMD_CONFIRM_LEAVE)
                 if not res:
                     raise ConnectionError(f"Error logging out from the server at {self.server_address} - invalid server response")
             except Exception as e:

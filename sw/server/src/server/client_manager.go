@@ -221,13 +221,14 @@ func (cm *ClientManager) getClient(nickname string) (*Client, error) {
 }
 
 // readCompleteMessage reads a message from the client.
-func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.IncomingMessage, error) {
+// It returns the parsed message, the raw string message, and an error.
+func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.IncomingMessage, string, error) {
 	// sanity checks
 	if pClient == nil {
-		return nil, custom_errors.ErrNilPointer
+		return nil, "", custom_errors.ErrNilPointer
 	}
 	if pClient.conn == nil {
-		return nil, custom_errors.ErrNilConn
+		return nil, "", custom_errors.ErrNilConn
 	}
 
 	// try to read until a whole message is received
@@ -236,7 +237,7 @@ func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.In
 	for {
 		// handle timeout
 		if time.Now().After(fullMsgDeadline) {
-			return nil, fmt.Errorf("client did not send whole message in time")
+			return nil, "", fmt.Errorf("client did not send whole message in time")
 		}
 
 		// check for any queued messages
@@ -255,7 +256,7 @@ func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.In
 
 		recv, err := cm.pServer.ReadMessage(pClient.conn)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read message from client: %w", err)
+			return nil, "", fmt.Errorf("failed to read message from client: %w", err)
 		}
 		msg += recv
 		pClient.lastTime = time.Now()
@@ -264,16 +265,16 @@ func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.In
 	// check if the message is a valid message
 	parts, err := msg_parser.FromNetMessage(msg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse message: %w", err)
+		return nil, "", fmt.Errorf("failed to parse message: %w", err)
 	}
 
 	// validate the message for generic format
 	pCommand, err := cmd_validator.GetCommand(parts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract valid command: %w", err)
+		return nil, "", fmt.Errorf("failed to extract valid command: %w", err)
 	}
 
-	return pCommand, nil
+	return pCommand, msg, nil
 }
 
 // sendMessage sends a message to the client.
@@ -364,15 +365,38 @@ func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
 	}
 
 	// read the pong message
-	p_command, err := cm.readCompleteMessage(pClient)
+	pCommand, rawMsg, err := cm.readCompleteMessage(pClient)
 	if err != nil {
-		return false, fmt.Errorf("failed to read pong message: %w", err)
+		return false, fmt.Errorf("failed to read pong response: %w", err)
 	}
 
 	// check if the pong message is valid
-	err = cmd_validator.ValidatePong(p_command)
-	if err != nil {
+	var tryAgain bool = false
+	err = cmd_validator.ValidatePong(pCommand)
+	if errors.Is(err, custom_errors.ErrInvalidCommand) {
+		// if another message is received, buffer it and await the pong message
+		logging.Info(fmt.Sprintf("Another message received (%s), buffering it and awaiting pong message", escapeSpecialSymbols(rawMsg)))
+		tryAgain = true
+
+	} else if err != nil {
 		return false, fmt.Errorf("invalid pong message: %w", err)
+	}
+
+	// some other message managed to get through earlier so try again
+	if tryAgain {
+		// read the pong message
+		pCommand, _, err := cm.readCompleteMessage(pClient)
+		if err != nil {
+			return false, fmt.Errorf("failed to read pong message: %w", err)
+		}
+
+		pClient.msgBuff += rawMsg
+
+		// check if the pong message is valid
+		err = cmd_validator.ValidatePong(pCommand)
+		if err != nil {
+			return false, fmt.Errorf("invalid pong message: %w", err)
+		}
 	}
 
 	return true, nil
@@ -410,7 +434,7 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	}
 
 	// read the handshake message
-	pValidMsg, err := cm.readCompleteMessage(pClient)
+	pValidMsg, _, err := cm.readCompleteMessage(pClient)
 	if err != nil {
 		return "", fmt.Errorf("failed to read handshake message: %w", err)
 	}
@@ -427,7 +451,7 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	}
 
 	// await confirmation
-	pValidMsg, err = cm.readCompleteMessage(pClient)
+	pValidMsg, _, err = cm.readCompleteMessage(pClient)
 	if err != nil {
 		return "", fmt.Errorf("failed to read confirmation message: %w", err)
 	}
@@ -527,7 +551,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 		}
 
 		// read message (busy waiting is prevented by the timeout)
-		pCommand, err := cm.readCompleteMessage(pClient)
+		pCommand, _, err := cm.readCompleteMessage(pClient)
 		if err != nil {
 			timeout, disconnect := cm.handleClientError(pClient, err)
 			// if the client is disconnected, break the loop
