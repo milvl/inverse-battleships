@@ -21,6 +21,7 @@ from graphics.menus.input_menu import InputMenu
 from graphics.menus.select_menu import SelectMenu
 from graphics.menus.primitives import MenuTitle, MenuOption
 from graphics.menus.info_screen import InfoScreen
+from graphics.menus.lobby_select import LobbySelect
 from util.etc import maintains_min_window_size
 from util.path import get_project_root
 from const.typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
@@ -201,6 +202,7 @@ class IBGame:
             
             with self.__net_lock:
                 self.__lobbies = lobbies
+                tmp_logger.debug(f'Lobbies: {self.__lobbies} (REMEBER TO DELETE DUMMY LOBBIES)')
                 self.game_state.connection_status = ConnectionStatus.RECEIVED_LOBBIES
         except Exception as e:
             logger.error(f'Failed to get the list of lobbies: {e}')
@@ -388,7 +390,7 @@ class IBGame:
         self.presentation_surface = self.window.subsurface(self.window.get_rect())
         
         logger.debug(f'Window resized to: {events.event_videoresize.dict["size"]}')
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
 
         if self.debug_mode:
             self.debug_info.dimensions = events.event_videoresize.dict['size']
@@ -417,7 +419,7 @@ class IBGame:
             
         self.key_input_validator = input_validators.init_menu_key_input_validator
         self.context.redraw()
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
     
 
     def __prepare_main_menu(self):
@@ -435,7 +437,7 @@ class IBGame:
 
         # draw the menu for the first time
         self.context.redraw()
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
 
 
     def __prepare_settings_menu(self):
@@ -449,7 +451,7 @@ class IBGame:
             
         self.key_input_validator = input_validators.settings_key_input_validator
         self.context.redraw()
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
 
     
     def __prepare_connection_menu(self):
@@ -492,7 +494,7 @@ class IBGame:
                                         self.assets['strings']['connection_failed_msg'])
         
         # update the graphics
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
         self.context.redraw()
 
 
@@ -516,12 +518,16 @@ class IBGame:
             self.__net_handler_thread.start()
             tmp_logger.debug('Received the list of lobbies')
             tmp_logger.debug(f'Lobbies: {self.__lobbies}')
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['not_yet_implemented_msg'])
+            if not self.__lobbies:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['no_lobbies_msg'])
+            else:
+                options = [MenuOption(lobby) for lobby in self.__lobbies]
+                self.context = LobbySelect(self.presentation_surface, self.assets, options)
             
 
         # update the graphics
         self.context.redraw()
-        self.update_result.update_areas.append(True)
+        self.update_result.update_areas.insert(0, True)
 
     
     def __handle_update_feedback_init_state(self, res: Dict[str, Any]):
@@ -580,7 +586,7 @@ class IBGame:
                 raise ValueError('Unknown option selected.')
             
             self.context = None
-            self.update_result.update_areas.append(True)
+            self.update_result.update_areas.insert(0, True)
     
 
     def __handle_update_feedback_settings_menu(self, res: Dict[str, Any]):
@@ -619,7 +625,7 @@ class IBGame:
             logger.info('Changing the state to MAIN_MENU')
             self.game_state.state = IBGameState.MAIN_MENU
             self.context = None
-            self.update_result.update_areas.append(True)
+            self.update_result.update_areas.insert(0, True)
 
 
     def __handle_update_feedback_connection_menu(self, res: Dict[str, Any]):
@@ -638,7 +644,7 @@ class IBGame:
                 logger.info('Changing the state to MAIN_MENU')
                 self.game_state.state = IBGameState.MAIN_MENU
                 self.context = None
-                self.update_result.update_areas.append(True)
+                self.update_result.update_areas.insert(0, True)
                 return
         
         # let the connection attempt finish
@@ -676,7 +682,7 @@ class IBGame:
             self.context = None
 
 
-    def __handle_update_feedback_select_lobbies(self, res: Dict[str, Any]):
+    def __handle_update_feedback_lobby_selection(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the LOBBY_SELECTION state.
 
@@ -697,17 +703,17 @@ class IBGame:
         elif res['escape']:
             if self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBIES:
                 pass
-            if self.game_state.connection_status == ConnectionStatus.RECEIVED_LOBBIES:
-                self.__stop_net_handler_thread()
-                logger.info('Changing the state to CONNECTION_MENU')
-                self.game_state.state = IBGameState.CONNECTION_MENU
-                self.game_state.connection_status = ConnectionStatus.CONNECTED
+            # if self.game_state.connection_status == ConnectionStatus.RECEIVED_LOBBIES:
+            #     self.__stop_net_handler_thread()
+            #     logger.info('Changing the state to CONNECTION_MENU')
+            #     self.game_state.state = IBGameState.CONNECTION_MENU
+            #     self.game_state.connection_status = ConnectionStatus.CONNECTED
             else:
                 logger.info('Changing the state to MAIN_MENU')
                 self.game_state.state = IBGameState.MAIN_MENU
             
             self.context = None
-            self.update_result.update_areas.append(True)
+            self.update_result.update_areas.insert(0, True)
 
 
     def __stop_net_handler_thread(self):
@@ -822,7 +828,7 @@ class IBGame:
         # update the context and get the results
         if self.context:
             res = self.context.update(inputs)
-            self.__handle_update_feedback_select_lobbies(res)
+            self.__handle_update_feedback_lobby_selection(res)
 
 
     def __update_game_end(self, events: PyGameEvents):
@@ -841,7 +847,8 @@ class IBGame:
         if self.__connection_manager:
             if self.__net_handler_thread:
                 self.__stop_net_handler_thread()
-            self.__connection_manager.stop()
+            if self.__connection_manager.is_running:
+                self.__connection_manager.stop()
             self.__connection_manager = None
         if self.__lobbies:
             self.__lobbies = []

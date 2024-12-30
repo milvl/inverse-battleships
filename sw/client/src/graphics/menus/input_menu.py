@@ -251,7 +251,7 @@ class InputMenu(Viewport):
         self.__input_rect_bounds = res['input_rect']
         self._submit_button_bounds = res['button_rect']
 
-        return res['bounding_rect']
+        return [res['bounding_rect']]
     
 
     def update(self, events: Dict[str, Any]):

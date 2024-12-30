@@ -24,7 +24,30 @@ class SelectMenu(Viewport):
                        radius: int = -1,
                        color: Tuple[int, int, int] = _TEXT_COLOR,
                        background_color: Tuple[int, int, int] = _BACKGROUND_COLOR) -> List[pygame.Rect]:
-        # TODO DOC
+        """
+        Draws the options on the surface.
+
+        :param surface: The surface to draw the options on.
+        :type surface: pygame.Surface
+        :param options: The options to draw.
+        :type options: List[MenuOption]
+        :param top_offset: The top offset of the options.
+        :type top_offset: int
+        :param option_height: The height of the options.
+        :type option_height: int
+        :param option_width: The width of the options.
+        :type option_width: int
+        :param option_x: The x-coordinate of the options.
+        :type option_x: int
+        :param radius: The radius of the options, default is -1.
+        :type radius: int
+        :param color: The color of the options, default is _TEXT_COLOR.
+        :type color: Tuple[int, int, int]
+        :param background_color: The background color of the options, default is _BACKGROUND_COLOR.
+        :type background_color: Tuple[int, int, int]
+        :return: The update rectangles.
+        :rtype: List[pygame.Rect]
+        """
 
         update_rects = []
         for i, option in enumerate(options):
@@ -185,18 +208,6 @@ class SelectMenu(Viewport):
         return self._surface
     
 
-    @property
-    def selected_option_text(self):
-        """
-        Getter for the selected_option_text property.
-
-        :return: The text of the selected option.
-        :rtype: str
-        """
-
-        return self._options[self.highlighted_option_index].text
-    
-
     @surface.setter
     def surface(self, surface: pygame.Surface):
         """
@@ -207,6 +218,18 @@ class SelectMenu(Viewport):
         """
 
         self._surface = surface
+
+    
+    @property
+    def selected_option_text(self):
+        """
+        Getter for the selected_option_text property.
+
+        :return: The text of the selected option.
+        :rtype: str
+        """
+
+        return self._options[self.highlighted_option_index].text
 
     
     @property

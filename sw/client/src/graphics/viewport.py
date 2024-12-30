@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List
 import pygame
 
 
@@ -22,12 +22,12 @@ class Viewport(ABC):
     
 
     @abstractmethod
-    def draw(self) -> pygame.rect.Rect:
+    def draw(self) -> List[pygame.rect.Rect]:
         """
         Draws the viewport.
 
-        :return: The rectangle of the updated area.
-        :rtype: pygame.rect.Rect
+        :return: The rectangles that were updated.
+        :rtype: List[pygame.rect.Rect]
         """
 
         raise NotImplementedError("Must be overridden by subclass.")

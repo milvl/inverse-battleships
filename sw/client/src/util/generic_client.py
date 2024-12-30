@@ -17,7 +17,7 @@ class GenericClient:
 
 
     TIMEOUT_DURATION = 1
-    """The duration of the timeout for the connection with the server."""
+    """The duration of the timeout for i/o operations."""
 
     BUFFER_SIZE = 1024
     """The size of the buffer for the connection with the server."""

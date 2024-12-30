@@ -12,5 +12,6 @@
     "attempt_connection_msg": "Attempting to connect to the server...",
     "connection_failed_msg": "Could not connect to the server.",
     "getting_lobbies_msg": "Getting lobbies...",
-    "no_lobbies_msg": "No lobbies available."
+    "no_lobbies_msg": "No lobbies available.",
+    "lobbies_label": "Lobbies:"
 }
