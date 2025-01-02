@@ -4,27 +4,58 @@ import "time"
 
 // validCmds is a list of valid commands.
 const (
-	CmdHandshakeReqv = "HAND"    // 0
-	CmdHandshakeResp = "SHAKE"   // 1
-	CmdHandshakeAck  = "DEAL"    // 2
-	CmdPing          = "PING"    // 3
-	CmdPong          = "PONG"    // 4
-	CmdLeave         = "LEAVE"   // 5
-	CmdLeaveAck      = "BYE"     // 6
-	CmdLobbies       = "LOBBIES" // 7
+	CmdHandshakeReqv  = "HAND"     // 0
+	CmdHandshakeResp  = "SHAKE"    // 1
+	CmdHandshakeAck   = "DEAL"     // 2
+	CmdPing           = "PING"     // 3
+	CmdPong           = "PONG"     // 4
+	CmdLeave          = "LEAVE"    // 5
+	CmdLeaveAck       = "BYE"      // 6
+	CmdLobbies        = "LOBBIES"  // 7
+	CmdCreateLobby    = "CREATE"   // 8
+	CmdJoinLobby      = "BRING_IT" // 9
+	CmdCreateLobbyAck = "PAIRING"  // 10
+	CmdJoinLobbyAck   = "PAIRED"   // 11
+	CmdClientReady    = "READY"    // 12
+	CmdPlayerTurn     = "TURN"     // 13
+	CmdTKO            = "TKO"      // 14
 )
 
 // validCmdsMap is a map of valid commands.
 var validCmdsMap = map[string]int{
-	CmdHandshakeReqv: 0,
-	CmdHandshakeResp: 1,
-	CmdHandshakeAck:  2,
-	CmdPing:          3,
-	CmdPong:          4,
-	CmdLeave:         5,
-	CmdLeaveAck:      6,
-	CmdLobbies:       7,
+	CmdHandshakeReqv:  0,
+	CmdHandshakeResp:  1,
+	CmdHandshakeAck:   2,
+	CmdPing:           3,
+	CmdPong:           4,
+	CmdLeave:          5,
+	CmdLeaveAck:       6,
+	CmdLobbies:        7,
+	CmdCreateLobby:    8,
+	CmdJoinLobby:      9,
+	CmdCreateLobbyAck: 10,
+	CmdJoinLobbyAck:   11,
+	CmdClientReady:    12,
+	CmdPlayerTurn:     13,
+	CmdTKO:            14,
 }
+
+// lobbyStates is a list of lobby statuses.
+const (
+	LobbyStateCreated uint8 = iota
+	LobbyStatePaired
+	LobbyStateStarting
+	LobbyStateUnready
+	LobbyStatePlayer01Turn
+	LobbyStatePlayer01Playing
+	LobbyStatePlayer02Played
+	LobbyStatePlayer02Turn
+	LobbyStatePlayer02Playing
+	LobbyStatePlayer01Played
+	LobbyStateFinished
+	LobbyStateWaiting
+	LobbyStateFail
+)
 
 // IsValidCmd checks if a command is valid.
 func IsValidCmd(cmd string) bool {
@@ -41,7 +72,9 @@ const (
 	HeaderPartIndex = 0
 	CmdPartIndex    = 1
 	MinPartsCount   = 2
-	NicknameIndex   = 0
+	// indexes for the IncomingMessage params slice
+	NicknameIndex = 0
+	LobbyIDIndex  = 0
 )
 
 // CompleteMsgTimeout is the time to wait for a valid message.
@@ -49,3 +82,6 @@ const CompleteMsgTimeout = 5 * time.Second
 
 // KeepAliveTimeout is the time to wait for a keep-alive message.
 const KeepAliveTimeout = 5 * time.Second
+
+// PlayerCount is the number of players in a game.
+const PlayerCount uint8 = 2

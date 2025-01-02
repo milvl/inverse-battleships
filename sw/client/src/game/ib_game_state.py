@@ -35,6 +35,20 @@ class ConnectionStatus:
     """The connection is waiting for the lobbies."""
     RECEIVED_LOBBIES = 7
     """The connection received the lobbies."""
+    REQUESTED_LOBBY = 8
+    """The connection requested creation of a lobby."""
+    WAITING_FOR_PLAYERS = 9
+    """The connection is in lobby waiting for players."""
+    TRYING_TO_JOIN = 10
+    """The connection is trying to join a lobby."""
+    JOINED_LOBBY = 11
+    """The connection joined a lobby."""
+    LOBBY_FAILED = 12
+    """Joining the lobby was not possible."""
+    GAME_READY = 13
+    """The game is ready to start."""
+    TKO = 14
+    """Represents any technical knockout and win of the player."""
 
     status: int = NOT_RUNNING
     """The status of the connection."""
@@ -85,7 +99,13 @@ class IBGameState:
             ConnectionStatus.FAILED: 'FAILED',
             ConnectionStatus.REQUESTED_LOBBIES: 'REQUESTED_LOBBIES',
             ConnectionStatus.WAITING_FOR_LOBBIES: 'WAITING_FOR_LOBBIES',
-            ConnectionStatus.RECEIVED_LOBBIES: 'RECEIVED_LOBBIES'
+            ConnectionStatus.RECEIVED_LOBBIES: 'RECEIVED_LOBBIES',
+            ConnectionStatus.REQUESTED_LOBBY: 'REQUESTED_LOBBY',
+            ConnectionStatus.WAITING_FOR_PLAYERS: 'WAITING_FOR_PLAYERS',
+            ConnectionStatus.TRYING_TO_JOIN: 'TRYING_TO_JOIN',
+            ConnectionStatus.JOINED_LOBBY: 'JOINED_LOBBY',
+            ConnectionStatus.LOBBY_FAILED: 'LOBBY_FAILED',
+            ConnectionStatus.TKO: 'TKO'
         }
         self.__connection_status = ConnectionStatus()
         logger.debug(f'IBGameState initialized with state: {str(self)}')

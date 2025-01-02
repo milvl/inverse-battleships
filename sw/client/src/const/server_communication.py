@@ -34,8 +34,20 @@ CMD_CONFIRM_LEAVE = 'BYE'
 CMD_LOBBIES = 'LOBBIES'
 """The lobbies command."""
 
-CMD_LOBBY_WAIT = 'PAIRING'
+CMD_LOBBY = 'BRING_IT'
+"""The lobby join request command."""
+
+CMD_LOBBY_CREATE = 'CREATE'
+"""The lobby create command."""
+
+CMD_LOBBY_PAIRING = 'PAIRING'
 """The pairing command."""
+
+CMD_LOBBY_PAIRED = 'PAIRED'
+"""The paired command."""
+
+CMD_READY = 'READY'
+"""The ready command."""
 
 CMD_RES_MISS = 'MISS'
 """The miss command."""
@@ -88,3 +100,9 @@ CMD_RES_GAINED = 'GAIN'
 
 CMD_INDEX = 0
 """The index of the command in the messages sent between the server and the clients."""
+
+PARAM_LOBBY_ID_INDEX = 0
+"""The index of the lobby id in the messages sent between the server and the clients."""
+
+PARAM_PLAYER_ID_INDEX = 0
+"""The index of the player id in the messages sent between the server and the clients."""

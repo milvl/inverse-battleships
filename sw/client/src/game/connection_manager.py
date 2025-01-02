@@ -161,7 +161,8 @@ class ConnectionManager:
 
         if command in [CMD_PING, CMD_PONG, CMD_ACKW_VALID, CMD_CONFIRM_LEAVE, 
                        CMD_LOBBIES, CMD_RES_MISS, CMD_RES_ACKW, CMD_GAME_LOSE, CMD_GAME_WIN, 
-                       CMD_WAIT, CMD_CONTINUE, CMD_TKO]:
+                       CMD_WAIT, CMD_CONTINUE, CMD_TKO, CMD_LOBBY_PAIRING, CMD_LOBBY_PAIRED,
+                       CMD_PLAYER_TURN]:
             return ServerResponse(command, parts[CMD_INDEX + 1:])
         
         # TODO parse various types
@@ -406,6 +407,107 @@ class ConnectionManager:
         return res.params
 
 
+    def get_lobby(self) -> str:
+        """
+        Requests the lobby from the game server.
+
+        :return: The lobby ID.
+        :rtype: str
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot request lobby from the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_LOBBY_CREATE])
+            except Exception as e:
+                raise ConnectionError(f"Error sending lobby request to the server at {self.server_address}: {e}")
+            
+            try:
+                res = self.__receive_command_response(CMD_LOBBY_PAIRING)
+                return res.params[PARAM_LOBBY_ID_INDEX]
+            except TimeoutError:
+                raise TimeoutError(f"Timeout while waiting for lobby from the server at {self.server_address}")
+            except Exception as e:
+                raise ConnectionError(f"Error receiving lobby from the server at {self.server_address}: {e}")
+            
+
+    def join_lobby(self, lobby_id: str) -> str:
+        """
+        Joins a lobby with the given ID.
+
+        :param lobby_id: The ID of the lobby to join.
+        :type lobby_id: str
+        :return: The lobby ID.
+        :rtype: str
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot request lobby from the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_LOBBY, lobby_id])
+            except Exception as e:
+                raise ConnectionError(f"Error sending lobby request to the server at {self.server_address}: {e}")
+            
+            try:
+                res = self.__receive_command_response(CMD_LOBBY_PAIRING)
+                return res.params[PARAM_LOBBY_ID_INDEX]
+            except TimeoutError:
+                raise TimeoutError(f"Timeout while waiting for lobby from the server at {self.server_address}")
+            except Exception as e:
+                raise ConnectionError(f"Error receiving lobby from the server at {self.server_address}: {e}")
+            
+
+    def check_for_players(self) -> str:
+        """
+        Checks for players in the lobby.
+
+        :return: Opponent's username.
+        :rtype: str
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot check for players in the lobby at the server {self.server_address}: not connected")
+            
+            try: 
+                res = self.__receive_command_response(CMD_LOBBY_PAIRED)
+                return res.params[PARAM_PLAYER_ID_INDEX]
+            except TimeoutError as e:
+                raise e
+            except Exception as e:
+                raise ConnectionError(f"Error receiving players in the lobby from the server at {self.server_address}: {e}")
+            
+
+    def game_ready(self) -> str:
+        """
+        Sends a ready message to the game server and receives current player's username.
+
+        :return: The current player's username.
+        :rtype: str
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send ready message to the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_READY])
+            except Exception as e:
+                raise ConnectionError(f"Error sending ready message to the server at {self.server_address}: {e}")
+            
+            try:
+                res = self.__receive_command_response(CMD_PLAYER_TURN)  # TODO TKO
+                return res.params[PARAM_PLAYER_ID_INDEX]
+            except TimeoutError as e:
+                raise e
+            except Exception as e:
+                raise ConnectionError(f"Error receiving player's username from the server at {self.server_address}: {e}")
+
+
     def __validate_connection(self) -> bool:
         """
         Authenticates the connection with the game server.
@@ -545,6 +647,8 @@ class ConnectionManager:
                     logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}")
                     return None
                 
+            except TimeoutError:
+                raise TimeoutError(f"Timeout while waiting for response from the server at {self.server_address}")
             except Exception as e:
                 raise ConnectionError(f"Error receiving message from the server at {self.server_address}: {e}")
         

@@ -189,30 +189,6 @@ class IBGame:
                 self.game_state.connection_status = ConnectionStatus.FAILED
 
 
-    def __get_lobbies(self):
-        """
-        Gets the list of lobbies from the server.
-        """
-
-        with self.__net_lock:
-            self.game_state.connection_status = ConnectionStatus.WAITING_FOR_LOBBIES
-
-        try:
-            lobbies = self.__connection_manager.get_lobbies()
-            
-            with self.__net_lock:
-                self.__lobbies = lobbies
-                tmp_logger.debug(f'Lobbies: {self.__lobbies} (REMEBER TO DELETE DUMMY LOBBIES)')
-                self.game_state.connection_status = ConnectionStatus.RECEIVED_LOBBIES
-        except Exception as e:
-            logger.error(f'Failed to get the list of lobbies: {e}')
-            with self.__net_lock:
-                self.game_state.connection_status = ConnectionStatus.FAILED
-
-        finally:
-            self.context = None
-
-
     def __init__(self, config: Dict[str, Any], assets: Dict[str, Any]):
         """
         Creates a new instance of the IBGame class.
@@ -268,6 +244,10 @@ class IBGame:
         self.__exit = threading.Event()
         self.__exit.clear()
         self.__lobbies = []
+        self.__my_lobby = None
+        self.__opponent_name = None
+        self.__current_player = None
+        self.__chosen_lobby = None
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -408,6 +388,187 @@ class IBGame:
         self.context.surface = self.presentation_surface
         self.context.redraw()
 
+
+    def __stop_net_handler_thread(self):
+        """
+        Stops the network handler thread.
+        Will wait for the thread to finish.
+        """
+        
+        self.__end_net_handler_thread.set()
+        self.__net_handler_thread.join()
+        self.__net_handler_thread = None
+        self.__end_net_handler_thread.clear()
+
+
+    def __handle_net_keep_alive(self):
+        """
+        Handles basic server communication.
+        """
+
+        logger.debug('Keep alive thread started')
+        while not self.__end_net_handler_thread.is_set() and not self.__exit.is_set():
+            # keep alive
+            if time.time() - self.__connection_manager.last_time_reply > self.__connection_manager.KEEP_ALIVE_TIMEOUT:
+                logger.debug('Connection timeout, pinging the server...')
+                try:
+                    self.__connection_manager.ping()
+                except Exception as e:
+                    raise ConnectionError(f'Failed to send ping to the server: {e}')
+
+            # listen for messages
+            else: 
+                resp: ServerResponse = None
+                try:
+                    resp = self.__connection_manager.receive_message()
+                except ConnectionError as e:
+                    logger.error(f'Error occurred while receiving message from the server: {e}')
+                    self.game_state.connection_status = ConnectionStatus.FAILED
+                    self.__end_net_handler_thread.set()
+                    self.context = None
+                    return
+                except TimeoutError:
+                    continue
+                    
+                if resp.command == CMD_PING:
+                    try:
+                        self.__connection_manager.pong()
+                    except Exception as e:
+                        raise ConnectionError(f'Failed to send pong to the server: {e}')
+        
+        logger.debug('Keep alive thread stopped')
+
+
+    def __handle_net_get_lobbies(self):
+        """
+        Gets the list of lobbies from the server.
+        """
+
+        logger.debug('Getting lobbies thread started')
+        with self.__net_lock:
+            self.game_state.connection_status = ConnectionStatus.WAITING_FOR_LOBBIES
+
+        try:
+            lobbies = self.__connection_manager.get_lobbies()
+            
+            with self.__net_lock:
+                self.__lobbies = lobbies
+                tmp_logger.debug(f'Lobbies: {self.__lobbies} (REMEBER TO DELETE DUMMY LOBBIES)')
+                self.game_state.connection_status = ConnectionStatus.RECEIVED_LOBBIES
+        except Exception as e:
+            logger.error(f'Failed to get the list of lobbies: {e}')
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.FAILED
+
+        finally:
+            self.context = None
+        logger.debug('Getting lobbies thread stopped')
+
+    
+    def __handle_net_get_lobby(self):
+        """
+        Gets the lobby info from the server.
+        """
+
+        logger.debug('Getting lobby info thread started')
+        with self.__net_lock:
+            self.game_state.connection_status = ConnectionStatus.TRYING_TO_JOIN
+
+        try:
+            lobby = self.__connection_manager.get_lobby()
+            if not lobby:
+                raise ValueError('Failed to get the lobby info')
+            
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.JOINED_LOBBY
+                self.__my_lobby = lobby
+        
+        except TimeoutError:
+            logger.error('Failed to get the lobby info: Timeout')
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.LOBBY_FAILED
+        except Exception as e:
+            logger.error(f'Failed to get the lobby info: {e}')
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.FAILED
+
+        finally:
+            self.context = None
+        logger.debug('Getting lobby info thread stopped')
+
+    
+    def __handle_net_join_lobby(self):
+        """
+        Attempts to join the lobby.
+        """
+
+        logger.debug('Joining lobby thread started')
+        try:
+            self.__connection_manager.join_lobby(self.__chosen_lobby)
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.JOINED_LOBBY
+        except Exception as e:
+            logger.error(f'Failed to join the lobby: {e}')
+            with self.__net_lock:
+                self.game_state.connection_status = ConnectionStatus.LOBBY_FAILED
+
+        finally:
+            self.context = None
+        logger.debug('Joining lobby thread stopped')
+
+
+    def __handle_net_wait_for_players(self):
+        """
+        Waits for the players to join the lobby.
+        """
+
+        logger.debug('Waiting for players thread started')
+        with self.__net_lock:
+            self.game_state.connection_status = ConnectionStatus.WAITING_FOR_PLAYERS
+
+        while not self.__end_net_handler_thread.is_set() and not self.__exit.is_set():
+            try:
+                oponent_name = self.__connection_manager.check_for_players()
+                with self.__net_lock:
+                    self.__opponent_name = oponent_name
+                    self.game_state.connection_status = ConnectionStatus.GAME_READY
+                
+                self.context = None
+                break
+            
+            except TimeoutError:
+                continue
+            except Exception as e:
+                logger.error(f'Failed to wait for the players: {e}')
+                with self.__net_lock:
+                    self.game_state.connection_status = ConnectionStatus.FAILED
+                self.context = None
+                break
+        
+        logger.debug('Waiting for players thread stopped')
+        # if ended from the outside, caller handles context
+
+
+    def __handle_net_game_ready(self):
+        """
+        Handles the game ready status.
+        """
+
+        logger.debug('Game ready thread started')
+        with self.__net_lock:
+            try:
+                current_player = self.__connection_manager.game_ready()
+
+                self.__current_player = current_player
+                self.game_state.state = IBGameState.GAME_SESSION
+
+            except Exception as e:
+                logger.error(f'Failed to start the game: {e}')
+                self.game_state.connection_status = ConnectionStatus.FAILED
+
+        self.context = None
+        logger.debug('Game ready thread stopped')
+
     
     def __prepare_init_state(self):
         """
@@ -494,8 +655,9 @@ class IBGame:
                                         self.assets['strings']['connection_failed_msg'])
         
         # update the graphics
-        self.update_result.update_areas.insert(0, True)
-        self.context.redraw()
+        if self.context:
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
 
 
     def __prepare_lobby_selection(self):
@@ -509,15 +671,14 @@ class IBGame:
         elif self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBIES:
             tmp_logger.debug('Setting up context for lobby selection')
             self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobbies_msg'])
-            self.__net_handler_thread = threading.Thread(target=self.__get_lobbies)
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_get_lobbies)
             self.__net_handler_thread.start()
 
         elif self.game_state.connection_status == ConnectionStatus.RECEIVED_LOBBIES:
             self.__net_handler_thread.join()
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_keep_alive)
             self.__net_handler_thread.start()
-            tmp_logger.debug('Received the list of lobbies')
-            tmp_logger.debug(f'Lobbies: {self.__lobbies}')
+            logger.debug('Received lobbies response')
             if not self.__lobbies:
                 self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['no_lobbies_msg'])
             else:
@@ -526,8 +687,53 @@ class IBGame:
             
 
         # update the graphics
-        self.context.redraw()
-        self.update_result.update_areas.insert(0, True)
+        if self.context:
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
+
+
+    def __prepare_lobby(self):
+        """
+        Prepares the lobby state of the game.
+        """
+
+        if self.game_state.connection_status == ConnectionStatus.FAILED:
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
+
+        elif self.game_state.connection_status == ConnectionStatus.LOBBY_FAILED:
+            self.__net_handler_thread.join()
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['lobby_failed_msg'])
+
+        elif self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBY:
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobby_info_msg'])
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_get_lobby)
+            self.__net_handler_thread.start()
+
+        elif self.game_state.connection_status == ConnectionStatus.TRYING_TO_JOIN:
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['joining_lobby_msg'])
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_join_lobby)
+            self.__net_handler_thread.start()
+
+        elif self.game_state.connection_status == ConnectionStatus.JOINED_LOBBY:
+            logger.debug('Received lobby response')
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['waiting_for_opponent_msg'])
+            self.__net_handler_thread.join()
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_wait_for_players)
+            self.__net_handler_thread.start()
+            self.__chosen_lobby = None
+
+        elif self.game_state.connection_status == ConnectionStatus.GAME_READY:
+            logger.debug('Opponent joined the lobby')
+            self.__net_handler_thread.join()
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['preparing_game_msg'])
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_game_ready)
+            self.__net_handler_thread.start()
+            self.__net_handler_thread.join()
+
+        # update the graphics
+        if self.context:
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
 
     
     def __handle_update_feedback_init_state(self, res: Dict[str, Any]):
@@ -667,6 +873,7 @@ class IBGame:
             
             elif self.context.selected_option_text == self.assets['strings']['connection_menu_lobby_create_label']:
                 logger.info('Changing the state to LOBBY')
+                self.game_state.connection_status = ConnectionStatus.REQUESTED_LOBBY
                 self.game_state.state = IBGameState.LOBBY
 
             else:
@@ -697,8 +904,15 @@ class IBGame:
         
         # handle the user input
         elif res['submit']:
-            # TFOF - to be implemented
-            raise NotImplementedError('The __handle_update_feedback_select_lobbies method has not been implemented yet.')
+            if self.game_state.connection_status == ConnectionStatus.RECEIVED_LOBBIES:
+                self.__stop_net_handler_thread()
+                logger.info('Changing the state to LOBBY')
+                self.game_state.state = IBGameState.LOBBY
+                self.game_state.connection_status = ConnectionStatus.TRYING_TO_JOIN
+                self.__chosen_lobby = self.context.selected_lobby_name
+                self.context = None
+            else:
+                logger.error('The connection status is not RECEIVED_LOBBIES')
         
         elif res['escape']:
             if self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBIES:
@@ -716,54 +930,32 @@ class IBGame:
             self.update_result.update_areas.insert(0, True)
 
 
-    def __stop_net_handler_thread(self):
+    def __handle_update_feedback_lobby(self, res: Dict[str, Any]):
         """
-        Stops the network handler thread.
-        Will wait for the thread to finish.
+        Handles the feedback from the update method in the LOBBY state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
         """
+
+        # handle graphics update (text input)
+        if res['graphics_update']:
+            update_rect = self.context.draw()
+            self.update_result.update_areas.extend(update_rect)
         
-        self.__end_net_handler_thread.set()
-        self.__net_handler_thread.join()
-        self.__net_handler_thread = None
-        self.__end_net_handler_thread.clear()
-
-
-    def __handle_net_keep_alive(self):
-        """
-        Handles basic server communication.
-        """
-
-        logger.debug('Keep alive thread started')
-        while not self.__end_net_handler_thread.is_set() and not self.__exit.is_set():
-            # keep alive
-            if time.time() - self.__connection_manager.last_time_reply > self.__connection_manager.KEEP_ALIVE_TIMEOUT:
-                logger.debug('Connection timeout, pinging the server...')
-                try:
-                    self.__connection_manager.ping()
-                except Exception as e:
-                    raise ConnectionError(f'Failed to send ping to the server: {e}')
-
-            # listen for messages
-            else: 
-                resp: ServerResponse = None
-                try:
-                    resp = self.__connection_manager.receive_message()
-                except ConnectionError as e:
-                    logger.error(f'Error occurred while receiving message from the server: {e}')
-                    self.game_state.connection_status = ConnectionStatus.FAILED
-                    self.__end_net_handler_thread.set()
-                    self.context = None
-                    return
-                except TimeoutError:
-                    continue
-                    
-                if resp.command == CMD_PING:
-                    try:
-                        self.__connection_manager.pong()
-                    except Exception as e:
-                        raise ConnectionError(f'Failed to send pong to the server: {e}')
-        
-        logger.debug('Keep alive thread stopped')
+        # handle the user input
+        elif res['escape']:
+            if self.game_state.connection_status == ConnectionStatus.FAILED:
+                logger.info('Changing the state to MAIN_MENU')
+                self.game_state.state = IBGameState.MAIN_MENU
+                self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
+                self.context = None
+            elif self.game_state.connection_status == ConnectionStatus.WAITING_FOR_PLAYERS:
+                logger.info('Changing the state to MAIN_MENU')
+                self.__stop_net_handler_thread()
+                self.game_state.state = IBGameState.MAIN_MENU
+                self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
+                self.context = None
 
 
     def __update_init_state(self, events: PyGameEvents):
@@ -794,7 +986,7 @@ class IBGame:
     
 
     def __update_connection_menu(self, events: PyGameEvents):
-        # TODO DOC
+        # TODO RECONNECT
 
         if not self.context:
             self.__prepare_connection_menu()
@@ -812,7 +1004,28 @@ class IBGame:
 
 
     def __update_lobby(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_lobby method has not been implemented yet.')
+        """
+        Handles the lobby state. Lobby state represents the state when the player
+        is either creating or joining a lobby.
+
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
+
+        if not self.context:
+            self.__prepare_lobby()
+
+        if events.event_videoresize:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_lobby(res)
+
 
 
     def __update_lobby_selection(self, events: PyGameEvents):

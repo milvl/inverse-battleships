@@ -72,6 +72,18 @@ class LobbySelect(Viewport):
 
         self.__surface = surface
 
+    
+    @property
+    def selected_lobby_name(self) -> str:
+        """
+        Getter for the selected lobby name.
+
+        :return: The name of the selected lobby.
+        :rtype: str
+        """
+
+        return self.__lobbies[self.__lobby_index].text
+
 
     def __draw_objects(self):
         """

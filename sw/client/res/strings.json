@@ -13,5 +13,10 @@
     "connection_failed_msg": "Could not connect to the server.",
     "getting_lobbies_msg": "Getting lobbies...",
     "no_lobbies_msg": "No lobbies available.",
-    "lobbies_label": "Lobbies:"
+    "lobbies_label": "Lobbies:",
+    "getting_lobby_info_msg": "Getting lobby info...",
+    "joining_lobby_msg": "Joining the lobby...",
+    "waiting_for_opponent_msg": "Waiting for the opponent...",
+    "lobby_failed_msg": "Could not join the lobby.",
+    "preparing_game_msg": "Preparing the game..."
 }
