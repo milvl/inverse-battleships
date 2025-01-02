@@ -6,7 +6,6 @@ all the logic related to the game itself.
 import json
 import os
 import re
-import socket
 import threading
 import time
 from const.server_communication import *
@@ -22,7 +21,7 @@ from graphics.menus.select_menu import SelectMenu
 from graphics.menus.primitives import MenuTitle, MenuOption
 from graphics.menus.info_screen import InfoScreen
 from graphics.menus.lobby_select import LobbySelect
-from util.etc import maintains_min_window_size
+from util.etc import maintains_min_window_size, get_scaled_resolution
 from util.path import get_project_root
 from const.typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
 from copy import deepcopy
@@ -364,9 +363,14 @@ class IBGame:
 
         logger.debug('User attempted to resize the window')
         event = events.event_videoresize
-        if not maintains_min_window_size(event.dict['w'], event.dict['h'], self.config['min_window_width'], self.config['min_window_height']):
-                logger.warning('The window size is below the minimum allowed size, resizing the window to the minimum size')
+        new_width = event.dict['w']
+        new_height = event.dict['h']
+        scaled_width, scaled_height = get_scaled_resolution(new_width, new_height, self.config['scale_width'] / self.config['scale_height'])
+        if not maintains_min_window_size(new_width, new_height, self.config['min_window_width'], self.config['min_window_height']):
+                logger.warning("The window size is below the minimum allowed size, resizing the window to the minimum size")
                 pygame.display.set_mode((self.config['min_window_width'], self.config['min_window_height']), pygame.RESIZABLE)
+        else:
+            pygame.display.set_mode((scaled_width, scaled_height), pygame.RESIZABLE)
         self.presentation_surface = self.window.subsurface(self.window.get_rect())
         
         logger.debug(f'Window resized to: {events.event_videoresize.dict["size"]}')

@@ -21,6 +21,29 @@ def maintains_min_window_size(width: int, height: int, min_width: int, min_heigh
     return width >= min_width and height >= min_height
 
 
+def get_scaled_resolution(width, height, ratio):
+    """
+    Calculate a scaled resolution based on the smaller dimension
+    and a given aspect ratio as a float.
+
+    Parameters:
+    width (int): The width of the screen.
+    height (int): The height of the screen.
+    ratio (float): The aspect ratio as width / height.
+
+    Returns:
+    tuple: The scaled resolution (scaled_width, scaled_height).
+    """
+    if width / height < ratio:  # width is the limiting dimension
+        scaled_width = width
+        scaled_height = int(width / ratio)
+    else:  # height is the limiting dimension
+        scaled_width = int(height * ratio)
+        scaled_height = height
+
+    return scaled_width, scaled_height
+
+
 def hex_to_tuple(hex_str: str) -> tuple:
     """
     Converts a hexadecimal string to a tuple of integers.

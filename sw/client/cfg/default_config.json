@@ -1,11 +1,12 @@
 {
-    "window_width": 500,
-    "window_height": 500,
+    "scale_width": 16,
+    "scale_height": 9,
+    "window_width": 1280,
+    "window_height": 720,
     "color_bit_depth": 32,
     "players_count": 2,
     "tick_speed": 60,
-    "skip_intro": false,
-    "min_window_width": 100,
-    "min_window_height": 100,
+    "min_window_width": 180,
+    "min_window_height": 320,
     "debug_mode": false
 }

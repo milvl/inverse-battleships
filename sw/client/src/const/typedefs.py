@@ -12,12 +12,13 @@ class IBGameConfig(BaseModel):
 
     model_config: ConfigDict = {'extra': 'forbid'}
 
+    scale_width: int
+    scale_height: int
     window_width: int
     window_height: int
     color_bit_depth: int
     tick_speed: int
     players_count: int
-    skip_intro: bool
     min_window_width: int
     min_window_height: int
     debug_mode: bool
