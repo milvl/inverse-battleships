@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Dict, Tuple, List, Union, Optional
+from typing import Any, Dict, Tuple, List, Union, Optional
 from dataclasses import dataclass, field
 import pygame
 
@@ -28,8 +28,13 @@ class IBAssets(BaseModel):
     """
     Class that represents the assets of the game.
     """
+    
+    model_config: ConfigDict = {'extra': 'forbid'}
+
     strings: Dict[str, str]
     colors: Dict[str, Tuple[int, int, int]]
+    sprites: Dict[str, Any]
+    images: Dict[str, Any]
 
 
 ########## For internally defined data ##########

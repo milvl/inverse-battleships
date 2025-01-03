@@ -76,6 +76,9 @@ def main():
         logger.critical(f'Assets data has incorrect format: {e}')
         exit(EXIT_INVALID_ASSETS_CFG)
 
+    # set the icon
+    pygame.display.set_icon(assets['images']['logo_small'])
+
     clock = pygame.time.Clock()
     tick_speed = config['tick_speed']
 

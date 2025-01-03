@@ -26,14 +26,16 @@ def get_scaled_resolution(width, height, ratio):
     Calculate a scaled resolution based on the smaller dimension
     and a given aspect ratio as a float.
 
-    Parameters:
-    width (int): The width of the screen.
-    height (int): The height of the screen.
-    ratio (float): The aspect ratio as width / height.
-
-    Returns:
-    tuple: The scaled resolution (scaled_width, scaled_height).
+    :param width: The width.
+    :type width: int
+    :param height: The height.
+    :type height: int
+    :param ratio: The aspect ratio.
+    :type ratio: float
+    :return: The scaled width and height.
+    :rtype: tuple
     """
+    
     if width / height < ratio:  # width is the limiting dimension
         scaled_width = width
         scaled_height = int(width / ratio)
