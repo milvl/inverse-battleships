@@ -96,7 +96,7 @@ CMD_RES_HIT = 'HIT'
 CMD_RES_GAINED = 'GAIN'
 """The gain command."""
 
-# indexes
+# indices
 
 CMD_INDEX = 0
 """The index of the command in the messages sent between the server and the clients."""
@@ -106,3 +106,14 @@ PARAM_LOBBY_ID_INDEX = 0
 
 PARAM_PLAYER_ID_INDEX = 0
 """The index of the player id in the messages sent between the server and the clients."""
+
+# constants
+
+PLAYER_NICKNAME_MAX_LENGTH = 20
+"""The maximum length of the player's nickname."""
+
+SERVER_ADDRESS_MAX_LENGTH = 18 # 9 IP, 5 port, 1 colon, 3 dots
+"""The maximum length of the server address."""
+
+SERVER_CONNECTION_TIMEOUT = 5
+"""The timeout for the server connection in seconds."""
