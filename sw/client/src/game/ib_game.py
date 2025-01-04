@@ -42,12 +42,8 @@ class IBGame:
     """
 
 
-    PLAYER_NICKNAME_MAX_LENGTH = 20
-    """The maximum length of the player's nickname."""
-    SERVER_ADDRESS_MAX_LENGTH = 18 # 9 IP, 5 port, 1 colon, 3 dots
-    """The maximum length of the server address."""
-    SERVER_CONNECTION_TIMEOUT = 5
-    """The timeout for the server connection in seconds."""
+    RESIZE_DELAY = 0.2
+    """The interval in seconds between window resizes."""
 
 
     @staticmethod
@@ -163,7 +159,7 @@ class IBGame:
         Establishes the connection to the server.
         """
 
-        with self.__net_lock:
+        with self.net_lock:
             self.game_state.connection_status = ConnectionStatus.CONNECTING
 
         try:
@@ -177,13 +173,13 @@ class IBGame:
                 raise ConnectionError('Failed to login to the server')
 
             # set the connection status
-            with self.__net_lock:
+            with self.net_lock:
                 self.context = None
                 self.game_state.connection_status = ConnectionStatus.CONNECTED
 
         except Exception as e:
             logger.error(f'Connection attempt failed: {e}')
-            with self.__net_lock:
+            with self.net_lock:
                 self.context = None
                 self.game_state.connection_status = ConnectionStatus.FAILED
 
@@ -199,7 +195,7 @@ class IBGame:
         """
 
         self.config = deepcopy(config)
-        self.assets = {'colors': deepcopy(assets['colors']), 'strings': deepcopy(assets['strings']), 'sprites': assets['sprites']}
+        self.assets = assets
 
         self.started = False
         self.debug_mode = False
@@ -217,6 +213,7 @@ class IBGame:
         pygame.init()
         pygame.font.init()
         pygame.display.set_caption(self.assets['strings']['window_title'])
+        pygame.display.set_icon(self.assets['images']['logo_small'])
         
         self.game_state = IBGameState()
 
@@ -231,17 +228,21 @@ class IBGame:
             pygame.display.flip()
         
         self.context = None
+        self.resized = False
         self.player_name = None
         self.server_ip = None
         self.server_port = None
+        self.do_exit = threading.Event()
+        self.do_exit.clear()
+        self.net_lock = threading.Lock()
 
+        self.__resizing = False
+        self.__last_resize_event = None
+        self.__time_last_resize = time.time()
         self.__connection_manager = None
-        self.__net_lock = threading.Lock()
         self.__net_handler_thread = None
         self.__end_net_handler_thread = threading.Event()
         self.__end_net_handler_thread.clear()
-        self.__exit = threading.Event()
-        self.__exit.clear()
         self.__lobbies = []
         self.__my_lobby = None
         self.__opponent_name = None
@@ -320,6 +321,7 @@ class IBGame:
                 continue
 
             if event.type == pygame.VIDEORESIZE:
+                # NOTE: Deprecated and should be updated for future versions
                 events.event_videoresize = event
                 logger.debug(f'Videoresize event registered: {event.dict["size"]}')
                 continue
@@ -352,19 +354,18 @@ class IBGame:
         self.server_port = int(server_address[1])
     
 
-    def __handle_window_resize(self, events) -> bool:
+    def __handle_window_resize(self, resize_event) -> bool:
         """
         Handles the window resize event.
 
-        :param events: The PyGame events.
-        :type events: PyGameEvents
+        :param resize_event: The resize event.
+        :type resize_event: pygame.event.Event
         :return: True if the debug info should be updated, False otherwise.
         """
 
         logger.debug('User attempted to resize the window')
-        event = events.event_videoresize
-        new_width = event.dict['w']
-        new_height = event.dict['h']
+        new_width = resize_event.dict['w']
+        new_height = resize_event.dict['h']
         scaled_width, scaled_height = get_scaled_resolution(new_width, new_height, self.config['scale_width'] / self.config['scale_height'])
         if not maintains_min_window_size(new_width, new_height, self.config['min_window_width'], self.config['min_window_height']):
                 logger.warning("The window size is below the minimum allowed size, resizing the window to the minimum size")
@@ -373,11 +374,11 @@ class IBGame:
             pygame.display.set_mode((scaled_width, scaled_height), pygame.RESIZABLE)
         self.presentation_surface = self.window.subsurface(self.window.get_rect())
         
-        logger.debug(f'Window resized to: {events.event_videoresize.dict["size"]}')
+        logger.debug(f'Window resized to: {resize_event.dict['size']}')
         self.update_result.update_areas.insert(0, True)
 
         if self.debug_mode:
-            self.debug_info.dimensions = events.event_videoresize.dict['size']
+            self.debug_info.dimensions = resize_event.dict['size']
             self.debug_surface = self.window.subsurface(0, self.window.get_height() - self.debug_info_render.get_height(), self.window.get_width(), self.debug_info_render.get_height())
             return True
         
@@ -411,7 +412,7 @@ class IBGame:
         """
 
         logger.debug('Keep alive thread started')
-        while not self.__end_net_handler_thread.is_set() and not self.__exit.is_set():
+        while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
             # keep alive
             if time.time() - self.__connection_manager.last_time_reply > self.__connection_manager.KEEP_ALIVE_TIMEOUT:
                 logger.debug('Connection timeout, pinging the server...')
@@ -449,19 +450,19 @@ class IBGame:
         """
 
         logger.debug('Getting lobbies thread started')
-        with self.__net_lock:
+        with self.net_lock:
             self.game_state.connection_status = ConnectionStatus.WAITING_FOR_LOBBIES
 
         try:
             lobbies = self.__connection_manager.get_lobbies()
             
-            with self.__net_lock:
+            with self.net_lock:
                 self.__lobbies = lobbies
                 tmp_logger.debug(f'Lobbies: {self.__lobbies} (REMEBER TO DELETE DUMMY LOBBIES)')
                 self.game_state.connection_status = ConnectionStatus.RECEIVED_LOBBIES
         except Exception as e:
             logger.error(f'Failed to get the list of lobbies: {e}')
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.FAILED
 
         finally:
@@ -475,7 +476,7 @@ class IBGame:
         """
 
         logger.debug('Getting lobby info thread started')
-        with self.__net_lock:
+        with self.net_lock:
             self.game_state.connection_status = ConnectionStatus.TRYING_TO_JOIN
 
         try:
@@ -483,17 +484,17 @@ class IBGame:
             if not lobby:
                 raise ValueError('Failed to get the lobby info')
             
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.JOINED_LOBBY
                 self.__my_lobby = lobby
         
         except TimeoutError:
             logger.error('Failed to get the lobby info: Timeout')
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.LOBBY_FAILED
         except Exception as e:
             logger.error(f'Failed to get the lobby info: {e}')
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.FAILED
 
         finally:
@@ -509,11 +510,11 @@ class IBGame:
         logger.debug('Joining lobby thread started')
         try:
             self.__connection_manager.join_lobby(self.__chosen_lobby)
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.JOINED_LOBBY
         except Exception as e:
             logger.error(f'Failed to join the lobby: {e}')
-            with self.__net_lock:
+            with self.net_lock:
                 self.game_state.connection_status = ConnectionStatus.LOBBY_FAILED
 
         finally:
@@ -527,13 +528,13 @@ class IBGame:
         """
 
         logger.debug('Waiting for players thread started')
-        with self.__net_lock:
+        with self.net_lock:
             self.game_state.connection_status = ConnectionStatus.WAITING_FOR_PLAYERS
 
-        while not self.__end_net_handler_thread.is_set() and not self.__exit.is_set():
+        while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
             try:
                 oponent_name = self.__connection_manager.check_for_players()
-                with self.__net_lock:
+                with self.net_lock:
                     self.__opponent_name = oponent_name
                     self.game_state.connection_status = ConnectionStatus.GAME_READY
                 
@@ -544,7 +545,7 @@ class IBGame:
                 continue
             except Exception as e:
                 logger.error(f'Failed to wait for the players: {e}')
-                with self.__net_lock:
+                with self.net_lock:
                     self.game_state.connection_status = ConnectionStatus.FAILED
                 self.context = None
                 break
@@ -559,7 +560,7 @@ class IBGame:
         """
 
         logger.debug('Game ready thread started')
-        with self.__net_lock:
+        with self.net_lock:
             try:
                 current_player = self.__connection_manager.game_ready()
 
@@ -624,7 +625,7 @@ class IBGame:
         Prepares the connection menu state of the game.
         """
 
-        with self.__net_lock:
+        with self.net_lock:
             if self.game_state.connection_status == ConnectionStatus.NOT_RUNNING:
                 tmp_logger.debug('Establishing the connection...')
                 self.context = InfoScreen(self.presentation_surface, 
@@ -973,8 +974,9 @@ class IBGame:
         # initialize the context as needed
         if not self.context:
             self.__prepare_init_state()
-
-        if events.event_videoresize:
+        
+        # handle the window resize event
+        if self.resized:
             self.__handle_context_resize()
 
         # process the input
@@ -995,8 +997,9 @@ class IBGame:
         if not self.context:
             self.__prepare_connection_menu()
         
-        if events.event_videoresize:
-            self.__handle_context_resize() 
+        # handle the window resize event
+        if self.resized:
+            self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1019,7 +1022,8 @@ class IBGame:
         if not self.context:
             self.__prepare_lobby()
 
-        if events.event_videoresize:
+        # handle the window resize event
+        if self.resized:
             self.__handle_context_resize()
 
         # process the input
@@ -1036,7 +1040,8 @@ class IBGame:
         if not self.context:
             self.__prepare_lobby_selection()
 
-        if events.event_videoresize:
+        # handle the window resize event
+        if self.resized:
             self.__handle_context_resize()
 
         # process the input
@@ -1076,10 +1081,9 @@ class IBGame:
         if not self.context:
             self.__prepare_main_menu()
 
-        # if the user resized the window, redraw the menu
-        if events.event_videoresize:
+        # handle the window resize event
+        if self.resized:
             self.__handle_context_resize()
-            # TODO figure it if return is needed here
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1101,7 +1105,8 @@ class IBGame:
         if not self.context:
             self.__prepare_settings_menu()
         
-        if events.event_videoresize:
+        # handle the window resize event
+        if self.resized:
             self.__handle_context_resize()
 
         # process the input
@@ -1126,24 +1131,35 @@ class IBGame:
             logger.critical('The game has not been started yet so it cannot be updated')
             raise SystemError('The game has not been started yet.')
 
-        # reset the update result
+        # reset the control variables
         self.update_result.update_areas = []
         events = self.__get_pygame_events()
+        self.resized = False
         debug_info_updated = False
         
         # user requests to quit
         if events.event_quit:
             logger.info('User requested to exit the game')
-            self.__exit.set()
+            self.do_exit.set()
             self.update_result.exit = True
             if self.__net_handler_thread:
                 self.__net_handler_thread.join()
             return self.update_result
             
-        # user attempts to resize the window
+        # user attempts to resize the window 
+        # NOTE: hacky solution because pygame does not support informing about the end of resizing on unix systems
         elif events.event_videoresize:
-            self.__handle_window_resize(events)
+            self.__time_last_resize = time.time()
+            self.__last_resize_event = events.event_videoresize
+            self.__resizing = True
+            self.window.fill(self.assets['colors']['black'])
+            self.update_result.update_areas.insert(0, True)
+        elif self.__resizing and time.time() - self.__time_last_resize > IBGame.RESIZE_DELAY:
+            self.__handle_window_resize(self.__last_resize_event)
             debug_info_updated = True
+            self.__time_last_resize = None
+            self.__resizing = False
+            self.resized = True 
 
 
         # capture the last key pressed for debugging purposes
