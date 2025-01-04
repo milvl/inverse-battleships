@@ -1,0 +1,350 @@
+// handleClient manages communication with a single client.
+func (s *Server) handleClient(conn net.Conn) {
+	defer conn.Close()
+
+	// fmt.Printf("New client connected: %s\n", conn.RemoteAddr().String())
+	logging.Info(fmt.Sprintf("New client connected: %s\n", conn.RemoteAddr().String()))
+
+	// add the connection to the Clients map.
+	s.Mu.Lock()
+	s.Clients[conn] = true
+	s.Mu.Unlock()
+
+	// create a buffer to read incoming data from the client.
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		// read a single line from the client (terminated by '\n').
+		message := scanner.Text()
+		// fmt.Printf("Received message from %s: %s\n", conn.RemoteAddr().String(), message)
+		logging.Info(fmt.Sprintf("Received message from %s: %s\n", conn.RemoteAddr().String(), message))
+
+		// Echo the message back to the client.
+		_, err := conn.Write([]byte("Echo: " + message + "\n"))
+		if err != nil {
+			fmt.Printf("Failed to send message to %s: %s\n", conn.RemoteAddr().String(), err)
+			break
+		}
+
+		// Exit if the client sends "exit".
+		if strings.TrimSpace(message) == "exit" {
+			fmt.Printf("Client %s disconnected.\n", conn.RemoteAddr().String())
+			break
+		}
+	}
+
+	// Remove the connection from the Clients map.
+	s.Mu.Lock()
+	delete(s.Clients, conn)
+	s.Mu.Unlock()
+	fmt.Printf("Connection with %s closed.\n", conn.RemoteAddr().String())
+}
+
+func testTryHandshake(cm *ClientManager, conn net.Conn) error {
+	// sanity check
+	if conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
+	// read the message
+	message, err := cm.p_server.ReadMessage(conn)
+	if err != nil {
+		return fmt.Errorf("failed to read message: %w", err)
+	}
+
+	// validate the message
+	expectedResp, err := ToNetMessage([]string{cmdHandshakeReqv})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	if message != expectedResp {
+		return fmt.Errorf("invalid message: %s", message)
+	}
+	logging.Info(fmt.Sprintf("Client %s has sent a handshake request", conn.RemoteAddr().String()))
+
+	// send the handshake response
+	resp, err := ToNetMessage([]string{cmdHandshakeResp})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	err = cm.p_server.SendMessage(conn, resp)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+	logging.Info(fmt.Sprintf("Client %s has received a handshake response", conn.RemoteAddr().String()))
+
+	// wait for the handshake acknowledgment
+	message, err = cm.p_server.ReadMessage(conn)
+	if err != nil {
+		return fmt.Errorf("failed to read message: %w", err)
+	}
+
+	expectedResp, err = ToNetMessage([]string{cmdHandshakeAck})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	if message != expectedResp {
+		return fmt.Errorf("invalid message: %s", message)
+	}
+
+	logging.Info(fmt.Sprintf("Client %s has been validated", conn.RemoteAddr().String()))
+	return nil
+}
+
+func testTryPong(cm *ClientManager, conn net.Conn) error {
+	// sanity check
+	if conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
+	// read the message
+	message, err := cm.p_server.ReadMessage(conn)
+	if err != nil {
+		return fmt.Errorf("failed to read message: %w", err)
+	}
+
+	// validate the message
+	expectedResp, err := ToNetMessage([]string{cmdPing})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	if message != expectedResp {
+		return fmt.Errorf("invalid message: %s", message)
+	}
+	logging.Info(fmt.Sprintf("Client %s has sent a ping", conn.RemoteAddr().String()))
+
+	// send the pong
+	resp, err := ToNetMessage([]string{cmdPong})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	err = cm.p_server.SendMessage(conn, resp)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+	logging.Info(fmt.Sprintf("Pong has been sent to client %s", conn.RemoteAddr().String()))
+
+	return nil
+}
+
+func testTryDisconnect(cm *ClientManager, conn net.Conn) error {
+	// sanity check
+	if conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
+	// read the message
+	message, err := cm.p_server.ReadMessage(conn)
+	if err != nil {
+		return fmt.Errorf("failed to read message: %w", err)
+	}
+
+	// validate the message
+	expectedResp, err := ToNetMessage([]string{cmdLeave})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	if message != expectedResp {
+		return fmt.Errorf("invalid message: %s", message)
+	}
+	logging.Info(fmt.Sprintf("Client %s has sent a leave request", conn.RemoteAddr().String()))
+
+	// send the leave acknowledgment
+	resp, err := ToNetMessage([]string{cmdLeaveAck})
+	if err != nil {
+		return fmt.Errorf("failed to create message: %w", err)
+	}
+
+	err = cm.p_server.SendMessage(conn, resp)
+	if err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+	logging.Info(fmt.Sprintf("Leave acknowledgment has been sent to client %s", conn.RemoteAddr().String()))
+
+	return nil
+}
+
+// testValidateClient validates a client by waiting for a handshake request.
+func testValidateClient(cm *ClientManager, conn net.Conn) error {
+	// sanity check
+	if conn == nil {
+		return fmt.Errorf("connection is nil")
+	}
+
+	err := testTryHandshake(cm, conn)
+	if err != nil {
+		return fmt.Errorf("failed to handshake: %w", err)
+	}
+
+	err = testTryPong(cm, conn)
+	if err != nil {
+		return fmt.Errorf("failed to pong: %w", err)
+	}
+
+	err = testTryDisconnect(cm, conn)
+	if err != nil {
+		return fmt.Errorf("failed to disconnect: %w", err)
+	}
+
+	return nil
+}
+
+// testHandleConnection handles a new connection. It adds the client to the client manager.
+// It requires a client manager and a connection as parameters.
+func testHandleConnection(cm *ClientManager, conn net.Conn) {
+	logging.Debug(fmt.Sprintf("Handling connection from %s", conn.RemoteAddr().String()))
+
+	// add the client
+	cm.mutex.Lock()
+	err := cm.addClient(conn)
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to add client: %v", err))
+		return
+	}
+	cm.mutex.Unlock()
+
+	logging.Info(fmt.Sprintf("Client %s has connected", conn.RemoteAddr().String()))
+
+	// validate the client (wait for handshake request)
+	err = testValidateClient(cm, conn)
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to validate client: %v", err))
+	}
+
+	// remove the client
+	cm.mutex.Lock()
+	err = cm.removeClient(conn)
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to remove client: %v", err))
+	}
+	cm.mutex.Unlock()
+
+	// close the connection
+	err = cm.p_server.CloseConnection(conn)
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to close connection: %v", err))
+	}
+
+	logging.Info(fmt.Sprintf("Client %s has disconnected", conn.RemoteAddr().String()))
+}
+
+func (cm *ClientManager) Test() {
+	// start the server
+	err := cm.startServer()
+	if err != nil {
+		logging.Error(fmt.Sprintf("failed to start server: %v", err))
+		return
+	}
+
+	// to stop the server after the function ends
+	defer cm.stopServer()
+
+	// infinite loop to accept connections
+	for {
+		// accept new connection
+		conn, err := cm.p_server.AcceptConnection()
+		if err != nil {
+			logging.Info(fmt.Sprintf("failed to accept connection: %v", err))
+			continue
+		}
+
+		go testHandleConnection(cm, conn)
+	}
+}
+
+// //
+// manageLobbies handles the games.
+func (cm *ClientManager) manageLobbies() error {
+	var err error = nil
+
+	var lobbiesToDelete []string
+	var lobbiesToPrepare []string
+	var lobbiesToStart []string
+	var lobbiesToAdvance []string
+
+	cm.rwMutex.RLock()
+	for _, lobby := range cm.lobbies {
+		// handle the game
+		switch lobby.state {
+		case protocol.LobbyStateFail:
+			lobbiesToDelete = append(lobbiesToDelete, lobby.id)
+
+		case protocol.LobbyStatePaired:
+			lobbiesToPrepare = append(lobbiesToPrepare, lobby.id)
+
+		case protocol.LobbyStateUnready:
+			if lobby.readyCount == protocol.PlayerCount {
+				lobbiesToStart = append(lobbiesToStart, lobby.id)
+			}
+
+		case protocol.LobbyStatePlayer01Turn, protocol.LobbyStatePlayer02Turn:
+			lobbiesToAdvance = append(lobbiesToAdvance, lobby.id)
+		}
+	}
+	cm.rwMutex.RUnlock()
+
+	for _, lobbyID := range lobbiesToDelete {
+		cm.rwMutex.Lock()
+		err = cm.handleDeleteLobby(lobbyID)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Error(fmt.Sprintf("failed to delete lobby %s: %v", lobbyID, err))
+		}
+	}
+	for _, lobbyID := range lobbiesToPrepare {
+
+		lobby, exists := cm.lobbies[lobbyID]
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+		cm.rwMutex.Lock()
+		err = cm.prepareGame(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to prepare game in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+		}
+	}
+	for _, lobbyID := range lobbiesToStart {
+		lobby, exists := cm.lobbies[lobbyID]
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		cm.rwMutex.Lock()
+		err = cm.startGame(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to start game in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+		}
+	}
+	for _, lobbyID := range lobbiesToAdvance {
+		lobby, exists := cm.lobbies[lobbyID]
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		err = cm.advanceGame(lobby)
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to advance game in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+		}
+	}
+
+	return err
+}
