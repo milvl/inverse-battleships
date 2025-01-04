@@ -990,8 +990,9 @@ class IBGame:
         inputs = self.__proccess_input(events, self.key_input_validator, self)
         
         # update the context and get the results
-        res = self.context.update(inputs)
-        self.__handle_update_feedback_init_state(res)
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_init_state(res)
     
 
     def __update_game_session(self, events: PyGameEvents):
@@ -1159,15 +1160,19 @@ class IBGame:
             self.__time_last_resize = time.time()
             self.__last_resize_event = events.event_videoresize
             self.__resizing = True
-            self.update_viewport_surfaces()
             self.window.fill(self.assets['colors']['black'])
             self.update_result.update_areas.insert(0, True)
+            return self.update_result
         elif self.__resizing and time.time() - self.__time_last_resize > IBGame.RESIZE_DELAY:
             self.__handle_window_resize(self.__last_resize_event)
             debug_info_updated = True
             self.__time_last_resize = None
             self.__resizing = False
             self.resized = True 
+        # NOTE: pygame does not work properly when resizing the window multiple times in a row
+        #       it causes segmentation fault in the C code under the hood
+        elif self.__resizing:
+            return self.update_result
 
 
         # capture the last key pressed for debugging purposes
