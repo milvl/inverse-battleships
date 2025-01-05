@@ -1197,6 +1197,7 @@ func (cm *ClientManager) ManageServer(ctx context.Context) error {
 		// server logic
 		default:
 			// handle games if any
+			// TODO: lock for connections
 			err := cm.manageLobbies()
 			if err != nil {
 				return fmt.Errorf("failed to manage lobbies: %w", err)

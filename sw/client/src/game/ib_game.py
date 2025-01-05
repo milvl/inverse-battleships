@@ -164,7 +164,7 @@ class IBGame:
 
         try:
             tmp_logger.debug('Thread: Attempting to connect to the server...')
-            __class__.__attempt_connection(self.__connection_manager)
+            IBGame.__attempt_connection(self.__connection_manager)
             tmp_logger.debug('Thread: Connection successful')
 
             # request the player to join the server
@@ -354,7 +354,7 @@ class IBGame:
         user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{self.player_name}.json')
         if not os.path.exists(user_cfg_path):
             logger.info(f'User configuration file does not exist, creating a new one: {user_cfg_path}')
-            __class__.__create_user_cfg(self.player_name)
+            IBGame.__create_user_cfg(self.player_name)
         
         logger.debug(f'User configuration file found: {user_cfg_path}')
         with open(user_cfg_path, 'r') as f:
@@ -593,6 +593,14 @@ class IBGame:
         self.key_input_validator = input_validators.init_menu_key_input_validator
         self.context.redraw()
         self.update_result.update_areas.insert(0, True)
+
+
+    def __prepare_game_session(self):
+        """
+        Prepares the game session state of the game.
+        """
+
+        raise NotImplementedError('The game session state has not been implemented yet.')
     
 
     def __prepare_main_menu(self):
@@ -822,9 +830,9 @@ class IBGame:
         
         # handle the user input
         elif res['submit']:
-            if __class__.__is_settings_input_valid(self.context.text_input):
+            if IBGame.__is_settings_input_valid(self.context.text_input):
                 logger.info(f'User submitted the input: {self.context.text_input}')
-                __class__.__create_user_cfg(self.player_name, self.context.text_input)
+                IBGame.__create_user_cfg(self.player_name, self.context.text_input)
                 ip, port = self.context.text_input.split(':')
                 self.server_ip = ip
                 self.server_port = int(port)
@@ -996,7 +1004,20 @@ class IBGame:
     
 
     def __update_game_session(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_game_session method has not been implemented yet.')
+        # initialize the context as needed
+        if not self.context:
+            self.__prepare_game_session()
+
+        if self.resized:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_game_session(res)
     
 
     def __update_connection_menu(self, events: PyGameEvents):
