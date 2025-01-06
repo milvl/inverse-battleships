@@ -27,7 +27,7 @@
     "preparing_game_msg": "Preparing the game...",
     
     "player_turn_panel_player": "It's your \nturn",
-    "player_turn_panel_opponent": "It's the turn \nof your opponent:\n",
+    "player_turn_panel_opponent": "It's the turn of \nyour opponent:\n",
     "status_panel_take_turn_msg": "Take your \nturn",
     "status_panel_waiting_for_opponent_turn_msg": "Waiting for the \nopponent's turn...",
     "last_action_panel_title": "Last action:\n",

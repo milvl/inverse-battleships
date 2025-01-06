@@ -8,6 +8,7 @@ import os
 import re
 import threading
 import time
+from graphics.game_session import GameSession
 from const.server_communication import *
 from game.connection_manager import ConnectionManager, ServerResponse
 from const.paths import DEFAULT_USER_CONFIG_PATH
@@ -766,16 +767,18 @@ class IBGame:
 
         # handle graphics update (text input)
         if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.extend(update_rect)
+            update_rects = self.context.draw()
+            self.update_result.update_areas.extend(update_rects)
         
         # handle the user input
         elif res['submit']:
             logger.info(f'User submitted the input: {self.context.text_input}')
             self.__set_up_user_session()
             self.context = None
-            self.game_state.state = IBGameState.MAIN_MENU
-            logger.info('Changing the state to MAIN_MENU')
+            # self.game_state.state = IBGameState.MAIN_MENU
+            # logger.info('Changing the state to MAIN_MENU')
+            self.game_state.state = IBGameState.GAME_SESSION
+            tmp_logger.debug('Changing the state directly to GAME_SESSION (DEBUGGING)')
 
 
     def __handle_update_feedback_main_menu(self, res: Dict[str, Any]):
@@ -825,8 +828,8 @@ class IBGame:
 
         # handle graphics update (text input)
         if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.extend(update_rect)
+            update_rects = self.context.draw()
+            self.update_result.update_areas.extend(update_rects)
         
         # handle the user input
         elif res['submit']:
@@ -919,8 +922,8 @@ class IBGame:
 
         # handle graphics update (text input)
         if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.extend(update_rect)
+            update_rects = self.context.draw()
+            self.update_result.update_areas.extend(update_rects)
         
         # handle the user input
         elif res['submit']:
@@ -960,8 +963,8 @@ class IBGame:
 
         # handle graphics update (text input)
         if res['graphics_update']:
-            update_rect = self.context.draw()
-            self.update_result.update_areas.extend(update_rect)
+            update_rects = self.context.draw()
+            self.update_result.update_areas.extend(update_rects)
         
         # handle the user input
         elif res['escape']:
@@ -976,6 +979,28 @@ class IBGame:
                 self.game_state.state = IBGameState.MAIN_MENU
                 self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
                 self.context = None
+
+
+    def __handle_update_feedback_game_session(self, res: Dict[str, Any]):
+        if res.get('switch', None):
+            with self.net_lock:
+                self.__shared_data['player_on_turn'] = self.__shared_data['player_name'] if self.__shared_data['player_on_turn'] == self.__shared_data['opponent_name'] else self.__shared_data['opponent_name']
+        if res.get('random_board', None):
+            random_board = []
+            import random
+            for i in range(9):
+                random_row = []
+                for j in range(9):
+                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
+                random_board.append(random_row)
+            
+            with self.net_lock:
+                self.__shared_data['board'] = random_board
+
+        if res.get('graphics_update', None):
+            update_rects = self.context.draw()
+            tmp_logger.debug(f'Game session update: {update_rects}')
+            self.update_result.update_areas.extend(update_rects)
 
 
     def __update_init_state(self, events: PyGameEvents):
@@ -1006,7 +1031,24 @@ class IBGame:
     def __update_game_session(self, events: PyGameEvents):
         # initialize the context as needed
         if not self.context:
-            self.__prepare_game_session()
+            # self.__prepare_game_session()
+            self.__shared_data = {'player_name': 'a', 
+                                  'player_on_turn': 'a',
+                                  'opponent_name': 'b',
+                                 }
+            random_board = []
+            import random
+            for i in range(9):
+                random_row = []
+                for j in range(9):
+                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
+                random_board.append(random_row)
+            
+            with self.net_lock:
+                self.__shared_data['board'] = random_board
+            self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
 
         if self.resized:
             self.__handle_context_resize()
@@ -1187,6 +1229,7 @@ class IBGame:
         elif self.__resizing and time.time() - self.__time_last_resize > IBGame.RESIZE_DELAY:
             self.__handle_window_resize(self.__last_resize_event)
             debug_info_updated = True
+            self.debug_info.dimensions = self.window.get_size()
             self.__time_last_resize = None
             self.__resizing = False
             self.resized = True 

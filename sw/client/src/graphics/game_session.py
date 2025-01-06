@@ -10,9 +10,19 @@ class GameSession(Viewport):
     """Represents the game session graphics context."""
 
 
+    BOARD_FREE = 0
+    """The value of a free cell on the board."""
+    BOARD_PLAYER = 1
+    """The value of a player cell on the board."""
+    BOARD_LOST = 2
+    """The value of a lost cell on the board."""
+    BOARD_OPPONENT = 3
+    """The value of an opponent cell on the board."""
+    BOARD_OPPONENT_LOST = 4
+    """The value of an opponent lost cell on the board."""
     TEXT_UNSET = "ERROR"
     """The text to display when the text is unset."""
-    RATIO_BOARD_TO_SCREEN_WIDTH = 0.8
+    RATIO_BOARD_TO_SCREEN_WIDTH = 9/16
     """The ratio of the board width to the screen width."""
     RATIO_INFO_PANEL_TO_SCREEN_WIDTH = (1 - RATIO_BOARD_TO_SCREEN_WIDTH) / 2
     """The ratio of the info panel width to the screen width."""
@@ -22,6 +32,12 @@ class GameSession(Viewport):
     """The ratio of the text width to the panel width."""
     RATIO_TEXT_HEIGHT_TO_PANEL_HEIGHT = 0.8
     """The ratio of the text height to the panel height."""
+    RATIO_OUTLINE_TO_CELL = 0.05
+    """The ratio of the outline to the cell."""
+    SYMBOLS_ROW = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+    """The symbols for the rows of the board."""
+    SYMBOLS_COLUMN = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    """The symbols for the columns of the board."""
 
 
     def __init__(self, 
@@ -49,10 +65,7 @@ class GameSession(Viewport):
         self.__text_color = self.__assets['colors']['white']
 
         with self.__rlock:
-            self.__player_name = shared_data['player_name']
-            self.__opponent_name = shared_data['opponent_name']
-            self.__board = shared_data['board']
-            self.__player_on_turn = shared_data['player_on_turn']
+            self.__shared_data = shared_data
         
         self.__last_action = ""
 
@@ -79,6 +92,31 @@ class GameSession(Viewport):
         """
 
         self.__surface = surface
+
+
+    def __get_score(self) -> int:
+        """
+        Gets the score of the game session. 
+        Attempts to access shared resources 
+        so it should be called within a lock.
+
+        :return: The score.
+        :rtype: int
+        """
+
+        score = 0
+        if not self.__shared_data.get('board', None):
+            return score
+        for row in self.__shared_data['board']:
+            for cell in row:
+                if cell == GameSession.BOARD_PLAYER:
+                    score += 10
+                elif cell == GameSession.BOARD_LOST:
+                    score -= 5
+                elif cell == GameSession.BOARD_OPPONENT_LOST:
+                    score += 20
+
+        return score
 
 
     def __get_panel(self, width: int, height: int) -> pygame.Surface:
@@ -117,19 +155,23 @@ class GameSession(Viewport):
 
         player_turn_panel_text = GameSession.TEXT_UNSET
         with self.__rlock:
-            if self.__player_on_turn == self.__player_name:
+            player_on_turn = self.__shared_data['player_on_turn']
+            player_name = self.__shared_data['player_name']
+            opponent_name = self.__shared_data['opponent_name']
+            if player_on_turn == player_name:
                 player_turn_panel_text = self.__assets['strings']['player_turn_panel_player']
-            elif self.__player_on_turn == self.__opponent_name:
-                player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + self.__opponent_name
+            elif player_on_turn == opponent_name:
+                player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + opponent_name
 
-        player_turn_panel_text = f"{player_turn_panel_text}"
         player_turn_panel_text_surface = get_rendered_text_with_size(player_turn_panel_text, 
                                                                      text_border_max_width, 
                                                                      text_border_max_height,
-                                                                     self.__text_color)
+                                                                     color=self.__text_color)
         
         text_top_left = (info_panel_width - player_turn_panel_text_surface.get_width()) // 2, \
                         (info_panel_height - player_turn_panel_text_surface.get_height()) // 2
+        
+        # draw the text
         player_turn_panel.blit(player_turn_panel_text_surface, text_top_left)
 
         return player_turn_panel
@@ -151,19 +193,23 @@ class GameSession(Viewport):
 
         status_panel_text = GameSession.TEXT_UNSET
         with self.__rlock:
-            if self.__player_on_turn == self.__player_name:
+            player_on_turn = self.__shared_data['player_on_turn']
+            player_name = self.__shared_data['player_name']
+            opponent_name = self.__shared_data['opponent_name']
+            if player_on_turn == player_name:
                 status_panel_text = self.__assets['strings']['status_panel_take_turn_msg']
-            elif self.__player_on_turn == self.__opponent_name:
+            elif player_on_turn == opponent_name:
                 status_panel_text = self.__assets['strings']['status_panel_waiting_for_opponent_turn_msg']
 
-        status_panel_text = f"{status_panel_text}"
         status_panel_text_surface = get_rendered_text_with_size(status_panel_text, 
                                                                 text_border_max_width, 
                                                                 text_border_max_height,
-                                                                self.__text_color)
+                                                                color=self.__text_color)
         
         text_top_left = (info_panel_width - status_panel_text_surface.get_width()) // 2, \
                         (info_panel_height - status_panel_text_surface.get_height()) // 2
+        
+        # draw the text
         status_panel.blit(status_panel_text_surface, text_top_left)
 
         return status_panel
@@ -185,13 +231,12 @@ class GameSession(Viewport):
 
         last_action_panel_text = GameSession.TEXT_UNSET
         with self.__rlock:
-            last_action_panel_text = self.__last_action
+            last_action_panel_text = self.__shared_data.get('last_action', "")
 
-        last_action_panel_text = f"{last_action_panel_text}"
         last_action_panel_text_surface = get_rendered_text_with_size(last_action_panel_text, 
                                                                     text_border_max_width, 
                                                                     text_border_max_height,
-                                                                    self.__text_color)
+                                                                    color=self.__text_color)
         
         text_top_left = (info_panel_width - last_action_panel_text_surface.get_width()) // 2, \
                         (info_panel_height - last_action_panel_text_surface.get_height()) // 2
@@ -201,8 +246,34 @@ class GameSession(Viewport):
     
 
     def __get_score_panel(self, info_panel_width, info_panel_height, text_border_max_width, text_border_max_height) -> pygame.Surface:
-        # TODO: Implement this method
-        pass
+        """
+        Gets the score panel for the game session.
+
+        :param info_panel_width: The width of the info panel.
+        :type info_panel_width: int
+        :param info_panel_height: The height of the info panel.
+        :type info_panel_height: int
+        :return: The score panel.
+        :rtype: pygame.Surface
+        """
+
+        score_panel = self.__get_panel(info_panel_width, info_panel_height)
+
+        score_panel_text = GameSession.TEXT_UNSET
+        with self.__rlock:
+            score = self.__get_score()
+            score_panel_text = self.__assets['strings']['score_panel_title'] + str(score)
+
+        score_panel_text_surface = get_rendered_text_with_size(score_panel_text, 
+                                                               text_border_max_width, 
+                                                               text_border_max_height,
+                                                               color=self.__text_color)
+        
+        text_top_left = (info_panel_width - score_panel_text_surface.get_width()) // 2, \
+                        (info_panel_height - score_panel_text_surface.get_height()) // 2
+        score_panel.blit(score_panel_text_surface, text_top_left)
+
+        return score_panel
 
 
     def __get_info_panels(self, 
@@ -223,28 +294,106 @@ class GameSession(Viewport):
 
         # player turn panel
         player_turn_panel = self.__get_player_turn_panel(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
-
         # status panel
         status_panel = self.__get_status_panel(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
-
         # last action panel
         last_action_panel = self.__get_last_action_panel(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
-
         # score panel
         score_panel = self.__get_score_panel(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
-
+        
         return player_turn_panel, status_panel, last_action_panel, score_panel
+    
 
-
-
-    def __draw_objects(self):
+    def __get_board(self, surface_width: int, surface_height: int) -> pygame.Surface:
         """
-        Draws the objects in the game session.
+        Gets the board for the game session.
 
-        :return: The select menu.
+        :param surface_width: The width of the surface.
+        :type surface_width: int
+        :param surface_height: The height of the surface.
+        :type surface_height: int
+        :return: The board.
         :rtype: pygame.Surface
         """
 
+        board_width = surface_width * GameSession.RATIO_BOARD_TO_SCREEN_WIDTH
+        board_height = surface_height
+        board_surface = pygame.Surface((board_width, board_height))
+        board_surface.fill(self.__background_color)
+        board_surface_rect = board_surface.get_rect()
+        board_surface_rect.topleft = (0, 0)
+
+        # draw the board
+        with self.__rlock:
+            board = self.__shared_data.get('board', None)
+            if not board:
+                raise ValueError('The board data is not set.')
+
+        row_cells_count = len(board) + 1
+        columns_cells_count = len(board[0]) + 1
+
+        cell_width = board_width / columns_cells_count
+        cell_height = board_height / row_cells_count
+
+        for row in range(row_cells_count):
+            for col in range(columns_cells_count):
+                # skip the first cell
+                if col == 0 and row == 0:
+                    continue
+
+                # draw the row symbols
+                elif col == 0:
+                    row_symbol = GameSession.SYMBOLS_ROW[row - 1]
+                    row_symbol_surface = get_rendered_text_with_size(row_symbol, 
+                                                                     cell_width, 
+                                                                     cell_height,
+                                                                     color=self.__text_color)
+                    row_symbol_rect = row_symbol_surface.get_rect()
+                    row_symbol_rect.topleft = (0 + (cell_width - row_symbol_rect.width) // 2, row * cell_height + (cell_height - row_symbol_rect.height) // 2)
+                    board_surface.blit(row_symbol_surface, row_symbol_rect)
+
+                # draw the column symbols
+                elif row == 0:
+                    col_symbol = GameSession.SYMBOLS_COLUMN[col - 1]
+                    col_symbol_surface = get_rendered_text_with_size(col_symbol, 
+                                                                    cell_width, 
+                                                                    cell_height,
+                                                                    color=self.__text_color)
+                    col_symbol_rect = col_symbol_surface.get_rect()
+                    col_symbol_rect.topleft = (col * cell_width + ((cell_width - col_symbol_rect.width) // 2), (0 + (cell_height - col_symbol_rect.height) // 2))
+                    board_surface.blit(col_symbol_surface, col_symbol_rect)
+
+                # draw the cells
+                else:
+                    cell = board[row - 1][col - 1]
+                    cell_rect = pygame.Rect((col * cell_width, row * cell_height), (cell_width, cell_height))
+                    cell_inner_rect = pygame.Rect(cell_rect.left + (cell_width * GameSession.RATIO_OUTLINE_TO_CELL) / 2, 
+                                                  cell_rect.top + (cell_height * GameSession.RATIO_OUTLINE_TO_CELL) / 2, 
+                                                  cell_rect.width - (cell_width * GameSession.RATIO_OUTLINE_TO_CELL),
+                                                  cell_rect.height - (cell_height * GameSession.RATIO_OUTLINE_TO_CELL))
+                    color = self.__assets['colors']['silver']
+                    if cell == GameSession.BOARD_PLAYER:
+                        color = self.__assets['colors']['green']
+                    elif cell == GameSession.BOARD_LOST:
+                        color = self.__assets['colors']['red']
+                    elif cell == GameSession.BOARD_OPPONENT_LOST:
+                        color = self.__assets['colors']['orange']
+
+                    pygame.draw.rect(board_surface, self.__assets['colors']['black'], cell_rect)
+                    pygame.draw.rect(board_surface, color, cell_inner_rect)
+        
+        return board_surface
+
+
+    def __draw_objects(self) -> List[pygame.Rect]:
+        """
+        Draws the objects in the game session.
+
+        :return: The rectangles of the objects.
+        :rtype: List[pygame.Rect]
+        """
+
+        update_areas = []
         surface_width, surface_height = self.__surface.get_size()
         info_panel_width = surface_width * self.RATIO_INFO_PANEL_TO_SCREEN_WIDTH
         info_panel_height = surface_height * self.RATIO_INFO_PANEL_TO_SCREEN_HEIGHT
@@ -252,12 +401,41 @@ class GameSession(Viewport):
         text_border_max_height = info_panel_height * self.RATIO_TEXT_HEIGHT_TO_PANEL_HEIGHT
 
         # draw the info panels
-        plyer_turn_panel, status_panel, last_action_panel, score_panel = self.__get_info_panels(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
+        panel_surfaces = self.__get_info_panels(info_panel_width, info_panel_height, text_border_max_width, text_border_max_height)
+        player_turn_panel, status_panel, last_action_panel, score_panel = panel_surfaces
+
+        # calculate the positions of the info panels
+        player_turn_panel_x_y = 0, 0
+        status_panel_x_y = player_turn_panel_x_y[0], player_turn_panel.get_height()
+        last_action_panel_x_y = surface_width - last_action_panel.get_width(), 0
+        score_panel_x_y = last_action_panel_x_y[0], last_action_panel.get_height()
+
+        # draw the info panels
+        self.__surface.blit(player_turn_panel, player_turn_panel_x_y)
+        self.__surface.blit(status_panel, status_panel_x_y)
+        self.__surface.blit(last_action_panel, last_action_panel_x_y)
+        self.__surface.blit(score_panel, score_panel_x_y)
+
+        player_turn_panel_rect = pygame.Rect(player_turn_panel_x_y, (info_panel_width, info_panel_height))
+        status_panel_rect = pygame.Rect(status_panel_x_y, (info_panel_width, info_panel_height))
+        last_action_panel_rect = pygame.Rect(last_action_panel_x_y, (info_panel_width, info_panel_height))
+        score_panel_rect = pygame.Rect(score_panel_x_y, (info_panel_width, info_panel_height))
+        update_areas.extend([player_turn_panel_rect, status_panel_rect, last_action_panel_rect, score_panel_rect])
+
+        # draw the board
+        board_surface = self.__get_board(surface_width, surface_height)
+        board_surface_x_y = info_panel_width, 0
+        self.__surface.blit(board_surface, board_surface_x_y)
+        board_surface_rect = pygame.Rect(board_surface_x_y, board_surface.get_size())
+        update_areas.append(board_surface_rect)
+
+        return update_areas
 
 
-    def draw(self):
+    def draw(self) -> List[pygame.Rect]:
         """
-        Draws the game session.
+        Draws the game session. Returns the 
+        bounding rectangles of the objects drawn.
 
         :return: The select menu.
         :rtype: pygame.Surface
@@ -273,9 +451,9 @@ class GameSession(Viewport):
         """
 
         # update and draw the background
-        surface_width, surface_height = self._surface.get_size()
+        surface_width, surface_height = self.__surface.get_size()
         self.__background = pygame.Rect(0, 0, surface_width, surface_height)
-        pygame.draw.rect(self._surface, self.__background_color, self.__background)
+        pygame.draw.rect(self.__surface, self.__background_color, self.__background)
 
         # draw the objects
         self.__draw_objects()
@@ -293,6 +471,16 @@ class GameSession(Viewport):
 
         result = {'graphics_update': False, 
                   'escape': False}
-
+        
+        if events.get('escape', False):
+            result['escape'] = True
+            result['graphics_update'] = True
+        elif events.get('new_char', None):
+            c = events['new_char']
+            if c == 'p':
+                result['switch'] = True
+            elif c == 's':
+                result['random_board'] = True
+            result['graphics_update'] = True
 
         return result
