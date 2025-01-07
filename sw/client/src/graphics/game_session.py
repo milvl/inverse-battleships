@@ -68,6 +68,9 @@ class GameSession(Viewport):
             self.__shared_data = shared_data
         
         self.__last_action = ""
+        self.__selected_cell = None
+        self.__highlighted_cell = None
+        self.__hit_check_cells = None
 
     
     @property
@@ -92,6 +95,18 @@ class GameSession(Viewport):
         """
 
         self.__surface = surface
+
+
+    @property
+    def selected_cell(self) -> Tuple[int, int]:
+        """
+        Getter for the selected cell property.
+
+        :return: The selected cell.
+        :rtype: Tuple[int, int]
+        """
+
+        return self.__selected_cell
 
 
     def __get_score(self) -> int:
@@ -161,7 +176,7 @@ class GameSession(Viewport):
             if player_on_turn == player_name:
                 player_turn_panel_text = self.__assets['strings']['player_turn_panel_player']
             elif player_on_turn == opponent_name:
-                player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + opponent_name
+                player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + f"\"{opponent_name}\""
 
         player_turn_panel_text_surface = get_rendered_text_with_size(player_turn_panel_text, 
                                                                      text_border_max_width, 
@@ -316,6 +331,8 @@ class GameSession(Viewport):
         :rtype: pygame.Surface
         """
 
+        self.__hit_check_cells = []
+        left_panel_width = surface_width * GameSession.RATIO_INFO_PANEL_TO_SCREEN_WIDTH
         board_width = surface_width * GameSession.RATIO_BOARD_TO_SCREEN_WIDTH
         board_height = surface_height
         board_surface = pygame.Surface((board_width, board_height))
@@ -336,6 +353,7 @@ class GameSession(Viewport):
         cell_height = board_height / row_cells_count
 
         for row in range(row_cells_count):
+            hit_check_row = []
             for col in range(columns_cells_count):
                 # skip the first cell
                 if col == 0 and row == 0:
@@ -378,9 +396,16 @@ class GameSession(Viewport):
                         color = self.__assets['colors']['red']
                     elif cell == GameSession.BOARD_OPPONENT_LOST:
                         color = self.__assets['colors']['orange']
+                    elif self.__highlighted_cell and self.__highlighted_cell == (row - 1, col - 1):
+                        color = self.__assets['colors']['white']
 
                     pygame.draw.rect(board_surface, self.__assets['colors']['black'], cell_rect)
                     pygame.draw.rect(board_surface, color, cell_inner_rect)
+                    hit_check_rect = pygame.Rect((left_panel_width + cell_rect.left, cell_rect.top), cell_rect.size)
+                    hit_check_row.append(hit_check_rect)
+            
+            if row != 0:
+                self.__hit_check_cells.append(hit_check_row)
         
         return board_surface
 
@@ -482,5 +507,15 @@ class GameSession(Viewport):
             elif c == 's':
                 result['random_board'] = True
             result['graphics_update'] = True
+        elif events.get('mouse_motion', None):
+            if self.__highlighted_cell:
+                self.__highlighted_cell = None
+                result['graphics_update'] = True
+            for row in range(len(self.__hit_check_cells)):
+                for col in range(len(self.__hit_check_cells[row])):
+                    if self.__hit_check_cells[row][col].collidepoint(events['mouse_motion']):
+                        self.__highlighted_cell = (row, col)
+                        result['graphics_update'] = True
+                        break
 
         return result

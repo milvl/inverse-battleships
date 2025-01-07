@@ -51,6 +51,14 @@ class IBGame:
     def __proccess_input(events: PyGameEvents, key_input_validator: Callable = lambda y, x: x, self = None) -> Dict[str, Any]:
         """
         Processes the input events into a dictionary.
+        Can return the following keys:
+        - direction: The direction key pressed.
+        - backspace: True if the backspace key was pressed.
+        - return: True if the return key was pressed.
+        - escape: True if the escape key was pressed.
+        - new_char: The new character entered.
+        - mouse_click: The position of the mouse click.
+        - mouse_motion: The position of the mouse motion.
 
         :param events: PyGame events.
         :type events: PyGameEvents
@@ -999,7 +1007,6 @@ class IBGame:
 
         if res.get('graphics_update', None):
             update_rects = self.context.draw()
-            tmp_logger.debug(f'Game session update: {update_rects}')
             self.update_result.update_areas.extend(update_rects)
 
 
