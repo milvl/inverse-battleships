@@ -783,10 +783,8 @@ class IBGame:
             logger.info(f'User submitted the input: {self.context.text_input}')
             self.__set_up_user_session()
             self.context = None
-            # self.game_state.state = IBGameState.MAIN_MENU
-            # logger.info('Changing the state to MAIN_MENU')
-            self.game_state.state = IBGameState.GAME_SESSION
-            tmp_logger.debug('Changing the state directly to GAME_SESSION (DEBUGGING)')
+            self.game_state.state = IBGameState.MAIN_MENU
+            logger.info('Changing the state to MAIN_MENU')
 
 
     def __handle_update_feedback_main_menu(self, res: Dict[str, Any]):
@@ -1033,106 +1031,6 @@ class IBGame:
         if self.context:
             res = self.context.update(inputs)
             self.__handle_update_feedback_init_state(res)
-    
-
-    def __update_game_session(self, events: PyGameEvents):
-        # initialize the context as needed
-        if not self.context:
-            # self.__prepare_game_session()
-            self.__shared_data = {'player_name': 'a', 
-                                  'player_on_turn': 'a',
-                                  'opponent_name': 'b',
-                                 }
-            random_board = []
-            import random
-            for i in range(9):
-                random_row = []
-                for j in range(9):
-                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
-                random_board.append(random_row)
-            
-            with self.net_lock:
-                self.__shared_data['board'] = random_board
-            self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
-            self.context.redraw()
-            self.update_result.update_areas.insert(0, True)
-
-        if self.resized:
-            self.__handle_context_resize()
-
-        # process the input
-        inputs = self.__proccess_input(events)
-
-        # update the context and get the results
-        if self.context:
-            res = self.context.update(inputs)
-            self.__handle_update_feedback_game_session(res)
-    
-
-    def __update_connection_menu(self, events: PyGameEvents):
-        # TODO RECONNECT
-
-        if not self.context:
-            self.__prepare_connection_menu()
-        
-        # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
-
-        # process the input
-        inputs = self.__proccess_input(events)
-
-        if self.context:
-            # update the context and get the results
-            res = self.context.update(inputs)
-            self.__handle_update_feedback_connection_menu(res)
-
-
-    def __update_lobby(self, events: PyGameEvents):
-        """
-        Handles the lobby state. Lobby state represents the state when the player
-        is either creating or joining a lobby.
-
-        :param events: The PyGame user input events.
-        :type events: PyGameEvents
-        """
-
-        if not self.context:
-            self.__prepare_lobby()
-
-        # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
-
-        # process the input
-        inputs = self.__proccess_input(events)
-
-        # update the context and get the results
-        if self.context:
-            res = self.context.update(inputs)
-            self.__handle_update_feedback_lobby(res)
-
-
-
-    def __update_lobby_selection(self, events: PyGameEvents):
-        if not self.context:
-            self.__prepare_lobby_selection()
-
-        # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
-
-        # process the input
-        inputs = self.__proccess_input(events)
-
-        # update the context and get the results
-        if self.context:
-            res = self.context.update(inputs)
-            self.__handle_update_feedback_lobby_selection(res)
-
-
-    def __update_game_end(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
 
 
     def __update_main_menu(self, events: PyGameEvents):
@@ -1193,6 +1091,106 @@ class IBGame:
         # update the context and get the results
         res = self.context.update(inputs)
         self.__handle_update_feedback_settings_menu(res)
+
+
+    def __update_connection_menu(self, events: PyGameEvents):
+        # TODO RECONNECT
+
+        if not self.context:
+            self.__prepare_connection_menu()
+        
+        # handle the window resize event
+        if self.resized:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        if self.context:
+            # update the context and get the results
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_connection_menu(res)
+
+
+    def __update_lobby(self, events: PyGameEvents):
+        """
+        Handles the lobby state. Lobby state represents the state when the player
+        is either creating or joining a lobby.
+
+        :param events: The PyGame user input events.
+        :type events: PyGameEvents
+        """
+
+        if not self.context:
+            self.__prepare_lobby()
+
+        # handle the window resize event
+        if self.resized:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_lobby(res)
+
+
+    def __update_lobby_selection(self, events: PyGameEvents):
+        if not self.context:
+            self.__prepare_lobby_selection()
+
+        # handle the window resize event
+        if self.resized:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_lobby_selection(res)
+
+
+    def __update_game_session(self, events: PyGameEvents):
+        # TODO DOC
+        # initialize the context as needed
+        if not self.context:
+            # self.__prepare_game_session()
+            self.__shared_data = {'player_name': 'a', 
+                                  'player_on_turn': 'a',
+                                  'opponent_name': 'b',
+                                 }
+            random_board = []
+            import random
+            for i in range(9):
+                random_row = []
+                for j in range(9):
+                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
+                random_board.append(random_row)
+            
+            with self.net_lock:
+                self.__shared_data['board'] = random_board
+            self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
+
+        if self.resized:
+            self.__handle_context_resize()
+
+        # process the input
+        inputs = self.__proccess_input(events)
+
+        # update the context and get the results
+        if self.context:
+            res = self.context.update(inputs)
+            self.__handle_update_feedback_game_session(res)
+
+
+    def __update_game_end(self, events: PyGameEvents):
+        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
 
         
     def update(self) -> IBGameUpdateResult:
