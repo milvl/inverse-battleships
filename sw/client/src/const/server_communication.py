@@ -117,3 +117,27 @@ SERVER_ADDRESS_MAX_LENGTH = 18 # 9 IP, 5 port, 1 colon, 3 dots
 
 SERVER_CONNECTION_TIMEOUT = 5
 """The timeout for the server connection in seconds."""
+
+BOARD_SIDE_SIZE = 9
+"""The size of the board side."""
+
+BOARD_FREE_CELL = 0
+"""The value of the free cell on the board."""
+
+BOARD_PLAYER_CELL = 1
+"""The value of the player cell on the board."""
+
+BOARD_PLAYER_SHIP_LOST_CELL = 2
+"""The value of the player ship lost cell on the board."""
+
+BOARD_OPPONENT_SHIP_LOST_CELL = 3
+"""The value of the opponent ship lost cell on the board."""
+
+SCORE_SHIP_GAINED = 10
+"""The score gained for a ship."""
+
+SCORE_HIT = 20
+"""The score gained for a hit."""
+
+SCORE_LOST_SHIP = -10
+"""The score lost for a lost ship."""

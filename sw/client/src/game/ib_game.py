@@ -163,6 +163,21 @@ class IBGame:
             raise ConnectionError(f'Failed to connect to the server: {e}')
         
 
+    def __get_init_board(self):
+        """
+        Returns the initial board state.
+        """
+
+        init_board = []
+        for _ in range(BOARD_SIDE_SIZE):
+            init_row = []
+            for _ in range(BOARD_SIDE_SIZE):
+                init_row.append(GameSession.BOARD_FREE)
+            init_board.append(init_row)
+
+        return init_board
+        
+
     def __establish_connection(self):
         """
         Establishes the connection to the server.
@@ -254,9 +269,10 @@ class IBGame:
         self.__end_net_handler_thread.clear()
         self.__lobbies = []
         self.__my_lobby = None
-        self.__opponent_name = None
-        self.__current_player = None
         self.__chosen_lobby = None
+        self.__game_session_updates = {}
+        self.__game_session_updated = threading.Event()
+        self.__game_session_updated.clear()
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -420,6 +436,23 @@ class IBGame:
         self.__net_handler_thread.join()
         self.__net_handler_thread = None
         self.__end_net_handler_thread.clear()
+
+    
+    def __append_game_session_async_updates(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Appends the game session async updates.
+
+        :param inputs: The inputs.
+        :type inputs: Dict[str, Any]
+        :return: The updated inputs.
+        :rtype: Dict[str, Any]
+        """
+
+        with self.net_lock:
+            for key, value in self.__game_session_updates.items():
+                inputs[key] = value
+
+        return inputs
 
 
     def __handle_net_keep_alive(self):
@@ -602,14 +635,6 @@ class IBGame:
         self.key_input_validator = input_validators.init_menu_key_input_validator
         self.context.redraw()
         self.update_result.update_areas.insert(0, True)
-
-
-    def __prepare_game_session(self):
-        """
-        Prepares the game session state of the game.
-        """
-
-        raise NotImplementedError('The game session state has not been implemented yet.')
     
 
     def __prepare_main_menu(self):
@@ -761,6 +786,36 @@ class IBGame:
 
         # update the graphics
         if self.context:
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
+    
+
+    def __prepare_game_session(self):
+        """
+        Prepares the game session state of the game.
+        """
+
+        if self.game_state.connection_status == ConnectionStatus.FAILED:
+            self.__net_handler_thread.join()
+            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
+
+        # get the data to start the game
+        elif self.game_state.connection_status == ConnectionStatus.GAME_READY:
+            if not self.__current_player:
+                raise ValueError("Logic error: The current player is not set")
+            if not self.__opponent_name:
+                raise ValueError("Logic error: The opponent name is not set")
+
+            self.context = GameSession(self.presentation_surface, self.assets)
+
+            with self.net_lock:
+                self.__game_session_updates['player_name'] = self.player_name
+                self.__game_session_updates['player_on_turn'] = self.__current_player
+                self.__game_session_updates['opponent_name'] = self.__opponent_name
+                self.__game_session_updates['board'] = self.__get_init_board()
+                self.context.update(self.__game_session_updates)
+                self.__game_session_updates = {}
+
             self.context.redraw()
             self.update_result.update_areas.insert(0, True)
 
@@ -1158,30 +1213,36 @@ class IBGame:
         # TODO DOC
         # initialize the context as needed
         if not self.context:
+            self.__prepare_game_session()
             # self.__prepare_game_session()
-            self.__shared_data = {'player_name': 'a', 
-                                  'player_on_turn': 'a',
-                                  'opponent_name': 'b',
-                                 }
-            random_board = []
-            import random
-            for i in range(9):
-                random_row = []
-                for j in range(9):
-                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
-                random_board.append(random_row)
+            # self.__shared_data = {'player_name': 'a', 
+            #                       'player_on_turn': 'a',
+            #                       'opponent_name': 'b',
+            #                      }
+            # random_board = []
+            # import random
+            # for i in range(9):
+            #     random_row = []
+            #     for j in range(9):
+            #         random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
+            #     random_board.append(random_row)
             
-            with self.net_lock:
-                self.__shared_data['board'] = random_board
-            self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
-            self.context.redraw()
-            self.update_result.update_areas.insert(0, True)
+            # with self.net_lock:
+            #     self.__shared_data['board'] = random_board
+            # self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
+            # self.context.redraw()
+            # self.update_result.update_areas.insert(0, True)
 
         if self.resized:
             self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
+
+        # append game session async updates
+        if self.__game_session_updated.is_set():
+            inputs = self.__append_game_session_async_updates(inputs)
+            self.__game_session_updated.clear()
 
         # update the context and get the results
         if self.context:

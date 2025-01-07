@@ -2,6 +2,8 @@ import threading
 from typing import Any, Dict, List, Tuple
 import pygame
 from const.typedefs import IBAssets
+from const.server_communication import BOARD_FREE_CELL, BOARD_PLAYER_CELL, BOARD_PLAYER_SHIP_LOST_CELL, BOARD_OPPONENT_SHIP_LOST_CELL
+from const.server_communication import SCORE_SHIP_GAINED, SCORE_HIT, SCORE_LOST_SHIP
 from graphics.viewport import Viewport
 from util.graphics import get_rendered_text_with_size
 
@@ -10,15 +12,13 @@ class GameSession(Viewport):
     """Represents the game session graphics context."""
 
 
-    BOARD_FREE = 0
+    BOARD_FREE = BOARD_FREE_CELL
     """The value of a free cell on the board."""
-    BOARD_PLAYER = 1
+    BOARD_PLAYER = BOARD_PLAYER_CELL
     """The value of a player cell on the board."""
-    BOARD_LOST = 2
-    """The value of a lost cell on the board."""
-    BOARD_OPPONENT = 3
+    BOARD_LOST = BOARD_PLAYER_SHIP_LOST_CELL
     """The value of an opponent cell on the board."""
-    BOARD_OPPONENT_LOST = 4
+    BOARD_OPPONENT_LOST = BOARD_OPPONENT_SHIP_LOST_CELL
     """The value of an opponent lost cell on the board."""
     TEXT_UNSET = "ERROR"
     """The text to display when the text is unset."""
@@ -42,9 +42,7 @@ class GameSession(Viewport):
 
     def __init__(self, 
                  surface: pygame.Surface, 
-                 assets: IBAssets, 
-                 rlock: threading.RLock,
-                 shared_data: Dict[str, Any]):
+                 assets: IBAssets):
 
         if not pygame.get_init():
             raise ValueError('The pygame module has not been initialized.')
@@ -57,20 +55,18 @@ class GameSession(Viewport):
         
         self.__surface = surface
         self.__assets = assets
-        self.__rlock = rlock
-
         master_display = pygame.display.get_surface()
         self.__background_color = self.__assets['colors']['black']
         self.__background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
         self.__text_color = self.__assets['colors']['white']
-
-        with self.__rlock:
-            self.__shared_data = shared_data
         
         self.__last_action = ""
         self.__selected_cell = None
         self.__highlighted_cell = None
         self.__hit_check_cells = None
+        self.__player_on_turn = None
+        self.__player_name = None
+        self.__opponent_name = None
 
     
     @property
@@ -111,25 +107,23 @@ class GameSession(Viewport):
 
     def __get_score(self) -> int:
         """
-        Gets the score of the game session. 
-        Attempts to access shared resources 
-        so it should be called within a lock.
+        Gets the score of the game session.
 
         :return: The score.
         :rtype: int
         """
 
         score = 0
-        if not self.__shared_data.get('board', None):
+        if not self.__board:
             return score
-        for row in self.__shared_data['board']:
+        for row in self.__board:
             for cell in row:
                 if cell == GameSession.BOARD_PLAYER:
-                    score += 10
+                    score += SCORE_SHIP_GAINED
                 elif cell == GameSession.BOARD_LOST:
-                    score -= 5
+                    score += SCORE_LOST_SHIP
                 elif cell == GameSession.BOARD_OPPONENT_LOST:
-                    score += 20
+                    score += SCORE_HIT
 
         return score
 
@@ -169,14 +163,10 @@ class GameSession(Viewport):
         player_turn_panel = self.__get_panel(info_panel_width, info_panel_height)
 
         player_turn_panel_text = GameSession.TEXT_UNSET
-        with self.__rlock:
-            player_on_turn = self.__shared_data['player_on_turn']
-            player_name = self.__shared_data['player_name']
-            opponent_name = self.__shared_data['opponent_name']
-            if player_on_turn == player_name:
-                player_turn_panel_text = self.__assets['strings']['player_turn_panel_player']
-            elif player_on_turn == opponent_name:
-                player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + f"\"{opponent_name}\""
+        if self.__player_on_turn == self.__player_name:
+            player_turn_panel_text = self.__assets['strings']['player_turn_panel_player']
+        elif self.__player_on_turn == self.__opponent_name:
+            player_turn_panel_text = self.__assets['strings']['player_turn_panel_opponent'] + f"\"{self.__opponent_name}\""
 
         player_turn_panel_text_surface = get_rendered_text_with_size(player_turn_panel_text, 
                                                                      text_border_max_width, 
@@ -207,14 +197,10 @@ class GameSession(Viewport):
         status_panel = self.__get_panel(info_panel_width, info_panel_height)
 
         status_panel_text = GameSession.TEXT_UNSET
-        with self.__rlock:
-            player_on_turn = self.__shared_data['player_on_turn']
-            player_name = self.__shared_data['player_name']
-            opponent_name = self.__shared_data['opponent_name']
-            if player_on_turn == player_name:
-                status_panel_text = self.__assets['strings']['status_panel_take_turn_msg']
-            elif player_on_turn == opponent_name:
-                status_panel_text = self.__assets['strings']['status_panel_waiting_for_opponent_turn_msg']
+        if self.__player_on_turn == self.__player_name:
+            status_panel_text = self.__assets['strings']['status_panel_take_turn_msg']
+        elif self.__player_on_turn == self.__opponent_name:
+            status_panel_text = self.__assets['strings']['status_panel_waiting_for_opponent_turn_msg']
 
         status_panel_text_surface = get_rendered_text_with_size(status_panel_text, 
                                                                 text_border_max_width, 
@@ -245,8 +231,7 @@ class GameSession(Viewport):
         last_action_panel = self.__get_panel(info_panel_width, info_panel_height)
 
         last_action_panel_text = GameSession.TEXT_UNSET
-        with self.__rlock:
-            last_action_panel_text = self.__shared_data.get('last_action', "")
+        last_action_panel_text = self.__last_action
 
         last_action_panel_text_surface = get_rendered_text_with_size(last_action_panel_text, 
                                                                     text_border_max_width, 
@@ -275,9 +260,8 @@ class GameSession(Viewport):
         score_panel = self.__get_panel(info_panel_width, info_panel_height)
 
         score_panel_text = GameSession.TEXT_UNSET
-        with self.__rlock:
-            score = self.__get_score()
-            score_panel_text = self.__assets['strings']['score_panel_title'] + str(score)
+        score = self.__get_score()
+        score_panel_text = self.__assets['strings']['score_panel_title'] + str(score)
 
         score_panel_text_surface = get_rendered_text_with_size(score_panel_text, 
                                                                text_border_max_width, 
@@ -341,13 +325,11 @@ class GameSession(Viewport):
         board_surface_rect.topleft = (0, 0)
 
         # draw the board
-        with self.__rlock:
-            board = self.__shared_data.get('board', None)
-            if not board:
-                raise ValueError('The board data is not set.')
+        if not self.__board:
+            raise ValueError('The board data is not set.')
 
-        row_cells_count = len(board) + 1
-        columns_cells_count = len(board[0]) + 1
+        row_cells_count = len(self.__board) + 1
+        columns_cells_count = len(self.__board[0]) + 1
 
         cell_width = board_width / columns_cells_count
         cell_height = board_height / row_cells_count
@@ -383,7 +365,7 @@ class GameSession(Viewport):
 
                 # draw the cells
                 else:
-                    cell = board[row - 1][col - 1]
+                    cell = self.__board[row - 1][col - 1]
                     cell_rect = pygame.Rect((col * cell_width, row * cell_height), (cell_width, cell_height))
                     cell_inner_rect = pygame.Rect(cell_rect.left + (cell_width * GameSession.RATIO_OUTLINE_TO_CELL) / 2, 
                                                   cell_rect.top + (cell_height * GameSession.RATIO_OUTLINE_TO_CELL) / 2, 
@@ -417,6 +399,9 @@ class GameSession(Viewport):
         :return: The rectangles of the objects.
         :rtype: List[pygame.Rect]
         """
+
+        if not self.__player_name or not self.__opponent_name or not self.__player_on_turn or not self.__board:
+            raise ValueError(f"The player name ({self.__player_name}), opponent name ({self.__opponent_name}), player on turn ({self.__player_on_turn}), or board ({self.__board}) is not set.")
 
         update_areas = []
         surface_width, surface_height = self.__surface.get_size()
@@ -496,6 +481,20 @@ class GameSession(Viewport):
 
         result = {'graphics_update': False, 
                   'escape': False}
+        
+        if events.get('board', None):
+            self.__board = events['board']
+            result['graphics_update'] = True
+        if events.get('player_on_turn', None):
+            self.__player_on_turn = events['player_on_turn']
+            result['graphics_update'] = True
+        if events.get('player_name', None):
+            self.__player_name = events['player_name']
+            result['graphics_update'] = True
+        if events.get('opponent_name', None):
+            self.__opponent_name = events['opponent_name']
+            result['graphics_update'] = True
+
         
         if events.get('escape', False):
             result['escape'] = True

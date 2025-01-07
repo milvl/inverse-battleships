@@ -486,7 +486,7 @@ class ConnectionManager:
         """
         Sends a ready message to the game server and receives current player's username.
 
-        :return: The current player's username.
+        :return: The username of the player whose turn it is.
         :rtype: str
         """
 
