@@ -19,6 +19,7 @@ const (
 	CmdClientReady    = "READY"    // 12
 	CmdPlayerTurn     = "TURN"     // 13
 	CmdTKO            = "TKO"      // 14
+	CmdAction         = "ACTION"   // 15
 )
 
 // validCmdsMap is a map of valid commands.
@@ -38,6 +39,7 @@ var validCmdsMap = map[string]int{
 	CmdClientReady:    12,
 	CmdPlayerTurn:     13,
 	CmdTKO:            14,
+	CmdAction:         15,
 }
 
 // lobbyStates is a list of lobby statuses.
@@ -69,12 +71,15 @@ const (
 	MsgTerminator   = "\n"
 	MsgEscape       = "\\"
 	MsgHeader       = "IBGAME"
+	NumDelimiter    = ":"
+	SeqDelimiter    = ","
 	HeaderPartIndex = 0
 	CmdPartIndex    = 1
 	MinPartsCount   = 2
 	// indexes for the IncomingMessage params slice
 	NicknameIndex = 0
 	LobbyIDIndex  = 0
+	PositionIndex = 0
 )
 
 // CompleteMsgTimeout is the time to wait for a valid message.

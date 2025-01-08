@@ -23,6 +23,8 @@ type Client struct {
 	lastTime time.Time
 	isAuth   bool
 	msgBuff  string
+	sendMu   sync.Mutex
+	recvMu   sync.Mutex
 }
 
 // Lobby represents a game lobby.
@@ -82,6 +84,7 @@ func getCompleteMsg(msg string) (bool, string, string) {
 
 // readCompleteMessage reads a message from the client.
 // It returns the parsed message, the raw string message, and an error.
+// It involves socket I/O operations so it should be called with a lock.
 func (cm *ClientManager) readCompleteMessage(pClient *Client) (*cmd_validator.IncomingMessage, string, error) {
 	// sanity checks
 	if pClient == nil {
@@ -330,6 +333,7 @@ func (cm *ClientManager) handleDeleteLobby(lobbyID string) error {
 }
 
 // sendMessage sends a message to the client.
+// It involves socket I/O operations so it should be called with a lock.
 func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
 	// sanity check
 	if conn == nil {
@@ -363,7 +367,9 @@ func (cm *ClientManager) sendHandshakeReply(pClient *Client) error {
 
 	// send the handshake reply
 	parts := []string{protocol.CmdHandshakeResp}
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send handshake reply: %w", err)
 	}
@@ -376,7 +382,9 @@ func (cm *ClientManager) sendHandshakeReply(pClient *Client) error {
 func (cm *ClientManager) sendPing(pClient *Client) error {
 	// send the ping message
 	parts := []string{protocol.CmdPing}
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send ping message: %w", err)
 	}
@@ -389,8 +397,9 @@ func (cm *ClientManager) sendPing(pClient *Client) error {
 func (cm *ClientManager) sendTKO(pClient *Client) error {
 	// send the TKO message
 	parts := []string{protocol.CmdTKO}
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
-
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send TKO message: %w", err)
 	}
@@ -404,7 +413,9 @@ func (cm *ClientManager) sendLobbies(pClient *Client, lobbies []string) error {
 	// send the list of lobbies
 	parts := append([]string{protocol.CmdLobbies}, lobbies...)
 
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send lobby list: %w", err)
 	}
@@ -417,7 +428,10 @@ func (cm *ClientManager) sendLobbies(pClient *Client, lobbies []string) error {
 func (cm *ClientManager) sendCreateLobbyAck(pClient *Client, lobbyID string) error {
 	// send the create lobby acknowledgment message
 	parts := []string{protocol.CmdCreateLobbyAck, lobbyID}
+
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send create lobby acknowledgment message: %w", err)
 	}
@@ -431,7 +445,9 @@ func (cm *ClientManager) sendTurnMsg(pClient *Client, playerOnTurn string, errCh
 	// send the turn message
 	parts := []string{protocol.CmdPlayerTurn, playerOnTurn}
 
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		if errChan != nil {
 			errChan <- fmt.Errorf("failed to send turn message: %w", err)
@@ -451,7 +467,9 @@ func (cm *ClientManager) sendPairedMsg(pClient *Client, opponent string) error {
 	// send the paired message
 	parts := []string{protocol.CmdJoinLobbyAck, opponent}
 
+	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send paired message: %w", err)
 	}
@@ -461,17 +479,13 @@ func (cm *ClientManager) sendPairedMsg(pClient *Client, opponent string) error {
 
 // handlePingCmd sends a pong message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) handlePingCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
-	// sanity check
-	err := cmd_validator.ValidatePing(pCommand)
-	if err != nil {
-		logging.Warn(fmt.Sprintf("invalid ping message: %v", err))
-		return custom_errors.ErrInvalidCommand
-	}
-
+func (cm *ClientManager) handlePingCmd(pClient *Client) error {
 	// send the pong message
 	parts := []string{protocol.CmdPong}
-	err = cm.sendMessage(pClient.conn, parts)
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send pong message: %w", err)
 	}
@@ -481,16 +495,13 @@ func (cm *ClientManager) handlePingCmd(pClient *Client, pCommand *cmd_validator.
 
 // handleLeaveCmd sends a leave acknowledgment message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) handleLeaveCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
-	err := cmd_validator.ValidateLeave(pCommand)
-	if err != nil {
-		logging.Warn(fmt.Sprintf("invalid leave message: %v", err))
-		return custom_errors.ErrInvalidCommand
-	}
-
+func (cm *ClientManager) handleLeaveCmd(pClient *Client) error {
 	// send the leave acknowledgment message
 	parts := []string{protocol.CmdLeaveAck}
-	err = cm.sendMessage(pClient.conn, parts)
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
 	if err != nil {
 		return fmt.Errorf("failed to send leave acknowledgment message: %w", err)
 	}
@@ -509,14 +520,7 @@ func (cm *ClientManager) handleLeaveCmd(pClient *Client, pCommand *cmd_validator
 }
 
 // handleLobbiesCmd sends a list of lobbies to the client.
-func (cm *ClientManager) handleLobbiesCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
-	// sanity check
-	err := cmd_validator.ValidateLobbies(pCommand)
-	if err != nil {
-		logging.Warn(fmt.Sprintf("invalid lobbies message: %v", err))
-		return custom_errors.ErrInvalidCommand
-	}
-
+func (cm *ClientManager) handleLobbiesCmd(pClient *Client) error {
 	// player must be in idle state (not in a lobby)
 	cm.rwMutex.RLock()
 	_, exists := cm.playerToLobby[pClient.nickname]
@@ -535,7 +539,7 @@ func (cm *ClientManager) handleLobbiesCmd(pClient *Client, pCommand *cmd_validat
 	cm.rwMutex.RUnlock()
 
 	// send the list of lobbies to the client
-	err = cm.sendLobbies(pClient, lobbies)
+	err := cm.sendLobbies(pClient, lobbies)
 	if err != nil {
 		return fmt.Errorf("failed to send lobby list: %w", err)
 	}
@@ -544,14 +548,7 @@ func (cm *ClientManager) handleLobbiesCmd(pClient *Client, pCommand *cmd_validat
 }
 
 // handleCreateLobbyCmd creates a new lobby and sends the lobby ID to the client.
-func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
-	// sanity check
-	err := cmd_validator.ValidateCreateLobby(pCommand)
-	if err != nil {
-		logging.Warn(fmt.Sprintf("invalid create lobby message: %v", err))
-		return custom_errors.ErrInvalidCommand
-	}
-
+func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client) error {
 	// player must be in idle state (not in a lobby)
 	cm.rwMutex.RLock()
 	_, exists := cm.playerToLobby[pClient.nickname]
@@ -578,7 +575,7 @@ func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client, pCommand *cmd_val
 	cm.rwMutex.Unlock()
 
 	// send the lobby ID to the client
-	err = cm.sendCreateLobbyAck(pClient, lobbyID)
+	err := cm.sendCreateLobbyAck(pClient, lobbyID)
 	if err != nil {
 		cm.rwMutex.Lock()
 		cm.lobbies[lobbyID].state = protocol.LobbyStateFail
@@ -596,7 +593,7 @@ func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client, pCommand *cmd_val
 // handleJoinLobbyCmd attempts to connect the client to a lobby.
 func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
 	// sanity check
-	err := cmd_validator.ValidateJoinLobby(pCommand)
+	lobbyID, err := cmd_validator.ParseJoinLobbyCmd(pCommand)
 	if err != nil {
 		logging.Warn(fmt.Sprintf("invalid join lobby message: %v", err))
 		return custom_errors.ErrInvalidCommand
@@ -609,9 +606,6 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	if exists {
 		return custom_errors.ErrPlayerNotIdle
 	}
-
-	// get the lobby ID
-	lobbyID := pCommand.Params[protocol.LobbyIDIndex]
 
 	// check if the lobby exists
 	cm.rwMutex.RLock()
@@ -653,13 +647,7 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 }
 
 // handleClientReadyCmd handles a client ready message.
-func (cm *ClientManager) handleClientReadyCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
-	// sanity check
-	err := cmd_validator.ValidateClientReady(pCommand)
-	if err != nil {
-		return custom_errors.ErrInvalidCommand
-	}
-
+func (cm *ClientManager) handleClientReadyCmd(pClient *Client) error {
 	// player must be in a lobby
 	cm.rwMutex.RLock()
 	lobby, exists := cm.playerToLobby[pClient.nickname]
@@ -701,27 +689,27 @@ func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
 	}
 
 	// read the pong message
+	pClient.recvMu.Lock()
 	pCommand, rawMsg, err := cm.readCompleteMessage(pClient)
+	pClient.recvMu.Unlock()
 	if err != nil {
 		return false, fmt.Errorf("failed to read pong response: %w", err)
 	}
 
 	// check if the pong message is valid
 	var tryAgain bool = false
-	err = cmd_validator.ValidatePong(pCommand)
-	if errors.Is(err, custom_errors.ErrInvalidCommand) {
+	if pCommand.Command != protocol.CmdPong {
 		// if another message is received, buffer it and await the pong message
 		logging.Info(fmt.Sprintf("Another message received (%s), buffering it and awaiting pong message", escapeSpecialSymbols(rawMsg)))
 		tryAgain = true
-
-	} else if err != nil {
-		return false, fmt.Errorf("invalid pong message: %w", err)
 	}
 
 	// some other message managed to get through earlier so try again
 	if tryAgain {
 		// read the pong message
+		pClient.recvMu.Lock()
 		pCommand, _, err := cm.readCompleteMessage(pClient)
+		pClient.recvMu.Unlock()
 		if err != nil {
 			return false, fmt.Errorf("failed to read pong message: %w", err)
 		}
@@ -729,9 +717,8 @@ func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
 		pClient.msgBuff += rawMsg
 
 		// check if the pong message is valid
-		err = cmd_validator.ValidatePong(pCommand)
-		if err != nil {
-			return false, fmt.Errorf("invalid pong message: %w", err)
+		if pCommand.Command != protocol.CmdPong {
+			return false, fmt.Errorf("invalid pong message: %s", pCommand.ToString())
 		}
 	}
 
@@ -750,15 +737,16 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	}
 
 	// read the handshake message
+	pClient.recvMu.Lock()
 	pValidMsg, _, err := cm.readCompleteMessage(pClient)
+	pClient.recvMu.Unlock()
 	if err != nil {
 		return "", fmt.Errorf("failed to read handshake message: %w", err)
 	}
-	err = cmd_validator.ValidateHandshake(pValidMsg)
+	nickname, err := cmd_validator.ParseHandshakeCmd(pValidMsg)
 	if err != nil {
 		return "", fmt.Errorf("invalid handshake message: %w", err)
 	}
-	nickname := pValidMsg.Params[protocol.NicknameIndex]
 
 	// send the handshake reply
 	err = cm.sendHandshakeReply(pClient)
@@ -767,13 +755,14 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	}
 
 	// await confirmation
+	pClient.recvMu.Lock()
 	pValidMsg, _, err = cm.readCompleteMessage(pClient)
+	pClient.recvMu.Unlock()
 	if err != nil {
 		return "", fmt.Errorf("failed to read confirmation message: %w", err)
 	}
-	err = cmd_validator.ValidateHandshakeConfirmation(pValidMsg)
-	if err != nil {
-		return "", fmt.Errorf("invalid confirmation message: %w", err)
+	if pValidMsg.Command != protocol.CmdHandshakeAck {
+		return "", fmt.Errorf("invalid confirmation message: %s", pValidMsg.ToString())
 	}
 
 	// authenticate the client
@@ -816,7 +805,6 @@ func (cm *ClientManager) prepareGame(lobby *Lobby) error {
 	if err != nil {
 		return fmt.Errorf("failed to send game start message to player 01: %w", err)
 	}
-
 	err = cm.sendPairedMsg(pClientPlayer02, pClientPlayer01.nickname)
 	if err != nil {
 		return fmt.Errorf("failed to send game start message to player 02: %w", err)
@@ -903,6 +891,13 @@ func (cm *ClientManager) advanceGame(lobby *Lobby) error {
 		if err != nil {
 			return fmt.Errorf("failed to send turn message: %w", err)
 		}
+	}
+
+	// change the lobby state
+	if lobby.state == protocol.LobbyStatePlayer01Turn {
+		lobby.state = protocol.LobbyStatePlayer01Playing
+	} else {
+		lobby.state = protocol.LobbyStatePlayer02Playing
 	}
 
 	return nil
@@ -1034,24 +1029,24 @@ func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.
 	switch pCommand.Command {
 	// universal commands
 	case protocol.CmdPing:
-		err = cm.handlePingCmd(pClient, pCommand)
+		err = cm.handlePingCmd(pClient)
 	case protocol.CmdLeave:
 		logging.Info(fmt.Sprintf("Client %s - %s has requested to leave.", pClient.conn.RemoteAddr().String(), pClient.nickname))
 		stayConnected = false
-		err = cm.handleLeaveCmd(pClient, pCommand)
+		err = cm.handleLeaveCmd(pClient)
 
 	// idle commands
 	case protocol.CmdLobbies:
-		err = cm.handleLobbiesCmd(pClient, pCommand)
+		err = cm.handleLobbiesCmd(pClient)
 	case protocol.CmdCreateLobby:
-		err = cm.handleCreateLobbyCmd(pClient, pCommand)
+		err = cm.handleCreateLobbyCmd(pClient)
 	case protocol.CmdJoinLobby:
 		err = cm.handleJoinLobbyCmd(pClient, pCommand)
 
 	// in lobby commands
 	case protocol.CmdClientReady:
 		// TODO TADY
-		err = cm.handleClientReadyCmd(pClient, pCommand)
+		err = cm.handleClientReadyCmd(pClient)
 
 	default:
 		err = fmt.Errorf("unknown command: %s", pCommand.Command)
@@ -1112,7 +1107,9 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 		}
 
 		// read message (busy waiting is prevented by the timeout)
+		pClient.recvMu.Lock()
 		pCommand, _, err := cm.readCompleteMessage(pClient)
+		pClient.recvMu.Unlock()
 		if err != nil {
 			timeout, disconnect := cm.handleClientError(pClient, err)
 			// if the client is disconnected, break the loop

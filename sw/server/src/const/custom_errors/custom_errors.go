@@ -23,3 +23,6 @@ var ErrLobbyFull = errors.New("lobby is full")
 
 // ErrPlayerNotFound is an error that occurs when a player is not found.
 var ErrPlayerNotFound = errors.New("player not found")
+
+// ErrCmdParsing is an error that occurs when a command is not parsed correctly.
+var ErrCmdParseInvalParam = errors.New("error while parsing command parameters (malformed parameters)")
