@@ -933,6 +933,7 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 			return custom_errors.ErrNotPlayerTurn
 		}
 	default:
+		logging.Critical(fmt.Sprintf("Lobby \"%s\" is in an invalid state: %d", lobby.id, lobby.state))
 		return errors.New("lobby is not in the correct state")
 	}
 	cm.rwMutex.RUnlock()

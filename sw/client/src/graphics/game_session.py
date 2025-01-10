@@ -563,6 +563,8 @@ class GameSession(Viewport):
             if self.__player_on_turn == self.__player_name:
                 for row in range(len(self.__hit_check_cells)):
                     for col in range(len(self.__hit_check_cells[row])):
+                        if self.__board[row][col] != BOARD_FREE_CELL:
+                            continue
                         if self.__hit_check_cells[row][col].collidepoint(events['mouse_motion']):
                             self.__highlighted_cell = (row, col)
                             result['graphics_update'] = True
