@@ -27,13 +27,13 @@
     "preparing_game_msg": "Preparing the game...",
     
     "player_turn_panel_player": "It's your \nturn",
-    "player_turn_panel_opponent": "It's the turn of \nyour opponent:\n",
+    "player_turn_panel_opponent": "It's the turn\nof your opponent:\n",
     "status_panel_take_turn_msg": "Take your \nturn",
-    "status_panel_waiting_for_opponent_turn_msg": "Waiting for the \nopponent's turn...",
+    "status_panel_waiting_for_opponent_turn_msg": "Waiting for \nthe opponent's\nturn...",
     "last_action_panel_title": "Last action:\n",
-    "last_action_panel_hit": "Hit",
-    "last_action_panel_miss": "Missed",
-    "last_action_panel_gain": "Gained a ship",
-    "last_action_panel_lose": "Lost a ship",
-    "score_panel_title": "Score:\n"
+    "last_action_panel_hit": "Latest update:\nOpponent's  \nship hit!",
+    "last_action_panel_miss": "Latest update:\nMissed shot!",
+    "last_action_panel_gain": "Latest update:\nGained a ship!",
+    "last_action_panel_lose": "Latest update:\nLost a ship!",
+    "score_panel_title": "Score:      \n"
 }

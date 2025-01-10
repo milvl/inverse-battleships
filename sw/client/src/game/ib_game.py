@@ -277,6 +277,7 @@ class IBGame:
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
         self.__game_session_updated.clear()
+        self.__game_session_wait_response = False
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -455,6 +456,7 @@ class IBGame:
         with self.net_lock:
             for key, value in self.__game_session_updates.items():
                 inputs[key] = value
+            self.__game_session_updates = {}
 
         return inputs
 
@@ -637,6 +639,8 @@ class IBGame:
         with self.net_lock:
             self.game_state.connection_status = ConnectionStatus.GAME_SESSION
 
+        do_update = False
+
         while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
             resp = None
             try:
@@ -660,12 +664,12 @@ class IBGame:
                         break
                 
                 elif resp.command == CMD_BOARD:
-                    self.__game_session_updates['board'] = resp.params
-                    self.__game_session_updated.set()
+                    self.__game_session_updates['board'] = resp.params[PARAM_BOARD_INDEX]
+                    do_update = True
 
                 elif resp.command == CMD_PLAYER_TURN:
-                    self.__game_session_updates['player_on_turn'] = resp.params
-                    self.__game_session_updated.set()
+                    self.__game_session_updates['player_on_turn'] = resp.params[PARAM_PLAYER_ON_TURN_INDEX]
+                    do_update = True
             
             elif not self.__action_input_queue.empty():
                 action = self.__action_input_queue.get()
@@ -676,6 +680,12 @@ class IBGame:
                     with self.net_lock:
                         self.game_state.connection_status = ConnectionStatus.FAILED
                     break
+
+            if do_update:
+                with self.net_lock:
+                    self.__game_session_updated.set()
+                do_update = False
+                    
 
         logger.debug('Game session thread stopped')
         # if ended from the outside, caller handles context
@@ -1120,7 +1130,8 @@ class IBGame:
         if res.get('escape', None):
             self.game_state.state = IBGameState.MAIN_MENU
             self.context = None
-        if res.get('selected_cell', None):
+        if res.get('selected_cell', None) and not self.__game_session_wait_response:
+            self.__game_session_wait_response = True
             self.__action_input_queue.put(res['selected_cell'])
 
 
@@ -1304,10 +1315,16 @@ class IBGame:
         # process the input
         inputs = self.__proccess_input(events)
 
+        # ignore the mouse click if waiting for the server response (to not send multiple actions)
+        if self.__game_session_wait_response:
+            inputs['mouse_click'] = False
+
         # append game session async updates
         if self.__game_session_updated.is_set():
             inputs = self.__append_game_session_async_updates(inputs)
+            tmp_logger.debug(f'Inputs: {inputs}')
             self.__game_session_updated.clear()
+            self.__game_session_wait_response = False
 
         # update the context and get the results
         if self.context:

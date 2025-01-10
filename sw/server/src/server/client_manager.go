@@ -115,28 +115,28 @@ func boardToStringPlayer(board [protocol.BoardSize][protocol.BoardSize]int8, isP
 			case protocol.BoardCellBoat:
 				sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
 
-			case protocol.BoardCellPlayer1:
+			case protocol.BoardCellPlayer01:
 				if isPlayer01 {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwner))
 				} else {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
 				}
 
-			case protocol.BoardCellPlayer2:
+			case protocol.BoardCellPlayer02:
 				if !isPlayer01 {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwner))
 				} else {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
 				}
 
-			case protocol.BoardCellPlayer1Lost:
+			case protocol.BoardCellPlayer01Lost:
 				if isPlayer01 {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwnerLost))
 				} else {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOpponentLost))
 				}
 
-			case protocol.BoardCellPlayer2Lost:
+			case protocol.BoardCellPlayer02Lost:
 				if !isPlayer01 {
 					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwnerLost))
 				} else {
@@ -437,26 +437,26 @@ func (cm *ClientManager) attemptMove(lobby *Lobby, nickname string, position []i
 	switch selectedCell {
 	case protocol.BoardCellBoat:
 		if isPlayer01 {
-			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer1
+			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer01
 		} else {
-			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer2
+			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer02
 		}
 
-	case protocol.BoardCellPlayer1:
+	case protocol.BoardCellPlayer01:
 		if isPlayer01 {
 			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
 			return custom_errors.ErrInvalidMove
 		}
-		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer2Lost
+		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer01Lost
 
-	case protocol.BoardCellPlayer2:
+	case protocol.BoardCellPlayer02:
 		if !isPlayer01 {
 			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
 			return custom_errors.ErrInvalidMove
 		}
-		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer1Lost
+		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer02Lost
 
-	case protocol.BoardCellPlayer1Lost, protocol.BoardCellPlayer2Lost:
+	case protocol.BoardCellPlayer01Lost, protocol.BoardCellPlayer02Lost:
 		logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on a sank ship", nickname))
 		return custom_errors.ErrInvalidMove
 	}

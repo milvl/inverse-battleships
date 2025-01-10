@@ -104,7 +104,13 @@ PARAM_LOBBY_ID_INDEX = 0
 PARAM_PLAYER_ID_INDEX = 0
 """The index of the player id in the messages sent between the server and the clients."""
 
+PARAM_PLAYER_ON_TURN_INDEX = 0
+"""The index of the player on turn in the messages sent between the server and the clients."""
+
 PARAM_BOARD_INDEX = 0
+"""The index of the board in the messages sent between the server and the clients."""
+
+PARTS_BOARD_INDEX = 1
 """The index of the board in the messages sent between the server and the clients."""
 
 # constants

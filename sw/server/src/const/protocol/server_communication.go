@@ -78,13 +78,13 @@ const (
 	BoardSize             = 9
 	BoardCellFree         = 0
 	BoardCellOwner        = 1
-	BoardCellPlayer1      = 1
-	BoardCellPlayer2      = 2
+	BoardCellPlayer01     = 1
+	BoardCellPlayer02     = 2
 	BoardCellBoat         = 3
 	BoardCellOwnerLost    = -1
 	BoardCellOpponentLost = -2
-	BoardCellPlayer1Lost  = -1
-	BoardCellPlayer2Lost  = -2
+	BoardCellPlayer01Lost = -1
+	BoardCellPlayer02Lost = -2
 	BoardBoatsCount       = 11
 	HeaderPartIndex       = 0
 	CmdPartIndex          = 1

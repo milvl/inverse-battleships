@@ -166,12 +166,11 @@ class ConnectionManager:
             return ServerResponse(command, parts[CMD_INDEX + 1:])
         elif command == CMD_BOARD:
             board = []
-            # TODO magic num
-            rows = parts[CMD_INDEX + 1].split(SEQ_DELIMITER)
+            rows = parts[PARTS_BOARD_INDEX].split(SEQ_DELIMITER)
             for row in rows:
-                board.append(row.split(NUM_DELIMITER))
+                board.append([int(c) for c in row.split(NUM_DELIMITER)])
 
-            return ServerResponse(command, board)
+            return ServerResponse(command, [board])
 
         
         # TODO parse various types

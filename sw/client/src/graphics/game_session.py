@@ -101,6 +101,7 @@ class GameSession(Viewport):
         self.__highlighted_cell = None
         self.__hit_check_cells = None
         self.__player_on_turn = None
+        self.__prev_player_on_turn = None
         self.__player_name = None
         self.__opponent_name = None
 
@@ -475,6 +476,13 @@ class GameSession(Viewport):
         :rtype: pygame.Surface
         """
 
+        debuginfo = {
+            'player_name': self.__player_name,
+            'opponent_name': self.__opponent_name,
+            'player_on_turn': self.__player_on_turn,
+            'board': self.__board,
+            'last_action': self.__last_action
+        }
         return self.__draw_objects()
         
 
@@ -511,7 +519,10 @@ class GameSession(Viewport):
             self.__board = events['board']
             if self.__last_board:
                 if str(self.__board) == str(self.__last_board):
-                    self.__last_action = self.__assets['strings']['last_action_panel_miss']
+                    if self.__prev_player_on_turn and self.__prev_player_on_turn != self.__player_name:
+                        self.__last_action = self.__assets['strings']['last_action_panel_miss']
+                    else:
+                        self.__last_action = ""
                 else:
                     _, stats_player, stats_player_lost, stats_opponent_lost = GameSession.__get_board_stats(self.__last_board)
                     _, new_stats_player, new_stats_player_lost, new_stats_opponent_lost = GameSession.__get_board_stats(self.__board)
@@ -521,15 +532,12 @@ class GameSession(Viewport):
                         self.__last_action = self.__assets['strings']['last_action_panel_hit']
                     elif new_stats_player_lost > stats_player_lost:
                         self.__last_action = self.__assets['strings']['last_action_panel_lose']
-                    else:
-                        self.__last_action = self.__assets['strings']['last_action_panel_miss']
 
             self.__last_board = self.__board
             result['graphics_update'] = True
         if events.get('player_on_turn', None):
+            self.__prev_player_on_turn = self.__player_on_turn
             self.__player_on_turn = events['player_on_turn']
-            if self.__player_on_turn == self.__player_name:
-                self.__last_action = ""
             result['graphics_update'] = True
         if events.get('player_name', None):
             self.__player_name = events['player_name']
@@ -546,6 +554,7 @@ class GameSession(Viewport):
             # based on last highlighted cell (should work with usual mouse movement)
             if self.__highlighted_cell:
                 result['selected_cell'] = self.__highlighted_cell
+                self.__highlighted_cell = None
                 result['graphics_update'] = True
         elif events.get('mouse_motion', None):
             if self.__highlighted_cell:
