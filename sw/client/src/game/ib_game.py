@@ -5,6 +5,7 @@ all the logic related to the game itself.
 
 import json
 import os
+from queue import Queue
 import re
 import threading
 import time
@@ -270,6 +271,9 @@ class IBGame:
         self.__lobbies = []
         self.__my_lobby = None
         self.__chosen_lobby = None
+        self.__current_player = None
+        self.__opponent_name = None
+        self.__action_input_queue = None
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
         self.__game_session_updated.clear()
@@ -623,6 +627,59 @@ class IBGame:
         self.context = None
         logger.debug('Game ready thread stopped')
 
+
+    def __handle_net_game_session(self):
+        """
+        Handles the game session connection updates.
+        """
+
+        logger.debug('Game session thread started')
+        with self.net_lock:
+            self.game_state.connection_status = ConnectionStatus.GAME_SESSION
+
+        while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
+            resp = None
+            try:
+                resp = self.__connection_manager.receive_message()
+            except TimeoutError:
+                pass
+            except Exception as e:
+                logger.error(f'Failed to receive message from the server: {e}')
+                with self.net_lock:
+                    self.game_state.connection_status = ConnectionStatus.FAILED
+                break
+
+            if resp:
+                if resp.command == CMD_PING:
+                    try:
+                        self.__connection_manager.pong()
+                    except Exception as e:
+                        logger.error(f'Failed to send pong to the server: {e}')
+                        with self.net_lock:
+                            self.game_state.connection_status = ConnectionStatus.FAILED
+                        break
+                
+                elif resp.command == CMD_BOARD:
+                    self.__game_session_updates['board'] = resp.params
+                    self.__game_session_updated.set()
+
+                elif resp.command == CMD_PLAYER_TURN:
+                    self.__game_session_updates['player_on_turn'] = resp.params
+                    self.__game_session_updated.set()
+            
+            elif not self.__action_input_queue.empty():
+                action = self.__action_input_queue.get()
+                try:
+                    self.__connection_manager.send_action(action)
+                except Exception as e:
+                    logger.error(f'Failed to send action to the server: {e}')
+                    with self.net_lock:
+                        self.game_state.connection_status = ConnectionStatus.FAILED
+                    break
+
+        logger.debug('Game session thread stopped')
+        # if ended from the outside, caller handles context
+
     
     def __prepare_init_state(self):
         """
@@ -798,6 +855,9 @@ class IBGame:
         if self.game_state.connection_status == ConnectionStatus.FAILED:
             self.__net_handler_thread.join()
             self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
+            return
 
         # get the data to start the game
         elif self.game_state.connection_status == ConnectionStatus.GAME_READY:
@@ -805,6 +865,7 @@ class IBGame:
                 raise ValueError("Logic error: The current player is not set")
             if not self.__opponent_name:
                 raise ValueError("Logic error: The opponent name is not set")
+            self.__action_input_queue = Queue()
 
             self.context = GameSession(self.presentation_surface, self.assets)
 
@@ -815,6 +876,9 @@ class IBGame:
                 self.__game_session_updates['board'] = self.__get_init_board()
                 self.context.update(self.__game_session_updates)
                 self.__game_session_updates = {}
+
+            self.__net_handler_thread = threading.Thread(target=self.__handle_net_game_session)
+            self.__net_handler_thread.start()
 
             self.context.redraw()
             self.update_result.update_areas.insert(0, True)
@@ -1043,24 +1107,21 @@ class IBGame:
 
 
     def __handle_update_feedback_game_session(self, res: Dict[str, Any]):
-        if res.get('switch', None):
-            with self.net_lock:
-                self.__shared_data['player_on_turn'] = self.__shared_data['player_name'] if self.__shared_data['player_on_turn'] == self.__shared_data['opponent_name'] else self.__shared_data['opponent_name']
-        if res.get('random_board', None):
-            random_board = []
-            import random
-            for i in range(9):
-                random_row = []
-                for j in range(9):
-                    random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
-                random_board.append(random_row)
-            
-            with self.net_lock:
-                self.__shared_data['board'] = random_board
+        """
+        Handles the feedback from the update method in the GAME_SESSION state.
+
+        :param res: The feedback from the update method.
+        :type res: Dict[str, Any]
+        """
 
         if res.get('graphics_update', None):
             update_rects = self.context.draw()
             self.update_result.update_areas.extend(update_rects)
+        if res.get('escape', None):
+            self.game_state.state = IBGameState.MAIN_MENU
+            self.context = None
+        if res.get('selected_cell', None):
+            self.__action_input_queue.put(res['selected_cell'])
 
 
     def __update_init_state(self, events: PyGameEvents):
@@ -1088,6 +1149,37 @@ class IBGame:
             self.__handle_update_feedback_init_state(res)
 
 
+    def connection_cleanup(self):
+        """
+        Cleans up all the resources related to the connection.
+        """
+
+        if self.__connection_manager:
+            if self.__net_handler_thread:
+                self.__stop_net_handler_thread()
+            if self.__connection_manager.is_running:
+                self.__connection_manager.stop()
+            self.__connection_manager = None
+        if self.__lobbies:
+            self.__lobbies = []
+        if self.__my_lobby:
+            self.__my_lobby = None
+        if self.__chosen_lobby:
+            self.__chosen_lobby = None
+        if self.__current_player:
+            self.__current_player = None
+        if self.__opponent_name:
+            self.__opponent_name = None
+        if self.__action_input_queue:
+            self.__action_input_queue = None
+        if self.__game_session_updates:
+            self.__game_session_updates = {}
+        if self.__game_session_updated.is_set():
+            self.__game_session_updated.clear()
+        if self.game_state.connection_status != ConnectionStatus.NOT_RUNNING:
+            self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
+
+
     def __update_main_menu(self, events: PyGameEvents):
         """
         Handles the main menu state.
@@ -1097,16 +1189,7 @@ class IBGame:
         """
 
         # clean up the connection if carried over
-        if self.__connection_manager:
-            if self.__net_handler_thread:
-                self.__stop_net_handler_thread()
-            if self.__connection_manager.is_running:
-                self.__connection_manager.stop()
-            self.__connection_manager = None
-        if self.__lobbies:
-            self.__lobbies = []
-        if self.game_state.connection_status != ConnectionStatus.NOT_RUNNING:
-            self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
+        self.connection_cleanup()
 
         # if no menu was drawn, prepare it and draw it
         if not self.context:
@@ -1214,24 +1297,6 @@ class IBGame:
         # initialize the context as needed
         if not self.context:
             self.__prepare_game_session()
-            # self.__prepare_game_session()
-            # self.__shared_data = {'player_name': 'a', 
-            #                       'player_on_turn': 'a',
-            #                       'opponent_name': 'b',
-            #                      }
-            # random_board = []
-            # import random
-            # for i in range(9):
-            #     random_row = []
-            #     for j in range(9):
-            #         random_row.append(random.choice([GameSession.BOARD_FREE, GameSession.BOARD_LOST, GameSession.BOARD_OPPONENT, GameSession.BOARD_OPPONENT_LOST, GameSession.BOARD_PLAYER]))
-            #     random_board.append(random_row)
-            
-            # with self.net_lock:
-            #     self.__shared_data['board'] = random_board
-            # self.context = GameSession(self.presentation_surface, self.assets, self.net_lock, self.__shared_data)
-            # self.context.redraw()
-            # self.update_result.update_areas.insert(0, True)
 
         if self.resized:
             self.__handle_context_resize()
@@ -1279,7 +1344,7 @@ class IBGame:
             logger.info('User requested to exit the game')
             self.do_exit.set()
             self.update_result.exit = True
-            if self.__net_handler_thread:
+            if self.__net_handler_thread and self.__net_handler_thread.is_alive():
                 self.__net_handler_thread.join()
             return self.update_result
             

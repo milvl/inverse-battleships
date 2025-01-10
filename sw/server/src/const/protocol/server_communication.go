@@ -20,6 +20,7 @@ const (
 	CmdPlayerTurn     = "TURN"     // 13
 	CmdTKO            = "TKO"      // 14
 	CmdAction         = "ACTION"   // 15
+	CmdBoard          = "BOARD"    // 16
 )
 
 // validCmdsMap is a map of valid commands.
@@ -40,6 +41,7 @@ var validCmdsMap = map[string]int{
 	CmdPlayerTurn:     13,
 	CmdTKO:            14,
 	CmdAction:         15,
+	CmdBoard:          16,
 }
 
 // lobbyStates is a list of lobby statuses.
@@ -67,15 +69,26 @@ func IsValidCmd(cmd string) bool {
 
 // constants for the message header and commands
 const (
-	MsgDelimiter    = ";"
-	MsgTerminator   = "\n"
-	MsgEscape       = "\\"
-	MsgHeader       = "IBGAME"
-	NumDelimiter    = ":"
-	SeqDelimiter    = ","
-	HeaderPartIndex = 0
-	CmdPartIndex    = 1
-	MinPartsCount   = 2
+	MsgDelimiter          = ";"
+	MsgTerminator         = "\n"
+	MsgEscape             = "\\"
+	MsgHeader             = "IBGAME"
+	NumDelimiter          = ":"
+	SeqDelimiter          = ","
+	BoardSize             = 9
+	BoardCellFree         = 0
+	BoardCellOwner        = 1
+	BoardCellPlayer1      = 1
+	BoardCellPlayer2      = 2
+	BoardCellBoat         = 3
+	BoardCellOwnerLost    = -1
+	BoardCellOpponentLost = -2
+	BoardCellPlayer1Lost  = -1
+	BoardCellPlayer2Lost  = -2
+	BoardBoatsCount       = 11
+	HeaderPartIndex       = 0
+	CmdPartIndex          = 1
+	MinPartsCount         = 2
 	// indexes for the IncomingMessage params slice
 	NicknameIndex = 0
 	LobbyIDIndex  = 0

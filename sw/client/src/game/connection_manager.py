@@ -160,10 +160,19 @@ class ConnectionManager:
         command = parts[CMD_INDEX]
 
         if command in [CMD_PING, CMD_PONG, CMD_ACKW_VALID, CMD_CONFIRM_LEAVE, 
-                       CMD_LOBBIES, CMD_RES_MISS, CMD_RES_ACKW, CMD_GAME_LOSE, CMD_GAME_WIN, 
+                       CMD_LOBBIES, CMD_GAME_LOSE, CMD_GAME_WIN, 
                        CMD_WAIT, CMD_CONTINUE, CMD_TKO, CMD_LOBBY_PAIRING, CMD_LOBBY_PAIRED,
                        CMD_PLAYER_TURN]:
             return ServerResponse(command, parts[CMD_INDEX + 1:])
+        elif command == CMD_BOARD:
+            board = []
+            # TODO magic num
+            rows = parts[CMD_INDEX + 1].split(SEQ_DELIMITER)
+            for row in rows:
+                board.append(row.split(NUM_DELIMITER))
+
+            return ServerResponse(command, board)
+
         
         # TODO parse various types
         
@@ -506,6 +515,26 @@ class ConnectionManager:
                 raise e
             except Exception as e:
                 raise ConnectionError(f"Error receiving player's username from the server at {self.server_address}: {e}")
+            
+
+    def send_action(self, action: Tuple[int, int]) -> str:
+        """
+        Sends an action to the game server.
+
+        :param action: The action to send.
+        :type action: Tuple[int, int]
+        :return: The response from the server.
+        :rtype: str
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send action to the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_TURN_ACTION, f"{str(action[0])}{NUM_DELIMITER}{str(action[1])}"])
+            except Exception as e:
+                raise ConnectionError(f"Error sending action to the server at {self.server_address}: {e}")
 
 
     def __validate_connection(self) -> bool:

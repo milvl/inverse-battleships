@@ -26,3 +26,9 @@ var ErrPlayerNotFound = errors.New("player not found")
 
 // ErrCmdParsing is an error that occurs when a command is not parsed correctly.
 var ErrCmdParseInvalParam = errors.New("error while parsing command parameters (malformed parameters)")
+
+// ErrNotPlayerTurn is an error that occurs when it is not a player's turn but they try to make a move.
+var ErrNotPlayerTurn = errors.New("not player's turn")
+
+// ErrInvalidMove is an error that occurs when an invalid move is made.
+var ErrInvalidMove = errors.New("invalid move")

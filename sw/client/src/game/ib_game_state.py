@@ -47,8 +47,14 @@ class ConnectionStatus:
     """Joining the lobby was not possible."""
     GAME_READY = 13
     """The game is ready to start."""
-    TKO = 14
+    GAME_SESSION = 14
+    """The game session is in progress."""
+    WAITING_FOR_OPPONENT = 15
+    """The game is waiting for the opponent to reconnect."""
+    TKO = 16
     """Represents any technical knockout and win of the player."""
+    WAITING_FOR_SERVER = 17
+    """The game is waiting for the server to respond."""
 
     status: int = NOT_RUNNING
     """The status of the connection."""

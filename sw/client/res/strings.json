@@ -34,5 +34,6 @@
     "last_action_panel_hit": "Hit",
     "last_action_panel_miss": "Missed",
     "last_action_panel_gain": "Gained a ship",
+    "last_action_panel_lose": "Lost a ship",
     "score_panel_title": "Score:\n"
 }

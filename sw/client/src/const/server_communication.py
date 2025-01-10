@@ -11,6 +11,12 @@ MSG_TERMINATOR = '\n'
 MSG_HEADER = 'IBGAME'
 """The header of the messages sent between the server and the clients."""
 
+NUM_DELIMITER = ':'
+"""The delimiter used to separate the numbers in parameters of the messages sent between the server and the clients."""
+
+SEQ_DELIMITER = ','
+"""The delimiter used to separate the sequences in parameters sent between the server and the clients."""
+
 # 1 part messages
 
 CMD_PING = 'PING'
@@ -49,12 +55,6 @@ CMD_LOBBY_PAIRED = 'PAIRED'
 CMD_READY = 'READY'
 """The ready command."""
 
-CMD_RES_MISS = 'MISS'
-"""The miss command."""
-
-CMD_RES_ACKW = 'ACTION_ACK'
-"""The action_ack command."""
-
 CMD_GAME_WIN = 'WIN'
 """The win command."""
 
@@ -90,11 +90,8 @@ CMD_PLAYER_TURN = 'TURN'
 CMD_TURN_ACTION = 'ACTION'
 """The action command."""
 
-CMD_RES_HIT = 'HIT'
-"""The hit command."""
-
-CMD_RES_GAINED = 'GAIN'
-"""The gain command."""
+CMD_BOARD = 'BOARD'
+"""The board command that represents the board of the player."""
 
 # indices
 
@@ -106,6 +103,9 @@ PARAM_LOBBY_ID_INDEX = 0
 
 PARAM_PLAYER_ID_INDEX = 0
 """The index of the player id in the messages sent between the server and the clients."""
+
+PARAM_BOARD_INDEX = 0
+"""The index of the board in the messages sent between the server and the clients."""
 
 # constants
 
@@ -127,10 +127,10 @@ BOARD_FREE_CELL = 0
 BOARD_PLAYER_CELL = 1
 """The value of the player cell on the board."""
 
-BOARD_PLAYER_SHIP_LOST_CELL = 2
+BOARD_PLAYER_SHIP_LOST_CELL = -1
 """The value of the player ship lost cell on the board."""
 
-BOARD_OPPONENT_SHIP_LOST_CELL = 3
+BOARD_OPPONENT_SHIP_LOST_CELL = -2
 """The value of the opponent ship lost cell on the board."""
 
 SCORE_SHIP_GAINED = 10

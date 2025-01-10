@@ -99,6 +99,7 @@ class InfoScreen(SelectMenu):
         """
 
         events['mouse_click'] = False
+        events['mouse_motion'] = None
         res = super().update(events)
         res = {'graphics_update': res['graphics_update'], 'submit': res['submit'], 'escape': res['escape']}
         if events.get('return', False):

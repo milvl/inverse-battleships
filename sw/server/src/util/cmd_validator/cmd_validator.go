@@ -139,5 +139,11 @@ func ParseActionCmd(pIm *IncomingMessage) ([]int, error) {
 		nums[i] = n
 	}
 
+	// check if the position is valid
+	if nums[0] < 0 || nums[0] >= protocol.BoardSize || nums[1] < 0 || nums[1] >= protocol.BoardSize {
+		logging.Warn(fmt.Sprintf("Error parsing action position: invalid position: %v", nums))
+		return nil, custom_errors.ErrCmdParseInvalParam
+	}
+
 	return nums, nil
 }

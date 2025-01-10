@@ -40,6 +40,41 @@ class GameSession(Viewport):
     """The symbols for the columns of the board."""
 
 
+    @staticmethod
+    def __get_board_stats(board: List[List[int]]) -> Tuple[int, int, int, int]:
+        """
+        Gets the statistics of the board.
+
+        :param board: The board.
+        :type board: List[List[int]]
+        :return: The statistics of the board.
+        The statistics are as follows:
+        - The number of free cells.
+        - The number of player cells.
+        - The number of player lost cells.
+        - The number of opponent lost cells.
+        :rtype: Tuple[int, int, int, int]
+        """
+
+        stats_free = 0
+        stats_player = 0
+        stats_player_lost = 0
+        stats_opponent_lost = 0
+
+        for row in board:
+            for cell in row:
+                if cell == GameSession.BOARD_FREE:
+                    stats_free += 1
+                elif cell == GameSession.BOARD_PLAYER:
+                    stats_player += 1
+                elif cell == GameSession.BOARD_LOST:
+                    stats_player_lost += 1
+                elif cell == GameSession.BOARD_OPPONENT_LOST:
+                    stats_opponent_lost += 1
+
+        return stats_free, stats_player, stats_player_lost, stats_opponent_lost
+
+
     def __init__(self, 
                  surface: pygame.Surface, 
                  assets: IBAssets):
@@ -60,8 +95,9 @@ class GameSession(Viewport):
         self.__background = pygame.Rect(0, 0, master_display.get_width(), master_display.get_height())
         self.__text_color = self.__assets['colors']['white']
         
+        self.__board = None
+        self.__last_board = None
         self.__last_action = ""
-        self.__selected_cell = None
         self.__highlighted_cell = None
         self.__hit_check_cells = None
         self.__player_on_turn = None
@@ -91,18 +127,6 @@ class GameSession(Viewport):
         """
 
         self.__surface = surface
-
-
-    @property
-    def selected_cell(self) -> Tuple[int, int]:
-        """
-        Getter for the selected cell property.
-
-        :return: The selected cell.
-        :rtype: Tuple[int, int]
-        """
-
-        return self.__selected_cell
 
 
     def __get_score(self) -> int:
@@ -480,13 +504,32 @@ class GameSession(Viewport):
         """
 
         result = {'graphics_update': False, 
-                  'escape': False}
+                  'escape': False,
+                  'selected_cell': None}
         
         if events.get('board', None):
             self.__board = events['board']
+            if self.__last_board:
+                if str(self.__board) == str(self.__last_board):
+                    self.__last_action = self.__assets['strings']['last_action_panel_miss']
+                else:
+                    _, stats_player, stats_player_lost, stats_opponent_lost = GameSession.__get_board_stats(self.__last_board)
+                    _, new_stats_player, new_stats_player_lost, new_stats_opponent_lost = GameSession.__get_board_stats(self.__board)
+                    if new_stats_player > stats_player:
+                        self.__last_action = self.__assets['strings']['last_action_panel_gain']
+                    elif new_stats_opponent_lost > stats_opponent_lost:
+                        self.__last_action = self.__assets['strings']['last_action_panel_hit']
+                    elif new_stats_player_lost > stats_player_lost:
+                        self.__last_action = self.__assets['strings']['last_action_panel_lose']
+                    else:
+                        self.__last_action = self.__assets['strings']['last_action_panel_miss']
+
+            self.__last_board = self.__board
             result['graphics_update'] = True
         if events.get('player_on_turn', None):
             self.__player_on_turn = events['player_on_turn']
+            if self.__player_on_turn == self.__player_name:
+                self.__last_action = ""
             result['graphics_update'] = True
         if events.get('player_name', None):
             self.__player_name = events['player_name']
@@ -499,22 +542,21 @@ class GameSession(Viewport):
         if events.get('escape', False):
             result['escape'] = True
             result['graphics_update'] = True
-        elif events.get('new_char', None):
-            c = events['new_char']
-            if c == 'p':
-                result['switch'] = True
-            elif c == 's':
-                result['random_board'] = True
-            result['graphics_update'] = True
+        elif events.get('mouse_click', None):
+            # based on last highlighted cell (should work with usual mouse movement)
+            if self.__highlighted_cell:
+                result['selected_cell'] = self.__highlighted_cell
+                result['graphics_update'] = True
         elif events.get('mouse_motion', None):
             if self.__highlighted_cell:
                 self.__highlighted_cell = None
                 result['graphics_update'] = True
-            for row in range(len(self.__hit_check_cells)):
-                for col in range(len(self.__hit_check_cells[row])):
-                    if self.__hit_check_cells[row][col].collidepoint(events['mouse_motion']):
-                        self.__highlighted_cell = (row, col)
-                        result['graphics_update'] = True
-                        break
+            if self.__player_on_turn == self.__player_name:
+                for row in range(len(self.__hit_check_cells)):
+                    for col in range(len(self.__hit_check_cells[row])):
+                        if self.__hit_check_cells[row][col].collidepoint(events['mouse_motion']):
+                            self.__highlighted_cell = (row, col)
+                            result['graphics_update'] = True
+                            break
 
         return result

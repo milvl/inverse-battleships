@@ -10,6 +10,7 @@ import (
 	"inverse-battleships-server/util/cmd_validator"
 	"inverse-battleships-server/util/msg_parser"
 	"io"
+	"math/rand"
 	"net"
 	"strings"
 	"sync"
@@ -35,6 +36,7 @@ type Lobby struct {
 	state         uint8
 	interruptTime time.Time
 	readyCount    uint8
+	board         [protocol.BoardSize][protocol.BoardSize]int8
 }
 
 // Server represents a TCP server.
@@ -80,6 +82,99 @@ func getCompleteMsg(msg string) (bool, string, string) {
 	}
 
 	return isWhole, wholeMsg, additional
+}
+
+// boardToString converts a board to a string.
+func boardToString(board [protocol.BoardSize][protocol.BoardSize]int8) string {
+	var sb strings.Builder
+
+	for i := 0; i < protocol.BoardSize; i++ {
+		for j := 0; j < protocol.BoardSize; j++ {
+			sb.WriteString(fmt.Sprintf("%d", board[i][j]))
+			if j < protocol.BoardSize-1 {
+				sb.WriteString(protocol.NumDelimiter)
+			}
+		}
+
+		if i < protocol.BoardSize-1 {
+			sb.WriteString("\n")
+		}
+	}
+
+	return sb.String()
+}
+
+// boardToStringPlayer converts a board to a string for a player.
+func boardToStringPlayer(board [protocol.BoardSize][protocol.BoardSize]int8, isPlayer01 bool) string {
+	var sb strings.Builder
+
+	for i := 0; i < protocol.BoardSize; i++ {
+		for j := 0; j < protocol.BoardSize; j++ {
+			cell := board[i][j]
+			switch cell {
+			case protocol.BoardCellBoat:
+				sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
+
+			case protocol.BoardCellPlayer1:
+				if isPlayer01 {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwner))
+				} else {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
+				}
+
+			case protocol.BoardCellPlayer2:
+				if !isPlayer01 {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwner))
+				} else {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellFree))
+				}
+
+			case protocol.BoardCellPlayer1Lost:
+				if isPlayer01 {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwnerLost))
+				} else {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOpponentLost))
+				}
+
+			case protocol.BoardCellPlayer2Lost:
+				if !isPlayer01 {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOwnerLost))
+				} else {
+					sb.WriteString(fmt.Sprintf("%d", protocol.BoardCellOpponentLost))
+				}
+
+			default:
+				sb.WriteString(fmt.Sprintf("%d", cell))
+			}
+
+			if j < protocol.BoardSize-1 {
+				sb.WriteString(protocol.NumDelimiter)
+			}
+		}
+
+		if i < protocol.BoardSize-1 {
+			sb.WriteString(protocol.SeqDelimiter)
+		}
+	}
+
+	return sb.String()
+}
+
+// getInitialBoard generates a random board.
+func getInitialBoard() [protocol.BoardSize][protocol.BoardSize]int8 {
+	var board [protocol.BoardSize][protocol.BoardSize]int8
+	for i := 0; i < protocol.BoardBoatsCount; i++ {
+		row := rand.Intn(protocol.BoardSize)
+		col := rand.Intn(protocol.BoardSize)
+		if board[row][col] == protocol.BoardCellBoat {
+			i--
+			continue
+		}
+
+		board[row][col] = protocol.BoardCellBoat
+	}
+
+	return board
 }
 
 // readCompleteMessage reads a message from the client.
@@ -332,6 +427,52 @@ func (cm *ClientManager) handleDeleteLobby(lobbyID string) error {
 	return nil
 }
 
+// attemptMove attempts to make a move in a lobby.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) attemptMove(lobby *Lobby, nickname string, position []int) error {
+	selectedCell := lobby.board[position[0]][position[1]]
+	isPlayer01 := lobby.player01 == nickname
+
+	switch selectedCell {
+	case protocol.BoardCellBoat:
+		if isPlayer01 {
+			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer1
+		} else {
+			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer2
+		}
+
+	case protocol.BoardCellPlayer1:
+		if isPlayer01 {
+			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
+			return custom_errors.ErrInvalidMove
+		}
+		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer2Lost
+
+	case protocol.BoardCellPlayer2:
+		if !isPlayer01 {
+			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
+			return custom_errors.ErrInvalidMove
+		}
+		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer1Lost
+
+	case protocol.BoardCellPlayer1Lost, protocol.BoardCellPlayer2Lost:
+		logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on a sank ship", nickname))
+		return custom_errors.ErrInvalidMove
+	}
+
+	logging.Debug(fmt.Sprintf("Player \"%s\" made a move in lobby \"%s\"", nickname, lobby.id))
+
+	// update the lobby state
+	if isPlayer01 {
+		lobby.state = protocol.LobbyStatePlayer01Played
+	} else {
+		lobby.state = protocol.LobbyStatePlayer02Played
+	}
+
+	return nil
+}
+
 // sendMessage sends a message to the client.
 // It involves socket I/O operations so it should be called with a lock.
 func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
@@ -423,9 +564,9 @@ func (cm *ClientManager) sendLobbies(pClient *Client, lobbies []string) error {
 	return nil
 }
 
-// sendCreateLobbyAck sends a create lobby acknowledgment message to the client.
+// sendLobbyAck sends a create lobby acknowledgment message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) sendCreateLobbyAck(pClient *Client, lobbyID string) error {
+func (cm *ClientManager) sendLobbyAck(pClient *Client, lobbyID string) error {
 	// send the create lobby acknowledgment message
 	parts := []string{protocol.CmdCreateLobbyAck, lobbyID}
 
@@ -474,6 +615,27 @@ func (cm *ClientManager) sendPairedMsg(pClient *Client, opponent string) error {
 		return fmt.Errorf("failed to send paired message: %w", err)
 	}
 
+	return nil
+}
+
+// sendBoard sends a board to the client.
+func (cm *ClientManager) sendBoard(pClient *Client, board string, errChan chan error) error {
+	// send the board
+	parts := []string{protocol.CmdBoard, board}
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
+	if err != nil {
+		if errChan != nil {
+			errChan <- fmt.Errorf("failed to send board: %w", err)
+		}
+		return fmt.Errorf("failed to send board: %w", err)
+	}
+
+	if errChan != nil {
+		errChan <- nil
+	}
 	return nil
 }
 
@@ -575,7 +737,7 @@ func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client) error {
 	cm.rwMutex.Unlock()
 
 	// send the lobby ID to the client
-	err := cm.sendCreateLobbyAck(pClient, lobbyID)
+	err := cm.sendLobbyAck(pClient, lobbyID)
 	if err != nil {
 		cm.rwMutex.Lock()
 		cm.lobbies[lobbyID].state = protocol.LobbyStateFail
@@ -620,6 +782,14 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 		return custom_errors.ErrLobbyFull
 	}
 
+	// check if the lobby is in the correct state
+	cm.rwMutex.RLock()
+	failed := lobby.state != protocol.LobbyStateWaiting
+	cm.rwMutex.RUnlock()
+	if failed {
+		return errors.New("lobby is not in the correct state")
+	}
+
 	// add the player to the lobby
 	cm.rwMutex.Lock()
 	if lobby.player01 == "" {
@@ -632,7 +802,7 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	// NOTE: bandage fix but might cause delay for others - lobby change
 	// 		 is handled in other goroutine so it needs to be synchronized (locked)
 	// 		 to prevent race conditions with other clients
-	err = cm.sendCreateLobbyAck(pClient, lobbyID)
+	err = cm.sendLobbyAck(pClient, lobbyID)
 	if err != nil {
 		lobby.state = protocol.LobbyStateFail
 		cm.rwMutex.Unlock()
@@ -668,6 +838,51 @@ func (cm *ClientManager) handleClientReadyCmd(pClient *Client) error {
 	cm.rwMutex.Lock()
 	lobby.readyCount++
 	cm.rwMutex.Unlock()
+
+	return nil
+}
+
+// handleActionCmd handles an action message.
+func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
+	// player must be in a lobby
+	cm.rwMutex.RLock()
+	lobby, exists := cm.playerToLobby[pClient.nickname]
+	cm.rwMutex.RUnlock()
+	if !exists {
+		return custom_errors.ErrPlayerNotIdle
+	}
+
+	// figure out if its the player's turn
+	playerNick := pClient.nickname
+	cm.rwMutex.RLock()
+	switch lobby.state {
+	case protocol.LobbyStatePlayer01Playing:
+		if playerNick != lobby.player01 {
+			return custom_errors.ErrNotPlayerTurn
+		}
+	case protocol.LobbyStatePlayer02Playing:
+		if playerNick != lobby.player02 {
+			return custom_errors.ErrNotPlayerTurn
+		}
+	default:
+		return errors.New("lobby is not in the correct state")
+	}
+	cm.rwMutex.RUnlock()
+
+	// parse the action message
+	position, err := cmd_validator.ParseActionCmd(pCommand)
+	if err != nil {
+		logging.Warn(fmt.Sprintf("invalid action message: %v", err))
+		return custom_errors.ErrInvalidCommand
+	}
+
+	// attempt to make a move
+	cm.rwMutex.Lock()
+	err = cm.attemptMove(lobby, pClient.nickname, position)
+	cm.rwMutex.Unlock()
+	if err != nil {
+		return fmt.Errorf("failed to make a move: %w", err)
+	}
 
 	return nil
 }
@@ -842,9 +1057,57 @@ func (cm *ClientManager) startGame(lobby *Lobby) error {
 		return custom_errors.ErrPlayerNotFound
 	}
 
+	// initialize the board
+	lobby.board = getInitialBoard()
+	logging.Debug(fmt.Sprintf("Initial board for lobby %s:\n%s", lobby.id, boardToString(lobby.board)))
+
 	// start the game
 	lobby.state = protocol.LobbyStatePlayer01Turn
 	lobby.readyCount = uint8(0)
+
+	return nil
+}
+
+func (cm *ClientManager) informMoves(lobby *Lobby) error {
+	// sanity checks
+	if lobby == nil {
+		return custom_errors.ErrNilPointer
+	}
+	if lobby.state != protocol.LobbyStatePlayer01Played && lobby.state != protocol.LobbyStatePlayer02Played {
+		return fmt.Errorf("lobby is not in the correct state")
+	}
+
+	// get the players
+	pClientPlayer01, exists := cm.authClients[lobby.player01]
+	if !exists {
+		return fmt.Errorf("player 01: %s not found for lobby %s", lobby.player01, lobby.id)
+	}
+	pClientPlayer02, exists := cm.authClients[lobby.player02]
+	if !exists {
+		return fmt.Errorf("player 02: %s not found for lobby %s", lobby.player02, lobby.id)
+	}
+
+	player01Board := boardToStringPlayer(lobby.board, true)
+	player02Board := boardToStringPlayer(lobby.board, false)
+
+	// send the move message to the players
+	errChan := make(chan error, int(protocol.PlayerCount))
+	go cm.sendBoard(pClientPlayer01, player01Board, errChan)
+	go cm.sendBoard(pClientPlayer02, player02Board, errChan)
+	var err error
+	for i := 0; i < int(protocol.PlayerCount); i++ {
+		err = <-errChan
+		if err != nil {
+			return fmt.Errorf("failed to send move message: %w", err)
+		}
+	}
+
+	// change the lobby state
+	if lobby.state == protocol.LobbyStatePlayer01Played {
+		lobby.state = protocol.LobbyStatePlayer02Turn
+	} else {
+		lobby.state = protocol.LobbyStatePlayer01Turn
+	}
 
 	return nil
 }
@@ -906,7 +1169,13 @@ func (cm *ClientManager) advanceGame(lobby *Lobby) error {
 // getLobbyStates gets the states of the lobbies and appends the lobby IDs to the corresponding slices.
 //
 // WARNING: It reads a shared resource, so it should be called with a rlock.
-func (cm *ClientManager) getLobbyStates(lobbiesToDelete *[]string, lobbiesToPrepare *[]string, lobbiesToStart *[]string, lobbiesToAdvance *[]string) {
+func (cm *ClientManager) getLobbyStates(
+	lobbiesToDelete *[]string,
+	lobbiesToPrepare *[]string,
+	lobbiesToStart *[]string,
+	lobbiesToFeedbackPlayers *[]string,
+	lobbiesToAdvance *[]string) {
+
 	for _, lobby := range cm.lobbies {
 		// handle the game
 		switch lobby.state {
@@ -921,6 +1190,9 @@ func (cm *ClientManager) getLobbyStates(lobbiesToDelete *[]string, lobbiesToPrep
 				*lobbiesToStart = append(*lobbiesToStart, lobby.id)
 			}
 
+		case protocol.LobbyStatePlayer01Played, protocol.LobbyStatePlayer02Played:
+			*lobbiesToFeedbackPlayers = append(*lobbiesToFeedbackPlayers, lobby.id)
+
 		case protocol.LobbyStatePlayer01Turn, protocol.LobbyStatePlayer02Turn:
 			*lobbiesToAdvance = append(*lobbiesToAdvance, lobby.id)
 		}
@@ -934,10 +1206,11 @@ func (cm *ClientManager) manageLobbies() error {
 	var lobbiesToDelete []string
 	var lobbiesToPrepare []string
 	var lobbiesToStart []string
+	var lobbiesToFeedbackPlayers []string
 	var lobbiesToAdvance []string
 
 	cm.rwMutex.RLock()
-	cm.getLobbyStates(&lobbiesToDelete, &lobbiesToPrepare, &lobbiesToStart, &lobbiesToAdvance)
+	cm.getLobbyStates(&lobbiesToDelete, &lobbiesToPrepare, &lobbiesToStart, &lobbiesToFeedbackPlayers, &lobbiesToAdvance)
 	cm.rwMutex.RUnlock()
 
 	for _, lobbyID := range lobbiesToDelete {
@@ -967,6 +1240,7 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+
 	for _, lobbyID := range lobbiesToStart {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -986,6 +1260,27 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+
+	for _, lobbyID := range lobbiesToFeedbackPlayers {
+		cm.rwMutex.RLock()
+		lobby, exists := cm.lobbies[lobbyID]
+		cm.rwMutex.RUnlock()
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		cm.rwMutex.Lock()
+		err = cm.informMoves(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to inform players in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+		}
+	}
+
 	for _, lobbyID := range lobbiesToAdvance {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -1045,8 +1340,11 @@ func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.
 
 	// in lobby commands
 	case protocol.CmdClientReady:
-		// TODO TADY
 		err = cm.handleClientReadyCmd(pClient)
+
+	// game session commands
+	case protocol.CmdAction:
+		err = cm.handleActionCmd(pClient, pCommand)
 
 	default:
 		err = fmt.Errorf("unknown command: %s", pCommand.Command)
