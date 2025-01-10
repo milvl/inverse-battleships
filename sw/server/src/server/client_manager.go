@@ -12,6 +12,7 @@ import (
 	"io"
 	"math/rand"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -175,6 +176,46 @@ func getInitialBoard() [protocol.BoardSize][protocol.BoardSize]int8 {
 	}
 
 	return board
+}
+
+// getGameStats gets the game statistics.
+// It returns if the game has finished; if player01 has won; and an error if any.
+// If error is returned the other two values are not defined.
+func getGameStats(board [protocol.BoardSize][protocol.BoardSize]int8) (bool, bool, error) {
+	player01Boats := 0
+	player02Boats := 0
+	freeBoatsCount := 0
+
+	// check if the game has finished
+	for i := 0; i < protocol.BoardSize; i++ {
+		for j := 0; j < protocol.BoardSize; j++ {
+			cell := board[i][j]
+			if cell == protocol.BoardCellBoat {
+				freeBoatsCount++
+			}
+
+			if cell == protocol.BoardCellPlayer01 {
+				player01Boats++
+			}
+
+			if cell == protocol.BoardCellPlayer02 {
+				player02Boats++
+			}
+		}
+	}
+
+	// check if the game has finished
+	if freeBoatsCount == 0 {
+		if player01Boats > player02Boats {
+			return true, true, nil
+		} else if player01Boats < player02Boats {
+			return true, false, nil
+		} else {
+			return true, false, errors.New("game has finished with a draw")
+		}
+	}
+
+	return false, false, nil
 }
 
 // readCompleteMessage reads a message from the client.
@@ -631,6 +672,33 @@ func (cm *ClientManager) sendBoard(pClient *Client, board string, errChan chan e
 			errChan <- fmt.Errorf("failed to send board: %w", err)
 		}
 		return fmt.Errorf("failed to send board: %w", err)
+	}
+
+	if errChan != nil {
+		errChan <- nil
+	}
+	return nil
+}
+
+// sendGameEndMsg sends a game end message to the client.
+// Expects the client to be valid.
+func (cm *ClientManager) sendGameEndMsg(pClient *Client, isWinner bool, errChan chan error) error {
+	// send the game end message
+	var parts []string
+	if isWinner {
+		parts = []string{protocol.CmdWin}
+	} else {
+		parts = []string{protocol.CmdLose}
+	}
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
+	if err != nil {
+		if errChan != nil {
+			errChan <- fmt.Errorf("failed to send game end message: %w", err)
+		}
+		return fmt.Errorf("failed to send game end message: %w", err)
 	}
 
 	if errChan != nil {
@@ -1144,23 +1212,48 @@ func (cm *ClientManager) advanceGame(lobby *Lobby) error {
 		return fmt.Errorf("invalid lobby state: %d", lobby.state)
 	}
 
-	// send the turn message to the players
+	// prepare sync channel for errors
 	errChan := make(chan error, int(protocol.PlayerCount))
-	go cm.sendTurnMsg(pClientPlayer01, playerOnTurn, errChan)
-	go cm.sendTurnMsg(pClientPlayer02, playerOnTurn, errChan)
-	var err error
-	for i := 0; i < int(protocol.PlayerCount); i++ {
-		err = <-errChan
-		if err != nil {
-			return fmt.Errorf("failed to send turn message: %w", err)
-		}
+
+	// check if the game is hasFinished
+	hasFinished, isPlayer01Winner, err := getGameStats(lobby.board)
+	if err != nil {
+		return fmt.Errorf("failed to get game stats: %w", err)
 	}
 
-	// change the lobby state
-	if lobby.state == protocol.LobbyStatePlayer01Turn {
-		lobby.state = protocol.LobbyStatePlayer01Playing
+	if hasFinished {
+		// send the game over message to the players
+		go cm.sendGameEndMsg(pClientPlayer01, isPlayer01Winner, errChan)
+		go cm.sendGameEndMsg(pClientPlayer02, !isPlayer01Winner, errChan)
+		for i := 0; i < int(protocol.PlayerCount); i++ {
+			err = <-errChan
+			if err != nil {
+				return fmt.Errorf("failed to send game over message: %w", err)
+			}
+		}
+
+		// change the lobby state
+		// TODO: end game state
+		// exit the program now as debug measure
+		os.Exit(0)
+
 	} else {
-		lobby.state = protocol.LobbyStatePlayer02Playing
+		// send the turn message to the players
+		go cm.sendTurnMsg(pClientPlayer01, playerOnTurn, errChan)
+		go cm.sendTurnMsg(pClientPlayer02, playerOnTurn, errChan)
+		for i := 0; i < int(protocol.PlayerCount); i++ {
+			err = <-errChan
+			if err != nil {
+				return fmt.Errorf("failed to send turn message: %w", err)
+			}
+		}
+
+		// change the lobby state
+		if lobby.state == protocol.LobbyStatePlayer01Turn {
+			lobby.state = protocol.LobbyStatePlayer01Playing
+		} else {
+			lobby.state = protocol.LobbyStatePlayer02Playing
+		}
 	}
 
 	return nil

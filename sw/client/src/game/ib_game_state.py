@@ -55,6 +55,10 @@ class ConnectionStatus:
     """Represents any technical knockout and win of the player."""
     WAITING_FOR_SERVER = 17
     """The game is waiting for the server to respond."""
+    WIN = 18
+    """The player won the game."""
+    LOSE = 19
+    """The player lost the game."""
 
     status: int = NOT_RUNNING
     """The status of the connection."""
@@ -111,7 +115,10 @@ class IBGameState:
             ConnectionStatus.TRYING_TO_JOIN: 'TRYING_TO_JOIN',
             ConnectionStatus.JOINED_LOBBY: 'JOINED_LOBBY',
             ConnectionStatus.LOBBY_FAILED: 'LOBBY_FAILED',
-            ConnectionStatus.TKO: 'TKO'
+            ConnectionStatus.TKO: 'TKO',
+            ConnectionStatus.WAITING_FOR_SERVER: 'WAITING_FOR_SERVER',
+            ConnectionStatus.WIN: 'WIN',
+            ConnectionStatus.LOSE: 'LOSE'
         }
         self.__connection_status = ConnectionStatus()
         logger.debug(f'IBGameState initialized with state: {str(self)}')

@@ -21,6 +21,8 @@ const (
 	CmdTKO            = "TKO"      // 14
 	CmdAction         = "ACTION"   // 15
 	CmdBoard          = "BOARD"    // 16
+	CmdWin            = "WIN"      // 17
+	CmdLose           = "LOST"     // 18
 )
 
 // validCmdsMap is a map of valid commands.
@@ -42,6 +44,8 @@ var validCmdsMap = map[string]int{
 	CmdTKO:            14,
 	CmdAction:         15,
 	CmdBoard:          16,
+	CmdWin:            17,
+	CmdLose:           18,
 }
 
 // lobbyStates is a list of lobby statuses.

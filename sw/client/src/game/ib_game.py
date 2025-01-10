@@ -651,6 +651,7 @@ class IBGame:
                 logger.error(f'Failed to receive message from the server: {e}')
                 with self.net_lock:
                     self.game_state.connection_status = ConnectionStatus.FAILED
+                self.context = None
                 break
 
             if resp:
@@ -661,6 +662,7 @@ class IBGame:
                         logger.error(f'Failed to send pong to the server: {e}')
                         with self.net_lock:
                             self.game_state.connection_status = ConnectionStatus.FAILED
+                        self.context = None
                         break
                 
                 elif resp.command == CMD_BOARD:
@@ -670,6 +672,20 @@ class IBGame:
                 elif resp.command == CMD_PLAYER_TURN:
                     self.__game_session_updates['player_on_turn'] = resp.params[PARAM_PLAYER_ON_TURN_INDEX]
                     do_update = True
+
+                elif resp.command == CMD_GAME_WIN:
+                    with self.net_lock:
+                        self.game_state.state = IBGameState.GAME_END
+                        self.game_state.connection_status = ConnectionStatus.WIN
+                    self.context = None
+                    break
+
+                elif resp.command == CMD_GAME_LOSE:
+                    with self.net_lock:
+                        self.game_state.state = IBGameState.GAME_END
+                        self.game_state.connection_status = ConnectionStatus.LOSE
+                    self.context = None
+                    break
             
             elif not self.__action_input_queue.empty():
                 action = self.__action_input_queue.get()
@@ -679,6 +695,7 @@ class IBGame:
                     logger.error(f'Failed to send action to the server: {e}')
                     with self.net_lock:
                         self.game_state.connection_status = ConnectionStatus.FAILED
+                        self.context = None
                     break
 
             if do_update:
@@ -686,7 +703,6 @@ class IBGame:
                     self.__game_session_updated.set()
                 do_update = False
                     
-
         logger.debug('Game session thread stopped')
         # if ended from the outside, caller handles context
 
@@ -1333,7 +1349,31 @@ class IBGame:
 
 
     def __update_game_end(self, events: PyGameEvents):
-        raise NotImplementedError('The __update_game_end method has not been implemented yet.')
+        if not self.context:
+            self.__net_handler_thread.join()
+            msg = ""
+            if self.game_state.connection_status == ConnectionStatus.WIN:
+                msg = self.assets['strings']['game_end_win_msg']
+            elif self.game_state.connection_status == ConnectionStatus.LOSE:
+                msg = self.assets['strings']['game_end_lose_msg']
+            else:
+                msg = self.assets['strings']['game_end_tko_msg']
+
+            self.context = InfoScreen(self.presentation_surface, self.assets, msg)
+            self.context.redraw()
+            self.update_result.update_areas.insert(0, True)
+
+        if self.resized:
+            self.__handle_context_resize()
+
+        inputs = self.__proccess_input(events)
+
+        if self.context:
+            res = self.context.update(inputs)
+            if res['escape']:
+                self.game_state.state = IBGameState.MAIN_MENU
+                self.context = None
+                self.update_result.update_areas.insert(0, True)
 
         
     def update(self) -> IBGameUpdateResult:
