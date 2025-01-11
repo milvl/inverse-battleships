@@ -490,13 +490,16 @@ class ConnectionManager:
                 raise ConnectionError(f"Error receiving players in the lobby from the server at {self.server_address}: {e}")
             
 
-    def game_ready(self) -> str:
+    def game_ready(self) -> Tuple[List[List[int]], str]:
         """
         Sends a ready message to the game server and receives current player's username.
 
-        :return: The username of the player whose turn it is.
-        :rtype: str
+        :return: The username of the player whose turn it is and the board.
+        :rtype: Tuple[List[List[int]], str]
         """
+
+        player_on_turn = None
+        board = None
 
         with self.__lock:
             if not self.is_running:
@@ -508,12 +511,23 @@ class ConnectionManager:
                 raise ConnectionError(f"Error sending ready message to the server at {self.server_address}: {e}")
             
             try:
+                res = self.__receive_command_response(CMD_BOARD)
+                board = res.params[PARAM_BOARD_INDEX]
+            except TimeoutError as e:
+                raise e
+            except Exception as e:
+                raise ConnectionError(f"Error receiving board from the server at {self.server_address}: {e}")
+
+            try:
                 res = self.__receive_command_response(CMD_PLAYER_TURN)  # TODO TKO
-                return res.params[PARAM_PLAYER_ID_INDEX]
+                player_on_turn = res.params[PARAM_PLAYER_ID_INDEX]
             except TimeoutError as e:
                 raise e
             except Exception as e:
                 raise ConnectionError(f"Error receiving player's username from the server at {self.server_address}: {e}")
+            
+        return board, player_on_turn
+
             
 
     def send_action(self, action: Tuple[int, int]) -> str:
@@ -672,7 +686,7 @@ class ConnectionManager:
                     res = self.receive_message()
 
                 if res.command != expected_command:
-                    logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}")
+                    logger.error(f"Invalid response received from the server at {self.server_address}: {res.command}. Expected: {expected_command}")
                     return None
                 
             except TimeoutError:

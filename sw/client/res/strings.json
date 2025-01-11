@@ -37,7 +37,7 @@
     "last_action_panel_lose": "Latest update:\nLost a ship!",
     "score_panel_title": "Score:      \n",
 
-    "game_end_win_msg": "Congratulations!\nYou won!",
-    "game_end_lose_msg": "You lost! \nBetter luck next time.",
+    "game_end_win_msg": "Congratulations!\nYou won!\nScore: ",
+    "game_end_lose_msg": "You lost! \nBetter luck next time.\nScore: ",
     "game_end_tko_msg": "Your opponent has \nleft the game.\nYou get a free win."
 }

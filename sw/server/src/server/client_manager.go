@@ -161,18 +161,145 @@ func boardToStringPlayer(board [protocol.BoardSize][protocol.BoardSize]int8, isP
 	return sb.String()
 }
 
+// getNighboursCount gets the count of neighbours of a cell.
+func getNighboursCount(board [protocol.BoardSize][protocol.BoardSize]int8, row, col int) int {
+	neighboursCount := 0
+	if row > 0 && board[row-1][col] == protocol.BoardCellBoat {
+		neighboursCount++
+	}
+	if row < protocol.BoardSize-1 && board[row+1][col] == protocol.BoardCellBoat {
+		neighboursCount++
+	}
+	if col > 0 && board[row][col-1] == protocol.BoardCellBoat {
+		neighboursCount++
+	}
+	if col < protocol.BoardSize-1 && board[row][col+1] == protocol.BoardCellBoat {
+		neighboursCount++
+	}
+
+	return neighboursCount
+}
+
 // getInitialBoard generates a random board.
 func getInitialBoard() [protocol.BoardSize][protocol.BoardSize]int8 {
 	var board [protocol.BoardSize][protocol.BoardSize]int8
-	for i := 0; i < protocol.BoardBoatsCount; i++ {
+	retries := 0
+	maxRetries := 1000
+	placedFullBoats := make([][][2]int, 0)
+
+	twoBoatsCount := rand.Intn(int(int(protocol.BoardBoatsCount/2)/2) + 1)
+	for i := 0; i < twoBoatsCount; i++ {
+		if retries > maxRetries {
+			logging.Error(fmt.Sprintf("Failed to generate a board after %d retries", maxRetries))
+			return board
+		}
+
 		row := rand.Intn(protocol.BoardSize)
 		col := rand.Intn(protocol.BoardSize)
+		// check if the boat is already placed
 		if board[row][col] == protocol.BoardCellBoat {
 			i--
+			retries++
+			continue
+		}
+		// check if neighbours are free
+		possibleNeighboursCount := getNighboursCount(board, row, col)
+		if possibleNeighboursCount != 0 {
+			i--
+			retries++
+			continue
+		}
+
+		// get all possible placemets for the second part of the boat
+		possiblePlacements := make([][2]int, 0)
+		// left
+		if col > 0 {
+			possiblePlacements = append(possiblePlacements, [2]int{row, col - 1})
+		}
+		// right
+		if col < protocol.BoardSize-1 {
+			possiblePlacements = append(possiblePlacements, [2]int{row, col + 1})
+		}
+		// up
+		if row > 0 {
+			possiblePlacements = append(possiblePlacements, [2]int{row - 1, col})
+		}
+		// down
+		if row < protocol.BoardSize-1 {
+			possiblePlacements = append(possiblePlacements, [2]int{row + 1, col})
+		}
+
+		// shuffle the slice
+		rand.Shuffle(len(possiblePlacements), func(i, j int) {
+			possiblePlacements[i], possiblePlacements[j] = possiblePlacements[j], possiblePlacements[i]
+		})
+
+		// try to place the second part of the boat
+		wasPlaced := false
+		for _, placement := range possiblePlacements {
+			possibleNeighboursCount := getNighboursCount(board, placement[0], placement[1])
+			if possibleNeighboursCount == 0 {
+				placed := make([][2]int, 0)
+				board[row][col] = protocol.BoardCellBoat
+				placed = append(placed, [2]int{row, col})
+				board[placement[0]][placement[1]] = protocol.BoardCellBoat
+				placed = append(placed, [2]int{placement[0], placement[1]})
+				placedFullBoats = append(placedFullBoats, placed)
+				wasPlaced = true
+				break
+			}
+		}
+		// try again with different starting position
+		if !wasPlaced {
+			i--
+			retries++
+			continue
+		}
+	}
+
+	// place the rest of the boats
+	for i := 0; i < protocol.BoardBoatsCount-(twoBoatsCount*2); i++ {
+		if retries > maxRetries {
+			logging.Error(fmt.Sprintf("Failed to generate a board after %d retries", maxRetries))
+			return board
+		}
+
+		row := rand.Intn(protocol.BoardSize)
+		col := rand.Intn(protocol.BoardSize)
+		// check if the boat is already placed
+		if board[row][col] == protocol.BoardCellBoat {
+			i--
+			retries++
+			continue
+		}
+		// check if neighbours are free
+		possibleNeighboursCount := getNighboursCount(board, row, col)
+		if possibleNeighboursCount != 0 {
+			i--
+			retries++
 			continue
 		}
 
 		board[row][col] = protocol.BoardCellBoat
+		placed := make([][2]int, 0)
+		placed = append(placed, [2]int{row, col})
+		placedFullBoats = append(placedFullBoats, placed)
+	}
+
+	// place player01 boats
+	randIndex := rand.Intn(len(placedFullBoats))
+	player01Cells := placedFullBoats[randIndex]
+	for _, cell := range player01Cells {
+		board[cell[0]][cell[1]] = protocol.BoardCellPlayer01
+	}
+	// remove the placed boat
+	placedFullBoats = append(placedFullBoats[:randIndex], placedFullBoats[randIndex+1:]...)
+
+	// place player02 boats
+	randIndex = rand.Intn(len(placedFullBoats))
+	player02Cells := placedFullBoats[randIndex]
+	for _, cell := range player02Cells {
+		board[cell[0]][cell[1]] = protocol.BoardCellPlayer02
 	}
 
 	return board
@@ -205,14 +332,23 @@ func getGameStats(board [protocol.BoardSize][protocol.BoardSize]int8) (bool, boo
 	}
 
 	// check if the game has finished
-	if freeBoatsCount == 0 {
-		if player01Boats > player02Boats {
-			return true, true, nil
-		} else if player01Boats < player02Boats {
-			return true, false, nil
-		} else {
-			return true, false, errors.New("game has finished with a draw")
-		}
+	// if freeBoatsCount == 0 {
+	// 	if player01Boats > player02Boats {
+	// 		return true, true, nil
+	// 	} else if player01Boats < player02Boats {
+	// 		return true, false, nil
+	// 	} else {
+	// 		return true, false, errors.New("game has finished with a draw")
+	// 	}
+	// }
+	if player01Boats == 0 && player02Boats == 0 {
+		return true, false, errors.New("game has finished with a draw")
+	}
+	if player01Boats == 0 {
+		return true, false, nil
+	}
+	if player02Boats == 0 {
+		return true, true, nil
 	}
 
 	return false, false, nil
@@ -472,34 +608,64 @@ func (cm *ClientManager) handleDeleteLobby(lobbyID string) error {
 //
 // WARNING: It manipulates a shared resource, so it should be called with a lock.
 func (cm *ClientManager) attemptMove(lobby *Lobby, nickname string, position []int) error {
-	selectedCell := lobby.board[position[0]][position[1]]
 	isPlayer01 := lobby.player01 == nickname
 
-	switch selectedCell {
-	case protocol.BoardCellBoat:
-		if isPlayer01 {
-			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer01
-		} else {
-			lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer02
+	targetCells := make([][2]int, 0)
+	targetCells = append(targetCells, [2]int{position[0], position[1]})
+	// check for neighbours
+	if position[0] > 0 {
+		toLeft := lobby.board[position[0]-1][position[1]]
+		if toLeft == protocol.BoardCellBoat || toLeft == protocol.BoardCellPlayer01 || toLeft == protocol.BoardCellPlayer02 {
+			targetCells = append(targetCells, [2]int{position[0] - 1, position[1]})
 		}
+	}
+	if position[0] < protocol.BoardSize-1 {
+		toRight := lobby.board[position[0]+1][position[1]]
+		if toRight == protocol.BoardCellBoat || toRight == protocol.BoardCellPlayer01 || toRight == protocol.BoardCellPlayer02 {
+			targetCells = append(targetCells, [2]int{position[0] + 1, position[1]})
+		}
+	}
+	if position[1] > 0 {
+		toUp := lobby.board[position[0]][position[1]-1]
+		if toUp == protocol.BoardCellBoat || toUp == protocol.BoardCellPlayer01 || toUp == protocol.BoardCellPlayer02 {
+			targetCells = append(targetCells, [2]int{position[0], position[1] - 1})
+		}
+	}
+	if position[1] < protocol.BoardSize-1 {
+		toDown := lobby.board[position[0]][position[1]+1]
+		if toDown == protocol.BoardCellBoat || toDown == protocol.BoardCellPlayer01 || toDown == protocol.BoardCellPlayer02 {
+			targetCells = append(targetCells, [2]int{position[0], position[1] + 1})
+		}
+	}
 
-	case protocol.BoardCellPlayer01:
-		if isPlayer01 {
-			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
+	for _, targetCell := range targetCells {
+		targetCellVal := lobby.board[targetCell[0]][targetCell[1]]
+		switch targetCellVal {
+		case protocol.BoardCellBoat:
+			if isPlayer01 {
+				lobby.board[targetCell[0]][targetCell[1]] = protocol.BoardCellPlayer01
+			} else {
+				lobby.board[targetCell[0]][targetCell[1]] = protocol.BoardCellPlayer02
+			}
+
+		case protocol.BoardCellPlayer01:
+			if isPlayer01 {
+				logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
+				return custom_errors.ErrInvalidMove
+			}
+			lobby.board[targetCell[0]][targetCell[1]] = protocol.BoardCellPlayer01Lost
+
+		case protocol.BoardCellPlayer02:
+			if !isPlayer01 {
+				logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
+				return custom_errors.ErrInvalidMove
+			}
+			lobby.board[targetCell[0]][targetCell[1]] = protocol.BoardCellPlayer02Lost
+
+		case protocol.BoardCellPlayer01Lost, protocol.BoardCellPlayer02Lost:
+			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on a sank ship", nickname))
 			return custom_errors.ErrInvalidMove
 		}
-		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer01Lost
-
-	case protocol.BoardCellPlayer02:
-		if !isPlayer01 {
-			logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on their own ship", nickname))
-			return custom_errors.ErrInvalidMove
-		}
-		lobby.board[position[0]][position[1]] = protocol.BoardCellPlayer02Lost
-
-	case protocol.BoardCellPlayer01Lost, protocol.BoardCellPlayer02Lost:
-		logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move on a sank ship", nickname))
-		return custom_errors.ErrInvalidMove
 	}
 
 	logging.Debug(fmt.Sprintf("Player \"%s\" made a move in lobby \"%s\"", nickname, lobby.id))
@@ -1131,7 +1297,7 @@ func (cm *ClientManager) startGame(lobby *Lobby) error {
 	logging.Debug(fmt.Sprintf("Initial board for lobby %s:\n%s", lobby.id, boardToString(lobby.board)))
 
 	// start the game
-	lobby.state = protocol.LobbyStatePlayer01Turn
+	lobby.state = protocol.LobbyStatePlayer02Played
 	lobby.readyCount = uint8(0)
 
 	return nil

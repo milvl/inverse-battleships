@@ -271,8 +271,10 @@ class IBGame:
         self.__lobbies = []
         self.__my_lobby = None
         self.__chosen_lobby = None
-        self.__current_player = None
+        self.__starting_player = None
+        self.__starting_board = None
         self.__opponent_name = None
+        self.__last_end_score = 0
         self.__action_input_queue = None
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
@@ -617,9 +619,10 @@ class IBGame:
         logger.debug('Game ready thread started')
         with self.net_lock:
             try:
-                current_player = self.__connection_manager.game_ready()
+                starting_board, current_player = self.__connection_manager.game_ready()
 
-                self.__current_player = current_player
+                self.__starting_player = current_player
+                self.__starting_board = starting_board
                 self.game_state.state = IBGameState.GAME_SESSION
 
             except Exception as e:
@@ -673,17 +676,11 @@ class IBGame:
                     self.__game_session_updates['player_on_turn'] = resp.params[PARAM_PLAYER_ON_TURN_INDEX]
                     do_update = True
 
-                elif resp.command == CMD_GAME_WIN:
+                elif resp.command == CMD_GAME_WIN or resp.command == CMD_GAME_LOSE:
                     with self.net_lock:
                         self.game_state.state = IBGameState.GAME_END
-                        self.game_state.connection_status = ConnectionStatus.WIN
-                    self.context = None
-                    break
-
-                elif resp.command == CMD_GAME_LOSE:
-                    with self.net_lock:
-                        self.game_state.state = IBGameState.GAME_END
-                        self.game_state.connection_status = ConnectionStatus.LOSE
+                        self.game_state.connection_status = ConnectionStatus.WIN if resp.command == CMD_GAME_WIN else ConnectionStatus.LOSE
+                    self.__last_end_score = self.context.last_score
                     self.context = None
                     break
             
@@ -887,7 +884,7 @@ class IBGame:
 
         # get the data to start the game
         elif self.game_state.connection_status == ConnectionStatus.GAME_READY:
-            if not self.__current_player:
+            if not self.__starting_player:
                 raise ValueError("Logic error: The current player is not set")
             if not self.__opponent_name:
                 raise ValueError("Logic error: The opponent name is not set")
@@ -897,9 +894,9 @@ class IBGame:
 
             with self.net_lock:
                 self.__game_session_updates['player_name'] = self.player_name
-                self.__game_session_updates['player_on_turn'] = self.__current_player
+                self.__game_session_updates['player_on_turn'] = self.__starting_player
                 self.__game_session_updates['opponent_name'] = self.__opponent_name
-                self.__game_session_updates['board'] = self.__get_init_board()
+                self.__game_session_updates['board'] = self.__starting_board
                 self.context.update(self.__game_session_updates)
                 self.__game_session_updates = {}
 
@@ -1193,8 +1190,10 @@ class IBGame:
             self.__my_lobby = None
         if self.__chosen_lobby:
             self.__chosen_lobby = None
-        if self.__current_player:
-            self.__current_player = None
+        if self.__starting_player:
+            self.__starting_player = None
+        if self.__starting_board:
+            self.__starting_board = None
         if self.__opponent_name:
             self.__opponent_name = None
         if self.__action_input_queue:
@@ -1353,9 +1352,9 @@ class IBGame:
             self.__net_handler_thread.join()
             msg = ""
             if self.game_state.connection_status == ConnectionStatus.WIN:
-                msg = self.assets['strings']['game_end_win_msg']
+                msg = f"{self.assets['strings']['game_end_win_msg']}{self.__last_end_score}"
             elif self.game_state.connection_status == ConnectionStatus.LOSE:
-                msg = self.assets['strings']['game_end_lose_msg']
+                msg = f"{self.assets['strings']['game_end_lose_msg']}{self.__last_end_score}"
             else:
                 msg = self.assets['strings']['game_end_tko_msg']
 

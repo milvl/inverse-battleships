@@ -89,6 +89,7 @@ class GameSession(Viewport):
             raise ValueError('The pygame.display module has not have a surface to render to.')
         
         self.__surface = surface
+        self.__last_score = 0
         self.__assets = assets
         master_display = pygame.display.get_surface()
         self.__background_color = self.__assets['colors']['black']
@@ -128,6 +129,18 @@ class GameSession(Viewport):
         """
 
         self.__surface = surface
+
+    
+    @property
+    def last_score(self) -> int:
+        """
+        Getter for the last score property.
+
+        :return: The last score.
+        :rtype: int
+        """
+
+        return self.__last_score
 
 
     def __get_score(self) -> int:
@@ -285,7 +298,7 @@ class GameSession(Viewport):
         score_panel = self.__get_panel(info_panel_width, info_panel_height)
 
         score_panel_text = GameSession.TEXT_UNSET
-        score = self.__get_score()
+        score = self.__last_score
         score_panel_text = self.__assets['strings']['score_panel_title'] + str(score)
 
         score_panel_text_surface = get_rendered_text_with_size(score_panel_text, 
@@ -532,6 +545,7 @@ class GameSession(Viewport):
                         self.__last_action = self.__assets['strings']['last_action_panel_hit']
                     elif new_stats_player_lost > stats_player_lost:
                         self.__last_action = self.__assets['strings']['last_action_panel_lose']
+                    self.__last_score = self.__get_score()
 
             self.__last_board = self.__board
             result['graphics_update'] = True
