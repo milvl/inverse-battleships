@@ -279,7 +279,6 @@ class IBGame:
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
         self.__game_session_updated.clear()
-        self.__game_session_wait_response = False
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -1143,8 +1142,7 @@ class IBGame:
         if res.get('escape', None):
             self.game_state.state = IBGameState.MAIN_MENU
             self.context = None
-        if res.get('selected_cell', None) and not self.__game_session_wait_response:
-            self.__game_session_wait_response = True
+        if res.get('selected_cell', None):
             self.__action_input_queue.put(res['selected_cell'])
 
 
@@ -1330,16 +1328,11 @@ class IBGame:
         # process the input
         inputs = self.__proccess_input(events)
 
-        # ignore the mouse click if waiting for the server response (to not send multiple actions)
-        if self.__game_session_wait_response:
-            inputs['mouse_click'] = False
-
         # append game session async updates
         if self.__game_session_updated.is_set():
             inputs = self.__append_game_session_async_updates(inputs)
             tmp_logger.debug(f'Inputs: {inputs}')
             self.__game_session_updated.clear()
-            self.__game_session_wait_response = False
 
         # update the context and get the results
         if self.context:

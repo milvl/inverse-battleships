@@ -12,7 +12,6 @@ import (
 	"io"
 	"math/rand"
 	"net"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -611,30 +610,41 @@ func (cm *ClientManager) attemptMove(lobby *Lobby, nickname string, position []i
 	isPlayer01 := lobby.player01 == nickname
 
 	targetCells := make([][2]int, 0)
-	targetCells = append(targetCells, [2]int{position[0], position[1]})
-	// check for neighbours
-	if position[0] > 0 {
-		toLeft := lobby.board[position[0]-1][position[1]]
-		if toLeft == protocol.BoardCellBoat || toLeft == protocol.BoardCellPlayer01 || toLeft == protocol.BoardCellPlayer02 {
-			targetCells = append(targetCells, [2]int{position[0] - 1, position[1]})
-		}
+	centerCell := lobby.board[position[0]][position[1]]
+	switch centerCell {
+	case protocol.BoardCellBoat:
+		fallthrough
+	case protocol.BoardCellPlayer01:
+		fallthrough
+	case protocol.BoardCellPlayer02:
+		targetCells = append(targetCells, [2]int{position[0], position[1]})
 	}
-	if position[0] < protocol.BoardSize-1 {
-		toRight := lobby.board[position[0]+1][position[1]]
-		if toRight == protocol.BoardCellBoat || toRight == protocol.BoardCellPlayer01 || toRight == protocol.BoardCellPlayer02 {
-			targetCells = append(targetCells, [2]int{position[0] + 1, position[1]})
+
+	if len(targetCells) != 0 {
+		// check for neighbours
+		if position[0] > 0 {
+			toLeft := lobby.board[position[0]-1][position[1]]
+			if toLeft == protocol.BoardCellBoat || toLeft == protocol.BoardCellPlayer01 || toLeft == protocol.BoardCellPlayer02 {
+				targetCells = append(targetCells, [2]int{position[0] - 1, position[1]})
+			}
 		}
-	}
-	if position[1] > 0 {
-		toUp := lobby.board[position[0]][position[1]-1]
-		if toUp == protocol.BoardCellBoat || toUp == protocol.BoardCellPlayer01 || toUp == protocol.BoardCellPlayer02 {
-			targetCells = append(targetCells, [2]int{position[0], position[1] - 1})
+		if position[0] < protocol.BoardSize-1 {
+			toRight := lobby.board[position[0]+1][position[1]]
+			if toRight == protocol.BoardCellBoat || toRight == protocol.BoardCellPlayer01 || toRight == protocol.BoardCellPlayer02 {
+				targetCells = append(targetCells, [2]int{position[0] + 1, position[1]})
+			}
 		}
-	}
-	if position[1] < protocol.BoardSize-1 {
-		toDown := lobby.board[position[0]][position[1]+1]
-		if toDown == protocol.BoardCellBoat || toDown == protocol.BoardCellPlayer01 || toDown == protocol.BoardCellPlayer02 {
-			targetCells = append(targetCells, [2]int{position[0], position[1] + 1})
+		if position[1] > 0 {
+			toUp := lobby.board[position[0]][position[1]-1]
+			if toUp == protocol.BoardCellBoat || toUp == protocol.BoardCellPlayer01 || toUp == protocol.BoardCellPlayer02 {
+				targetCells = append(targetCells, [2]int{position[0], position[1] - 1})
+			}
+		}
+		if position[1] < protocol.BoardSize-1 {
+			toDown := lobby.board[position[0]][position[1]+1]
+			if toDown == protocol.BoardCellBoat || toDown == protocol.BoardCellPlayer01 || toDown == protocol.BoardCellPlayer02 {
+				targetCells = append(targetCells, [2]int{position[0], position[1] + 1})
+			}
 		}
 	}
 
@@ -1400,9 +1410,7 @@ func (cm *ClientManager) advanceGame(lobby *Lobby) error {
 		}
 
 		// change the lobby state
-		// TODO: end game state
-		// exit the program now as debug measure
-		os.Exit(0)
+		lobby.state = protocol.LobbyStateFinished
 
 	} else {
 		// send the turn message to the players
@@ -1440,6 +1448,8 @@ func (cm *ClientManager) getLobbyStates(
 		// handle the game
 		switch lobby.state {
 		case protocol.LobbyStateFail:
+			fallthrough
+		case protocol.LobbyStateFinished:
 			*lobbiesToDelete = append(*lobbiesToDelete, lobby.id)
 
 		case protocol.LobbyStatePaired:

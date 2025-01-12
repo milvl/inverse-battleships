@@ -105,6 +105,8 @@ class GameSession(Viewport):
         self.__prev_player_on_turn = None
         self.__player_name = None
         self.__opponent_name = None
+        self.__already_submitted = False
+        self.__previously_submitted_cells = set()
 
     
     @property
@@ -418,6 +420,8 @@ class GameSession(Viewport):
                         color = self.__assets['colors']['orange']
                     elif self.__highlighted_cell and self.__highlighted_cell == (row - 1, col - 1):
                         color = self.__assets['colors']['white']
+                    elif (row - 1, col - 1) in self.__previously_submitted_cells:
+                        color = self.__assets['colors']['gray']
 
                     pygame.draw.rect(board_surface, self.__assets['colors']['black'], cell_rect)
                     pygame.draw.rect(board_surface, color, cell_inner_rect)
@@ -552,6 +556,8 @@ class GameSession(Viewport):
         if events.get('player_on_turn', None):
             self.__prev_player_on_turn = self.__player_on_turn
             self.__player_on_turn = events['player_on_turn']
+            if self.__player_on_turn == self.__player_name:
+                self.__already_submitted = False
             result['graphics_update'] = True
         if events.get('player_name', None):
             self.__player_name = events['player_name']
@@ -564,13 +570,15 @@ class GameSession(Viewport):
         if events.get('escape', False):
             result['escape'] = True
             result['graphics_update'] = True
-        elif events.get('mouse_click', None):
+        elif events.get('mouse_click', None) and not self.__already_submitted:
             # based on last highlighted cell (should work with usual mouse movement)
             if self.__highlighted_cell:
                 result['selected_cell'] = self.__highlighted_cell
                 self.__highlighted_cell = None
+                self.__already_submitted = True
+                self.__previously_submitted_cells.add(result['selected_cell'])
                 result['graphics_update'] = True
-        elif events.get('mouse_motion', None):
+        elif events.get('mouse_motion', None) and not self.__already_submitted:
             if self.__highlighted_cell:
                 self.__highlighted_cell = None
                 result['graphics_update'] = True
