@@ -23,6 +23,9 @@ const (
 	CmdBoard          = "BOARD"    // 16
 	CmdWin            = "WIN"      // 17
 	CmdLose           = "LOST"     // 18
+	CmdWait           = "WAIT"     // 19
+	CmdWaiting        = "WAITING"  // 20
+	CmdContinue       = "CONTINUE" // 21
 )
 
 // validCmdsMap is a map of valid commands.
@@ -46,22 +49,28 @@ var validCmdsMap = map[string]int{
 	CmdBoard:          16,
 	CmdWin:            17,
 	CmdLose:           18,
+	CmdWait:           19,
+	CmdWaiting:        20,
+	CmdContinue:       21,
 }
 
 // lobbyStates is a list of lobby statuses.
 const (
 	LobbyStateCreated uint8 = iota
 	LobbyStatePaired
-	LobbyStateStarting
+	LobbyStateWaiting
 	LobbyStateUnready
 	LobbyStatePlayer01Turn
 	LobbyStatePlayer01Playing
-	LobbyStatePlayer02Played
+	LobbyStatePlayer01Played
 	LobbyStatePlayer02Turn
 	LobbyStatePlayer02Playing
-	LobbyStatePlayer01Played
+	LobbyStatePlayer02Played
+	LobbyStateInterrupt
+	LobbyStateInterruptPending
+	LobbyStateInterrupted
+	LobbyStateContinue
 	LobbyStateFinished
-	LobbyStateWaiting
 	LobbyStateFail
 )
 
@@ -104,6 +113,9 @@ const CompleteMsgTimeout = 5 * time.Second
 
 // KeepAliveTimeout is the time to wait for a keep-alive message.
 const KeepAliveTimeout = 5 * time.Second
+
+// PlayerReconnectTimeout is the time to wait for a player to reconnect.
+const PlayerReconnectTimeout = 60 * time.Second
 
 // PlayerCount is the number of players in a game.
 const PlayerCount uint8 = 2

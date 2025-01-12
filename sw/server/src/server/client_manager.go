@@ -30,13 +30,15 @@ type Client struct {
 
 // Lobby represents a game lobby.
 type Lobby struct {
-	id            string
-	player01      string
-	player02      string
-	state         uint8
-	interruptTime time.Time
-	readyCount    uint8
-	board         [protocol.BoardSize][protocol.BoardSize]int8
+	id                  string
+	player01            string
+	player02            string
+	state               uint8
+	interruptTime       time.Time
+	missingPlayer       string
+	readyCount          uint8
+	board               [protocol.BoardSize][protocol.BoardSize]int8
+	priorInterruptState uint8
 }
 
 // Server represents a TCP server.
@@ -353,6 +355,25 @@ func getGameStats(board [protocol.BoardSize][protocol.BoardSize]int8) (bool, boo
 	return false, false, nil
 }
 
+// shouldLobbyWait checks if the lobby can be switched to reconnecting state.
+func shouldLobbyWait(lobby *Lobby) bool {
+	doWait := true
+	switch lobby.state {
+	case protocol.LobbyStateFail:
+		fallthrough
+	case protocol.LobbyStateFinished:
+		fallthrough
+	case protocol.LobbyStateInterrupt:
+		fallthrough
+	case protocol.LobbyStateInterruptPending:
+		fallthrough
+	case protocol.LobbyStateInterrupted:
+		doWait = false
+	}
+
+	return doWait
+}
+
 // readCompleteMessage reads a message from the client.
 // It returns the parsed message, the raw string message, and an error.
 // It involves socket I/O operations so it should be called with a lock.
@@ -609,6 +630,28 @@ func (cm *ClientManager) getClient(nickname string) (*Client, error) {
 	}
 
 	return client, nil
+}
+
+// checkForPendingReconnect checks if a new connection is in a lobby pending reconnect state.
+//
+// WARNING: It reads a shared resource, so it should be called with a lock.
+func (cm *ClientManager) checkForPendingReconnect(nickname string) bool {
+	lobby, exists := cm.playerToLobby[nickname]
+	if !exists {
+		return false
+	}
+
+	isPending := false
+	switch lobby.state {
+	case protocol.LobbyStateInterrupt:
+		fallthrough
+	case protocol.LobbyStateInterruptPending:
+		fallthrough
+	case protocol.LobbyStateInterrupted:
+		isPending = true
+	}
+
+	return isPending
 }
 
 // handleDeleteLobby deletes a lobby from the client manager.
@@ -937,6 +980,50 @@ func (cm *ClientManager) sendGameEndMsg(pClient *Client, isWinner bool, errChan 
 	return nil
 }
 
+// sendWaitMsg sends a wait message to the client.
+// Expects the client to be valid.
+func (cm *ClientManager) sendWaitMsg(pClient *Client, errChan chan error) error {
+	// send the wait message
+	parts := []string{protocol.CmdWait}
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
+	if err != nil {
+		if errChan != nil {
+			errChan <- fmt.Errorf("failed to send wait message: %w", err)
+		}
+		return fmt.Errorf("failed to send wait message: %w", err)
+	}
+
+	if errChan != nil {
+		errChan <- nil
+	}
+	return nil
+}
+
+// sendContinueMsg sends a continue message to the client.
+// Expects the client to be valid.
+func (cm *ClientManager) sendContinueMsg(pClient *Client, pLobby *Lobby, playerOnTurn string, board string, errChan chan error) error {
+	// send the continue message
+	parts := []string{protocol.CmdContinue, pLobby.id, playerOnTurn, board}
+
+	pClient.sendMu.Lock()
+	err := cm.sendMessage(pClient.conn, parts)
+	pClient.sendMu.Unlock()
+	if err != nil {
+		if errChan != nil {
+			errChan <- fmt.Errorf("failed to send continue message: %w", err)
+		}
+		return fmt.Errorf("failed to send continue message: %w", err)
+	}
+
+	if errChan != nil {
+		errChan <- nil
+	}
+	return nil
+}
+
 // handlePingCmd sends a pong message to the client.
 // Expects the client to be valid.
 // Returns if the connection should continue and an error if any.
@@ -1001,7 +1088,9 @@ func (cm *ClientManager) handleLobbiesCmd(pClient *Client) (bool, error) {
 	// get the list of lobbies
 	cm.rwMutex.RLock()
 	for _, lobby := range cm.lobbies {
-		lobbies = append(lobbies, lobby.id)
+		if lobby.state == protocol.LobbyStateWaiting {
+			lobbies = append(lobbies, lobby.id)
+		}
 	}
 	cm.rwMutex.RUnlock()
 
@@ -1094,7 +1183,7 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 
 	// check if the lobby is full
 	if lobby.player01 != "" && lobby.player02 != "" {
-		return false, custom_errors.ErrLobbyFull
+		return true, custom_errors.ErrLobbyFull
 	}
 
 	// check if the lobby is in the correct state
@@ -1102,7 +1191,7 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	failed := lobby.state != protocol.LobbyStateWaiting
 	cm.rwMutex.RUnlock()
 	if failed {
-		return false, errors.New("lobby is not in the correct state")
+		return true, errors.New("lobby is not in the correct state")
 	}
 
 	// add the player to the lobby
@@ -1182,6 +1271,9 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 		if playerNick != lobby.player02 {
 			return true, custom_errors.ErrNotPlayerTurn
 		}
+	case protocol.LobbyStateInterrupt:
+		logging.Warn(fmt.Sprintf("Player \"%s\" tried to make a move in an interrupted lobby", playerNick))
+		return true, nil
 	default:
 		logging.Critical(fmt.Sprintf("Lobby \"%s\" is in an invalid state: %d", lobby.id, lobby.state))
 		cm.rwMutex.RUnlock()
@@ -1213,6 +1305,34 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 		cm.rwMutex.Unlock()
 		return false, fmt.Errorf("failed to make a move: %w", err)
 	}
+
+	return true, nil
+}
+
+// handleWaitingCmd handles a waiting message.
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleWaitingCmd(pClient *Client) (bool, error) {
+	// player must be in a lobby
+	cm.rwMutex.RLock()
+	lobby, exists := cm.playerToLobby[pClient.nickname]
+	cm.rwMutex.RUnlock()
+	if !exists {
+		return false, custom_errors.ErrLobbyNotFound
+	}
+
+	// lobby must be in the correct state
+	cm.rwMutex.RLock()
+	retFlag := lobby.state != protocol.LobbyStateInterruptPending
+	cm.rwMutex.RUnlock()
+	if retFlag {
+		return false, errors.New("lobby is not in the correct state")
+	}
+
+	// change the lobby state
+	cm.rwMutex.Lock()
+	lobby.state = protocol.LobbyStateInterrupted
+	cm.rwMutex.Unlock()
 
 	return true, nil
 }
@@ -1328,6 +1448,28 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	cm.rwMutex.Unlock()
 
 	return nickname, nil
+}
+
+// getMissingPlayerNickname returns the nickname of the missing player in a lobby.
+// Expects the lobby to be valid.
+//
+// WARNING: It reads a shared resource, so it should be called with a rlock.
+func (cm *ClientManager) getMissingPlayerNickname(lobby *Lobby) string {
+	var missingPlayerNickname string = ""
+	_, exists := cm.authClients[lobby.player01]
+	if !exists {
+		missingPlayerNickname = lobby.player01
+	}
+
+	_, exists = cm.authClients[lobby.player02]
+	if !exists {
+		if missingPlayerNickname != "" {
+			logging.Error(fmt.Sprintf("There is a discrepancy in lobby \"%s\": both players are missing", lobby.id))
+		}
+		missingPlayerNickname = lobby.player02
+	}
+
+	return missingPlayerNickname
 }
 
 // prepareGame prepares a game in a lobby.
@@ -1528,6 +1670,145 @@ func (cm *ClientManager) advanceGame(lobby *Lobby) error {
 	return nil
 }
 
+// pauseLobby pauses a lobby and sends wait messages to the players.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) pauseLobby(lobby *Lobby) error {
+	// sanity checks
+	if lobby == nil {
+		return custom_errors.ErrNilPointer
+	}
+	if lobby.state != protocol.LobbyStateInterrupt {
+		return fmt.Errorf("lobby is not in the correct state")
+	}
+
+	// send the other plater wait msg
+	pClientPlayer01, p01Exists := cm.authClients[lobby.player01]
+	pClientPlayer02, p02Exists := cm.authClients[lobby.player02]
+	if lobby.player01 != lobby.missingPlayer {
+		if !p01Exists {
+			lobby.state = protocol.LobbyStateFail
+			return fmt.Errorf("player 01: %s not found for lobby %s", lobby.player01, lobby.id)
+		}
+		err := cm.sendWaitMsg(pClientPlayer01, nil)
+		if err != nil {
+			lobby.state = protocol.LobbyStateFail
+			return fmt.Errorf("failed to send wait message to player 01: %w", err)
+		}
+	} else if lobby.player02 != lobby.missingPlayer {
+		if !p02Exists {
+			lobby.state = protocol.LobbyStateFail
+			return fmt.Errorf("player 02: %s not found for lobby %s", lobby.player02, lobby.id)
+		}
+		err := cm.sendWaitMsg(pClientPlayer02, nil)
+		if err != nil {
+			lobby.state = protocol.LobbyStateFail
+			return fmt.Errorf("failed to send wait message to player 02: %w", err)
+		}
+	} else {
+		lobby.state = protocol.LobbyStateFail
+		return fmt.Errorf("missing player not found in lobby %s", lobby.id)
+	}
+
+	// change the lobby state
+	lobby.state = protocol.LobbyStateInterruptPending
+	return nil
+}
+
+// handleLobbyInterrupted handles a lobby in the waiting state.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) handleLobbyInterrupted(lobby *Lobby) error {
+	// sanity checks
+	if lobby == nil {
+		return custom_errors.ErrNilPointer
+	}
+	if lobby.state != protocol.LobbyStateInterrupted {
+		return fmt.Errorf("lobby is not in the correct state")
+	}
+
+	// check how long the lobby has been waiting
+	if time.Since(lobby.interruptTime) > protocol.PlayerReconnectTimeout {
+		// get the missing player nickname
+		missingPlayerNickname := cm.getMissingPlayerNickname(lobby)
+		cm.kickPlayerFromLobby(missingPlayerNickname)
+		lobby.state = protocol.LobbyStateFail
+	}
+
+	return nil
+}
+
+// handleLobbyContinue handles a lobby in the waiting state.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) handleLobbyContinue(lobby *Lobby) error {
+	// sanity checks
+	if lobby == nil {
+		return custom_errors.ErrNilPointer
+	}
+	if lobby.state != protocol.LobbyStateContinue {
+		return fmt.Errorf("lobby is not in the correct state")
+	}
+
+	// get the players
+	pClientPlayer01, exists := cm.authClients[lobby.player01]
+	if !exists {
+		return fmt.Errorf("player 01: %s not found for lobby %s", lobby.player01, lobby.id)
+	}
+	pClientPlayer02, exists := cm.authClients[lobby.player02]
+	if !exists {
+		return fmt.Errorf("player 02: %s not found for lobby %s", lobby.player02, lobby.id)
+	}
+
+	// get the last player on turn
+	var playerOnTurn string
+	var isPlayer01OnTurn bool
+	switch lobby.priorInterruptState {
+	case protocol.LobbyStatePlayer01Turn:
+		fallthrough
+	case protocol.LobbyStatePlayer01Played:
+		fallthrough
+	case protocol.LobbyStatePlayer01Playing:
+		playerOnTurn = pClientPlayer01.nickname
+		isPlayer01OnTurn = true
+	case protocol.LobbyStatePlayer02Turn:
+		fallthrough
+	case protocol.LobbyStatePlayer02Played:
+		fallthrough
+	case protocol.LobbyStatePlayer02Playing:
+		playerOnTurn = pClientPlayer02.nickname
+		isPlayer01OnTurn = false
+	default:
+		lobby.state = protocol.LobbyStateFail
+		return fmt.Errorf("invalid prior interrupt state: %d", lobby.priorInterruptState)
+	}
+
+	player01Board := boardToStringPlayer(lobby.board, true)
+	player02Board := boardToStringPlayer(lobby.board, false)
+
+	// send the game start message to the players
+	errChan := make(chan error, int(protocol.PlayerCount))
+	go cm.sendContinueMsg(pClientPlayer01, lobby, playerOnTurn, player01Board, errChan)
+	go cm.sendContinueMsg(pClientPlayer02, lobby, playerOnTurn, player02Board, errChan)
+	var err error
+	for i := 0; i < int(protocol.PlayerCount); i++ {
+		err = <-errChan
+		if err != nil {
+			lobby.state = protocol.LobbyStateFail
+			return fmt.Errorf("failed to send continue message: %w", err)
+		}
+	}
+
+	// change the lobby state
+	if isPlayer01OnTurn {
+		lobby.state = protocol.LobbyStatePlayer01Turn
+	} else {
+		lobby.state = protocol.LobbyStatePlayer02Turn
+	}
+
+	return nil
+}
+
 // getLobbyStates gets the states of the lobbies and appends the lobby IDs to the corresponding slices.
 //
 // WARNING: It reads a shared resource, so it should be called with a rlock.
@@ -1536,7 +1817,10 @@ func (cm *ClientManager) getLobbyStates(
 	lobbiesToPrepare *[]string,
 	lobbiesToStart *[]string,
 	lobbiesToFeedbackPlayers *[]string,
-	lobbiesToAdvance *[]string) {
+	lobbiesToAdvance *[]string,
+	lobbiesToInterrupt *[]string,
+	lobbiesInterrupted *[]string,
+	lobbiesToContinue *[]string) {
 
 	for _, lobby := range cm.lobbies {
 		// handle the game
@@ -1559,33 +1843,33 @@ func (cm *ClientManager) getLobbyStates(
 
 		case protocol.LobbyStatePlayer01Turn, protocol.LobbyStatePlayer02Turn:
 			*lobbiesToAdvance = append(*lobbiesToAdvance, lobby.id)
+
+		case protocol.LobbyStateInterrupt:
+			*lobbiesToInterrupt = append(*lobbiesToInterrupt, lobby.id)
+
+		case protocol.LobbyStateInterrupted:
+			*lobbiesInterrupted = append(*lobbiesInterrupted, lobby.id)
+
+		case protocol.LobbyStateContinue:
+			*lobbiesToContinue = append(*lobbiesToContinue, lobby.id)
 		}
 	}
 }
 
-// manageLobbies handles the games.
-func (cm *ClientManager) manageLobbies() error {
-	var err error = nil
-
-	var lobbiesToDelete []string
-	var lobbiesToPrepare []string
-	var lobbiesToStart []string
-	var lobbiesToFeedbackPlayers []string
-	var lobbiesToAdvance []string
-
-	cm.rwMutex.RLock()
-	cm.getLobbyStates(&lobbiesToDelete, &lobbiesToPrepare, &lobbiesToStart, &lobbiesToFeedbackPlayers, &lobbiesToAdvance)
-	cm.rwMutex.RUnlock()
-
+// manageLobbiesToDelete handles the lobbies that need to be deleted.
+func (cm *ClientManager) manageLobbiesToDelete(lobbiesToDelete []string) {
 	for _, lobbyID := range lobbiesToDelete {
 		cm.rwMutex.Lock()
-		err = cm.handleDeleteLobby(lobbyID)
+		err := cm.handleDeleteLobby(lobbyID)
 		cm.rwMutex.Unlock()
 		if err != nil {
 			logging.Error(fmt.Sprintf("failed to delete lobby %s: %v", lobbyID, err))
 		}
 	}
+}
 
+// manageLobbiesToPrepare handles the lobbies that need to be prepared.
+func (cm *ClientManager) manageLobbiesToPrepare(lobbiesToPrepare []string) {
 	for _, lobbyID := range lobbiesToPrepare {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -1595,7 +1879,7 @@ func (cm *ClientManager) manageLobbies() error {
 			continue
 		}
 		cm.rwMutex.Lock()
-		err = cm.prepareGame(lobby)
+		err := cm.prepareGame(lobby)
 		cm.rwMutex.Unlock()
 		if err != nil {
 			logging.Warn(fmt.Sprintf("failed to prepare game in lobby %s: %v", lobbyID, err))
@@ -1604,7 +1888,10 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+}
 
+// manageLobbiesToStart handles the lobbies that need to be started.
+func (cm *ClientManager) manageLobbiesToStart(lobbiesToStart []string) {
 	for _, lobbyID := range lobbiesToStart {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -1615,7 +1902,7 @@ func (cm *ClientManager) manageLobbies() error {
 		}
 
 		cm.rwMutex.Lock()
-		err = cm.startGame(lobby)
+		err := cm.startGame(lobby)
 		cm.rwMutex.Unlock()
 		if err != nil {
 			logging.Warn(fmt.Sprintf("failed to start game in lobby %s: %v", lobbyID, err))
@@ -1624,7 +1911,10 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+}
 
+// manageLobbiesToFeedback handles the lobbies that need to inform the players about the moves.
+func (cm *ClientManager) manageLobbiesToFeedback(lobbiesToFeedbackPlayers []string) {
 	for _, lobbyID := range lobbiesToFeedbackPlayers {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -1635,7 +1925,7 @@ func (cm *ClientManager) manageLobbies() error {
 		}
 
 		cm.rwMutex.Lock()
-		err = cm.informMoves(lobby)
+		err := cm.informMoves(lobby)
 		cm.rwMutex.Unlock()
 		if err != nil {
 			logging.Warn(fmt.Sprintf("failed to inform players in lobby %s: %v", lobbyID, err))
@@ -1644,7 +1934,10 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+}
 
+// manageLobbiesToAdvance handles the lobbies to advance.
+func (cm *ClientManager) manageLobbiesToAdvance(lobbiesToAdvance []string) {
 	for _, lobbyID := range lobbiesToAdvance {
 		cm.rwMutex.RLock()
 		lobby, exists := cm.lobbies[lobbyID]
@@ -1654,9 +1947,9 @@ func (cm *ClientManager) manageLobbies() error {
 			continue
 		}
 
-		cm.rwMutex.RLock()
-		err = cm.advanceGame(lobby)
-		cm.rwMutex.RUnlock()
+		cm.rwMutex.Lock()
+		err := cm.advanceGame(lobby)
+		cm.rwMutex.Unlock()
 		if err != nil {
 			logging.Warn(fmt.Sprintf("failed to advance game in lobby %s: %v", lobbyID, err))
 			cm.rwMutex.Lock()
@@ -1664,8 +1957,110 @@ func (cm *ClientManager) manageLobbies() error {
 			cm.rwMutex.Unlock()
 		}
 	}
+}
 
-	return err
+// manageLobbiesToInterrupt handles the lobbies to interrupt.
+func (cm *ClientManager) manageLobbiesToInterrupt(lobbiesToInterrupt []string) {
+	for _, lobbyID := range lobbiesToInterrupt {
+		cm.rwMutex.RLock()
+		lobby, exists := cm.lobbies[lobbyID]
+		cm.rwMutex.RUnlock()
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		cm.rwMutex.Lock()
+		err := cm.pauseLobby(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to pause lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+		}
+	}
+}
+
+// manageLobbiesInterrupted handles the interrupted lobbies.
+func (cm *ClientManager) manageLobbiesInterrupted(lobbiesReconnecting []string) {
+	for _, lobbyID := range lobbiesReconnecting {
+		cm.rwMutex.RLock()
+		lobby, exists := cm.lobbies[lobbyID]
+		cm.rwMutex.RUnlock()
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		cm.rwMutex.Lock()
+		err := cm.handleLobbyInterrupted(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to handle wait in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+			continue
+		}
+	}
+}
+
+// manageLobbiesToContinue handles the lobbies that need to continue.
+func (cm *ClientManager) manageLobbiesToContinue(lobbiesToContinue []string) {
+	for _, lobbyID := range lobbiesToContinue {
+		cm.rwMutex.RLock()
+		lobby, exists := cm.lobbies[lobbyID]
+		cm.rwMutex.RUnlock()
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby %s not found", lobbyID))
+			continue
+		}
+
+		cm.rwMutex.Lock()
+		err := cm.handleLobbyContinue(lobby)
+		cm.rwMutex.Unlock()
+		if err != nil {
+			logging.Warn(fmt.Sprintf("failed to handle continue in lobby %s: %v", lobbyID, err))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
+			continue
+		}
+	}
+}
+
+// manageLobbies handles the games.
+func (cm *ClientManager) manageLobbies() {
+	var lobbiesToDelete []string
+	var lobbiesToPrepare []string
+	var lobbiesToStart []string
+	var lobbiesToFeedbackPlayers []string
+	var lobbiesToAdvance []string
+	var lobbiesToInterrupt []string
+	var lobbiesInterrupted []string
+	var lobbiesToContinue []string
+
+	cm.rwMutex.RLock()
+	cm.getLobbyStates(
+		&lobbiesToDelete,
+		&lobbiesToPrepare,
+		&lobbiesToStart,
+		&lobbiesToFeedbackPlayers,
+		&lobbiesToAdvance,
+		&lobbiesToInterrupt,
+		&lobbiesInterrupted,
+		&lobbiesToContinue)
+	cm.rwMutex.RUnlock()
+
+	cm.manageLobbiesToDelete(lobbiesToDelete)
+	cm.manageLobbiesToPrepare(lobbiesToPrepare)
+	cm.manageLobbiesToStart(lobbiesToStart)
+	cm.manageLobbiesToFeedback(lobbiesToFeedbackPlayers)
+	cm.manageLobbiesToAdvance(lobbiesToAdvance)
+	cm.manageLobbiesToInterrupt(lobbiesToInterrupt)
+	cm.manageLobbiesInterrupted(lobbiesInterrupted)
+	cm.manageLobbiesToContinue(lobbiesToContinue)
 }
 
 // handleCommand handles a command from the client. It returns a boolean indicating if the client should stay connected.
@@ -1713,6 +2108,9 @@ func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.
 	case protocol.CmdAction:
 		stayConnected, err = cm.handleActionCmd(pClient, pCommand)
 
+	case protocol.CmdWaiting:
+		stayConnected, err = cm.handleWaitingCmd(pClient)
+
 	default:
 		err = fmt.Errorf("unknown command: %s", pCommand.Command)
 		stayConnected = false
@@ -1756,7 +2154,43 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 		return
 	}
 
-	// TODO: handle reconnect
+	cm.rwMutex.RLock()
+	isPendingReconnect := cm.checkForPendingReconnect(nickname)
+	cm.rwMutex.RUnlock()
+	if isPendingReconnect {
+		logging.Info(fmt.Sprintf("Client %s has reconnected", nickname))
+		isValidState := false
+		reconnectFail := false
+		var pLobby *Lobby = nil
+
+		// wait for valid state
+		for {
+			if isValidState {
+				break
+			}
+
+			cm.rwMutex.RLock()
+			pLobby, exists := cm.playerToLobby[nickname]
+			cm.rwMutex.RUnlock()
+			if !exists {
+				logging.Error(fmt.Sprintf("Lobby not found for player %s", nickname))
+				reconnectFail = true
+				break
+			}
+
+			cm.rwMutex.RLock()
+			isValidState = pLobby.state == protocol.LobbyStateInterrupt
+			cm.rwMutex.RUnlock()
+		}
+
+		// reconnect
+		if !reconnectFail {
+			cm.rwMutex.Lock()
+			pLobby.missingPlayer = ""
+			pLobby.state = protocol.LobbyStateContinue
+			cm.rwMutex.Unlock()
+		}
+	}
 
 	// infinite loop to handle messages
 	for {
@@ -1802,12 +2236,14 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 	cm.rwMutex.RUnlock()
 	if exists {
 		cm.rwMutex.RLock()
-		doWait := lobby.state != protocol.LobbyStateFail && lobby.state != protocol.LobbyStateWaiting
+		doWait := shouldLobbyWait(lobby)
 		cm.rwMutex.RUnlock()
 		if doWait {
 			logging.Info(fmt.Sprintf("Client abruptly disconnected from lobby %s. State changed to waiting.", lobby.id))
 			cm.rwMutex.Lock()
-			lobby.state = protocol.LobbyStateWaiting
+			lobby.priorInterruptState = lobby.state
+			lobby.state = protocol.LobbyStateInterrupt
+			lobby.missingPlayer = nickname
 			lobby.interruptTime = time.Now()
 			cm.rwMutex.Unlock()
 		} else {
@@ -1860,11 +2296,7 @@ func (cm *ClientManager) ManageServer(ctx context.Context) error {
 		// server logic
 		default:
 			// handle games if any
-			// TODO: lock for connections
-			err := cm.manageLobbies()
-			if err != nil {
-				return fmt.Errorf("failed to manage lobbies: %w", err)
-			}
+			cm.manageLobbies()
 
 			// try to accept a new connection
 			conn, err := cm.pServer.AcceptConnection()

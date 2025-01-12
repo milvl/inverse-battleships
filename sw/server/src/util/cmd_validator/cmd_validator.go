@@ -64,6 +64,8 @@ func GetCommand(parts []string) (*IncomingMessage, error) {
 	case protocol.CmdCreateLobby:
 		fallthrough
 	case protocol.CmdClientReady:
+		fallthrough
+	case protocol.CmdWaiting:
 		if len(parts) != protocol.MinPartsCount {
 			return nil, fmt.Errorf("invalid format - not enough parts")
 		}

@@ -441,7 +441,8 @@ class IBGame:
         """
         
         self.__end_net_handler_thread.set()
-        self.__net_handler_thread.join()
+        if self.__net_handler_thread and self.__net_handler_thread.is_alive():
+            self.__net_handler_thread.join()
         self.__net_handler_thread = None
         self.__end_net_handler_thread.clear()
 
@@ -815,6 +816,7 @@ class IBGame:
             self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
 
         elif self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBIES:
+            self.__lobbies = []
             tmp_logger.debug('Setting up context for lobby selection')
             self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobbies_msg'])
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_get_lobbies)
@@ -1132,6 +1134,11 @@ class IBGame:
                 logger.info('Changing the state to MAIN_MENU')
                 self.game_state.state = IBGameState.MAIN_MENU
                 self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
+                self.context = None
+            elif self.game_state.connection_status == ConnectionStatus.LOBBY_FAILED:
+                logger.info('Changing the state to LOBBY_SELECTION')
+                self.game_state.state = IBGameState.LOBBY_SELECTION
+                self.game_state.connection_status = ConnectionStatus.REQUESTED_LOBBIES
                 self.context = None
             elif self.game_state.connection_status == ConnectionStatus.WAITING_FOR_PLAYERS:
                 logger.info('Changing the state to MAIN_MENU')
