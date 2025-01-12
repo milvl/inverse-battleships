@@ -279,7 +279,7 @@ class IBGame:
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
         self.__game_session_updated.clear()
-        self.__stored_state: IBGameState = None
+        self.__stored_state = None
         self.__stored_context = None
 
         self.update_result = IBGameUpdateResult()

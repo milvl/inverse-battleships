@@ -32,3 +32,6 @@ var ErrNotPlayerTurn = errors.New("not player's turn")
 
 // ErrInvalidMove is an error that occurs when an invalid move is made.
 var ErrInvalidMove = errors.New("invalid move")
+
+// ErrSendMsg is an error that occurs when a message cannot be sent.
+var ErrSendMsg = errors.New("error while sending message")

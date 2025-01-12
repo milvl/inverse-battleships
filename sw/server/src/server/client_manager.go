@@ -523,6 +523,59 @@ func (cm *ClientManager) removeClient(nickname string) error {
 	return nil
 }
 
+// addPlayerToLobby adds a player to a lobby.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) addPlayerToLobby(nickname string, lobbyID string) error {
+	// sanity check
+	_, exists := cm.lobbies[lobbyID]
+	if !exists {
+		return fmt.Errorf("lobby not found")
+	}
+
+	// add the player to the lobby
+	lobby := cm.lobbies[lobbyID]
+	if lobby.player01 == "" {
+		lobby.player01 = nickname
+	} else if lobby.player02 == "" {
+		lobby.player02 = nickname
+	} else {
+		return fmt.Errorf("lobby is full")
+	}
+
+	cm.playerToLobby[nickname] = lobby
+	logging.Info(fmt.Sprintf("Player \"%s\" has been added to lobby \"%s\"", nickname, lobbyID))
+	return nil
+}
+
+// kickPlayerFromLobby kicks a player from a lobby.
+//
+// WARNING: It manipulates a shared resource, so it should be called with a lock.
+func (cm *ClientManager) kickPlayerFromLobby(nickname string) error {
+	// sanity check
+	lobby, exists := cm.playerToLobby[nickname]
+	if !exists {
+		logging.Critical(fmt.Sprintf("Cannot kick player \"%s\" from lobby \"%s\": player is not in a lobby", nickname, lobby.id))
+		return fmt.Errorf("player is not in a lobby")
+	}
+
+	if lobby.player01 == nickname {
+		lobby.player01 = ""
+	} else if lobby.player02 == nickname {
+		lobby.player02 = ""
+	} else {
+		logging.Critical(fmt.Sprintf("Cannot kick player \"%s\" from lobby \"%s\": player is not in the lobby (but was in lobbies map)", nickname, lobby.id))
+		return fmt.Errorf("player is not in the lobby")
+	}
+
+	// change the lobby state
+	lobby.state = protocol.LobbyStateFail
+
+	delete(cm.playerToLobby, nickname)
+	logging.Info(fmt.Sprintf("Player \"%s\" has been kicked from lobby \"%s\"", nickname, lobby.id))
+	return nil
+}
+
 // removePendingClient removes a pending client from the client manager.
 //
 // WARNING: It manipulates a shared resource, so it should be called with a lock.
@@ -707,7 +760,8 @@ func (cm *ClientManager) sendMessage(conn net.Conn, parts []string) error {
 	// send the message
 	err = cm.pServer.SendMessage(conn, msg)
 	if err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
+		logging.Error(fmt.Sprintf("Failed to send message: %v", err))
+		return custom_errors.ErrSendMsg
 	}
 
 	return nil
@@ -885,7 +939,8 @@ func (cm *ClientManager) sendGameEndMsg(pClient *Client, isWinner bool, errChan 
 
 // handlePingCmd sends a pong message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) handlePingCmd(pClient *Client) error {
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handlePingCmd(pClient *Client) (bool, error) {
 	// send the pong message
 	parts := []string{protocol.CmdPong}
 
@@ -893,15 +948,16 @@ func (cm *ClientManager) handlePingCmd(pClient *Client) error {
 	err := cm.sendMessage(pClient.conn, parts)
 	pClient.sendMu.Unlock()
 	if err != nil {
-		return fmt.Errorf("failed to send pong message: %w", err)
+		return false, fmt.Errorf("failed to send pong message: %w", err)
 	}
 
-	return nil
+	return true, nil
 }
 
 // handleLeaveCmd sends a leave acknowledgment message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) handleLeaveCmd(pClient *Client) error {
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleLeaveCmd(pClient *Client) (bool, error) {
 	// send the leave acknowledgment message
 	parts := []string{protocol.CmdLeaveAck}
 
@@ -909,30 +965,35 @@ func (cm *ClientManager) handleLeaveCmd(pClient *Client) error {
 	err := cm.sendMessage(pClient.conn, parts)
 	pClient.sendMu.Unlock()
 	if err != nil {
-		return fmt.Errorf("failed to send leave acknowledgment message: %w", err)
+		return false, fmt.Errorf("failed to send leave acknowledgment message: %w", err)
 	}
 
 	// if the player is in a lobby, send a TKO message to the opponent if necessary
 	cm.rwMutex.RLock()
-	lobby, exists := cm.playerToLobby[pClient.nickname]
+	_, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if exists {
 		cm.rwMutex.Lock()
-		lobby.state = protocol.LobbyStateFail
+		cm.kickPlayerFromLobby(pClient.nickname)
 		cm.rwMutex.Unlock()
 	}
 
-	return nil
+	return false, nil
 }
 
 // handleLobbiesCmd sends a list of lobbies to the client.
-func (cm *ClientManager) handleLobbiesCmd(pClient *Client) error {
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleLobbiesCmd(pClient *Client) (bool, error) {
 	// player must be in idle state (not in a lobby)
 	cm.rwMutex.RLock()
 	_, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if exists {
-		return custom_errors.ErrPlayerNotIdle
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(pClient.nickname)
+		cm.rwMutex.Unlock()
+		return false, custom_errors.ErrPlayerNotIdle
 	}
 
 	lobbies := make([]string, 0)
@@ -947,20 +1008,25 @@ func (cm *ClientManager) handleLobbiesCmd(pClient *Client) error {
 	// send the list of lobbies to the client
 	err := cm.sendLobbies(pClient, lobbies)
 	if err != nil {
-		return fmt.Errorf("failed to send lobby list: %w", err)
+		return false, fmt.Errorf("failed to send lobby list: %w", err)
 	}
 
-	return nil
+	return true, nil
 }
 
 // handleCreateLobbyCmd creates a new lobby and sends the lobby ID to the client.
-func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client) error {
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client) (bool, error) {
 	// player must be in idle state (not in a lobby)
 	cm.rwMutex.RLock()
 	_, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if exists {
-		return custom_errors.ErrPlayerNotIdle
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(pClient.nickname)
+		cm.rwMutex.Unlock()
+		return false, custom_errors.ErrPlayerNotIdle
 	}
 
 	// create a new lobby
@@ -986,23 +1052,25 @@ func (cm *ClientManager) handleCreateLobbyCmd(pClient *Client) error {
 		cm.rwMutex.Lock()
 		cm.lobbies[lobbyID].state = protocol.LobbyStateFail
 		cm.rwMutex.Unlock()
-		return fmt.Errorf("failed to send create lobby acknowledgment: %w", err)
+		return false, fmt.Errorf("failed to send create lobby acknowledgment: %w", err)
 	}
 
 	cm.rwMutex.Lock()
 	cm.lobbies[lobbyID].state = protocol.LobbyStateWaiting
 	cm.rwMutex.Unlock()
 
-	return nil
+	return true, nil
 }
 
 // handleJoinLobbyCmd attempts to connect the client to a lobby.
-func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) (bool, error) {
 	// sanity check
 	lobbyID, err := cmd_validator.ParseJoinLobbyCmd(pCommand)
 	if err != nil {
 		logging.Warn(fmt.Sprintf("invalid join lobby message: %v", err))
-		return custom_errors.ErrInvalidCommand
+		return false, custom_errors.ErrInvalidCommand
 	}
 
 	// player must be in idle state (not in a lobby)
@@ -1010,7 +1078,10 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	_, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if exists {
-		return custom_errors.ErrPlayerNotIdle
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(pClient.nickname)
+		cm.rwMutex.Unlock()
+		return false, custom_errors.ErrPlayerNotIdle
 	}
 
 	// check if the lobby exists
@@ -1018,12 +1089,12 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	lobby, exists := cm.lobbies[lobbyID]
 	cm.rwMutex.RUnlock()
 	if !exists {
-		return custom_errors.ErrLobbyNotFound
+		return false, custom_errors.ErrLobbyNotFound
 	}
 
 	// check if the lobby is full
 	if lobby.player01 != "" && lobby.player02 != "" {
-		return custom_errors.ErrLobbyFull
+		return false, custom_errors.ErrLobbyFull
 	}
 
 	// check if the lobby is in the correct state
@@ -1031,43 +1102,44 @@ func (cm *ClientManager) handleJoinLobbyCmd(pClient *Client, pCommand *cmd_valid
 	failed := lobby.state != protocol.LobbyStateWaiting
 	cm.rwMutex.RUnlock()
 	if failed {
-		return errors.New("lobby is not in the correct state")
+		return false, errors.New("lobby is not in the correct state")
 	}
 
 	// add the player to the lobby
 	cm.rwMutex.Lock()
-	if lobby.player01 == "" {
-		lobby.player01 = pClient.nickname
-	} else {
-		lobby.player02 = pClient.nickname
+	err = cm.addPlayerToLobby(pClient.nickname, lobbyID)
+	if err != nil {
+		cm.rwMutex.Unlock()
+		return false, fmt.Errorf("failed to add player to lobby: %w", err)
 	}
-	cm.playerToLobby[pClient.nickname] = lobby
 
 	// NOTE: bandage fix but might cause delay for others - lobby change
 	// 		 is handled in other goroutine so it needs to be synchronized (locked)
 	// 		 to prevent race conditions with other clients
 	err = cm.sendLobbyAck(pClient, lobbyID)
 	if err != nil {
-		lobby.state = protocol.LobbyStateFail
+		cm.kickPlayerFromLobby(pClient.nickname)
 		cm.rwMutex.Unlock()
-		return fmt.Errorf("failed to send join lobby acknowledgment: %w", err)
+		return false, fmt.Errorf("failed to send join lobby acknowledgment: %w", err)
 	}
 
 	// change the lobby state
 	lobby.state = protocol.LobbyStatePaired
 	cm.rwMutex.Unlock()
 
-	return nil
+	return true, nil
 }
 
 // handleClientReadyCmd handles a client ready message.
-func (cm *ClientManager) handleClientReadyCmd(pClient *Client) error {
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleClientReadyCmd(pClient *Client) (bool, error) {
 	// player must be in a lobby
 	cm.rwMutex.RLock()
 	lobby, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if !exists {
-		return custom_errors.ErrPlayerNotIdle
+		return false, custom_errors.ErrPlayerNotIdle
 	}
 
 	// lobby must be unready
@@ -1075,7 +1147,7 @@ func (cm *ClientManager) handleClientReadyCmd(pClient *Client) error {
 	retFlag := lobby.state != protocol.LobbyStateUnready || lobby.readyCount >= protocol.PlayerCount
 	cm.rwMutex.RUnlock()
 	if retFlag {
-		return errors.New("lobby is not in the correct state")
+		return false, errors.New("lobby is not in the correct state")
 	}
 
 	// increase the ready count
@@ -1083,17 +1155,19 @@ func (cm *ClientManager) handleClientReadyCmd(pClient *Client) error {
 	lobby.readyCount++
 	cm.rwMutex.Unlock()
 
-	return nil
+	return true, nil
 }
 
 // handleActionCmd handles an action message.
-func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) error {
+// Expects the client to be valid.
+// Returns if the connection should continue and an error if any.
+func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validator.IncomingMessage) (bool, error) {
 	// player must be in a lobby
 	cm.rwMutex.RLock()
 	lobby, exists := cm.playerToLobby[pClient.nickname]
 	cm.rwMutex.RUnlock()
 	if !exists {
-		return custom_errors.ErrPlayerNotIdle
+		return false, custom_errors.ErrPlayerNotIdle
 	}
 
 	// figure out if its the player's turn
@@ -1102,15 +1176,20 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 	switch lobby.state {
 	case protocol.LobbyStatePlayer01Playing:
 		if playerNick != lobby.player01 {
-			return custom_errors.ErrNotPlayerTurn
+			return true, custom_errors.ErrNotPlayerTurn
 		}
 	case protocol.LobbyStatePlayer02Playing:
 		if playerNick != lobby.player02 {
-			return custom_errors.ErrNotPlayerTurn
+			return true, custom_errors.ErrNotPlayerTurn
 		}
 	default:
 		logging.Critical(fmt.Sprintf("Lobby \"%s\" is in an invalid state: %d", lobby.id, lobby.state))
-		return errors.New("lobby is not in the correct state")
+		cm.rwMutex.RUnlock()
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(playerNick)
+		cm.rwMutex.Unlock()
+
+		return false, errors.New("lobby is not in the correct state")
 	}
 	cm.rwMutex.RUnlock()
 
@@ -1118,7 +1197,10 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 	position, err := cmd_validator.ParseActionCmd(pCommand)
 	if err != nil {
 		logging.Warn(fmt.Sprintf("invalid action message: %v", err))
-		return custom_errors.ErrInvalidCommand
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(playerNick)
+		cm.rwMutex.Unlock()
+		return false, custom_errors.ErrInvalidCommand
 	}
 
 	// attempt to make a move
@@ -1126,13 +1208,17 @@ func (cm *ClientManager) handleActionCmd(pClient *Client, pCommand *cmd_validato
 	err = cm.attemptMove(lobby, pClient.nickname, position)
 	cm.rwMutex.Unlock()
 	if err != nil {
-		return fmt.Errorf("failed to make a move: %w", err)
+		cm.rwMutex.Lock()
+		cm.kickPlayerFromLobby(playerNick)
+		cm.rwMutex.Unlock()
+		return false, fmt.Errorf("failed to make a move: %w", err)
 	}
 
-	return nil
+	return true, nil
 }
 
 // checkAlive checks if the client is alive by sending a ping message and waiting for a pong message.
+// Returns true if the client is alive, false otherwise. Returns an error if any.
 func (cm *ClientManager) checkAlive(pClient *Client) (bool, error) {
 	// sanity checks
 	if pClient == nil {
@@ -1206,6 +1292,14 @@ func (cm *ClientManager) validateConnection(pClient *Client) (string, error) {
 	nickname, err := cmd_validator.ParseHandshakeCmd(pValidMsg)
 	if err != nil {
 		return "", fmt.Errorf("invalid handshake message: %w", err)
+	}
+
+	// check if the nickname is already taken
+	cm.rwMutex.RLock()
+	_, exists := cm.authClients[nickname]
+	cm.rwMutex.RUnlock()
+	if exists {
+		return "", fmt.Errorf("nickname is already taken")
 	}
 
 	// send the handshake reply
@@ -1588,36 +1682,40 @@ func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.
 	}
 
 	var err error = nil
-	stayConnected := true
+	var stayConnected bool = true
 
 	// handle the command
 	switch pCommand.Command {
+
 	// universal commands
 	case protocol.CmdPing:
-		err = cm.handlePingCmd(pClient)
+		stayConnected, err = cm.handlePingCmd(pClient)
+
 	case protocol.CmdLeave:
 		logging.Info(fmt.Sprintf("Client %s - %s has requested to leave.", pClient.conn.RemoteAddr().String(), pClient.nickname))
-		stayConnected = false
-		err = cm.handleLeaveCmd(pClient)
+		stayConnected, err = cm.handleLeaveCmd(pClient)
 
 	// idle commands
 	case protocol.CmdLobbies:
-		err = cm.handleLobbiesCmd(pClient)
+		stayConnected, err = cm.handleLobbiesCmd(pClient)
+
 	case protocol.CmdCreateLobby:
-		err = cm.handleCreateLobbyCmd(pClient)
+		stayConnected, err = cm.handleCreateLobbyCmd(pClient)
+
 	case protocol.CmdJoinLobby:
-		err = cm.handleJoinLobbyCmd(pClient, pCommand)
+		stayConnected, err = cm.handleJoinLobbyCmd(pClient, pCommand)
 
 	// in lobby commands
 	case protocol.CmdClientReady:
-		err = cm.handleClientReadyCmd(pClient)
+		stayConnected, err = cm.handleClientReadyCmd(pClient)
 
 	// game session commands
 	case protocol.CmdAction:
-		err = cm.handleActionCmd(pClient, pCommand)
+		stayConnected, err = cm.handleActionCmd(pClient, pCommand)
 
 	default:
 		err = fmt.Errorf("unknown command: %s", pCommand.Command)
+		stayConnected = false
 	}
 
 	return stayConnected, err
