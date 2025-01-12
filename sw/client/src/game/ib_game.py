@@ -279,6 +279,8 @@ class IBGame:
         self.__game_session_updates = {}
         self.__game_session_updated = threading.Event()
         self.__game_session_updated.clear()
+        self.__stored_state: IBGameState = None
+        self.__stored_context = None
 
         self.update_result = IBGameUpdateResult()
         self.started = True
@@ -618,11 +620,15 @@ class IBGame:
         logger.debug('Game ready thread started')
         with self.net_lock:
             try:
-                starting_board, current_player = self.__connection_manager.game_ready()
+                starting_board, current_player, tko = self.__connection_manager.game_ready()
 
-                self.__starting_player = current_player
-                self.__starting_board = starting_board
-                self.game_state.state = IBGameState.GAME_SESSION
+                if tko:
+                    self.game_state.state = IBGameState.GAME_END
+                    self.game_state.connection_status = ConnectionStatus.TKO
+                else:
+                    self.__starting_player = current_player
+                    self.__starting_board = starting_board
+                    self.game_state.state = IBGameState.GAME_SESSION
 
             except Exception as e:
                 logger.error(f'Failed to start the game: {e}')
@@ -680,6 +686,13 @@ class IBGame:
                         self.game_state.state = IBGameState.GAME_END
                         self.game_state.connection_status = ConnectionStatus.WIN if resp.command == CMD_GAME_WIN else ConnectionStatus.LOSE
                     self.__last_end_score = self.context.last_score
+                    self.context = None
+                    break
+                
+                elif resp.command == CMD_TKO:
+                    with self.net_lock:
+                        self.game_state.state = IBGameState.GAME_END
+                        self.game_state.connection_status = ConnectionStatus.TKO
                     self.context = None
                     break
             

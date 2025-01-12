@@ -490,16 +490,19 @@ class ConnectionManager:
                 raise ConnectionError(f"Error receiving players in the lobby from the server at {self.server_address}: {e}")
             
 
-    def game_ready(self) -> Tuple[List[List[int]], str]:
+    def game_ready(self) -> Tuple[List[List[int]], str, bool]:
         """
-        Sends a ready message to the game server and receives current player's username.
+        Sends a ready message to the game server and receives current player's username,
+        the board and the TKO flag if the player won dur to the opponent's connection 
+        difficulties.
 
-        :return: The username of the player whose turn it is and the board.
-        :rtype: Tuple[List[List[int]], str]
+        :return: The username of the player whose turn it is, the board and TKO flag.
+        :rtype: Tuple[List[List[int]], str, bool]
         """
 
         player_on_turn = None
         board = None
+        tko = False
 
         with self.__lock:
             if not self.is_running:
@@ -509,24 +512,48 @@ class ConnectionManager:
                 self.__send_cmd([CMD_READY])
             except Exception as e:
                 raise ConnectionError(f"Error sending ready message to the server at {self.server_address}: {e}")
-            
-            try:
-                res = self.__receive_command_response(CMD_BOARD)
-                board = res.params[PARAM_BOARD_INDEX]
-            except TimeoutError as e:
-                raise e
-            except Exception as e:
-                raise ConnectionError(f"Error receiving board from the server at {self.server_address}: {e}")
 
-            try:
-                res = self.__receive_command_response(CMD_PLAYER_TURN)  # TODO TKO
-                player_on_turn = res.params[PARAM_PLAYER_ID_INDEX]
-            except TimeoutError as e:
-                raise e
-            except Exception as e:
-                raise ConnectionError(f"Error receiving player's username from the server at {self.server_address}: {e}")
+            i = 0
+            while i < 2:      # wait for board and turn command => two commands
+                try:
+                    res = self.receive_message() 
+                    if res.command == CMD_PING:
+                        self.pong()
+                        continue
+                    elif res.command == CMD_TKO:
+                        tko = True
+                        return board, player_on_turn, tko
+                    elif res.command == CMD_BOARD:
+                        board = res.params[PARAM_BOARD_INDEX]
+                        i += 1
+                    elif res.command == CMD_PLAYER_TURN:
+                        player_on_turn = res.params[PARAM_PLAYER_ID_INDEX]
+                        i += 1
+                    else:
+                        raise ConnectionError(f"Invalid response received from the server at {self.server_address}: {res.command}. Expected: {CMD_BOARD} or {CMD_PLAYER_TURN}")
+                except TimeoutError as e:
+                    raise e
             
-        return board, player_on_turn
+            if not board or not player_on_turn:
+                raise ConnectionError(f"Error receiving board or player's username from the server at {self.server_address}")
+                
+            # try:
+            #     res = self.__receive_command_response(CMD_BOARD)
+            #     board = res.params[PARAM_BOARD_INDEX]
+            # except TimeoutError as e:
+            #     raise e
+            # except Exception as e:
+            #     raise ConnectionError(f"Error receiving board from the server at {self.server_address}: {e}")
+
+            # try:
+            #     res = self.__receive_command_response(CMD_PLAYER_TURN)  # TODO TKO
+            #     player_on_turn = res.params[PARAM_PLAYER_ID_INDEX]
+            # except TimeoutError as e:
+            #     raise e
+            # except Exception as e:
+            #     raise ConnectionError(f"Error receiving player's username from the server at {self.server_address}: {e}")
+            
+        return board, player_on_turn, tko
 
             
 
