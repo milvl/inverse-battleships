@@ -51,13 +51,17 @@ class ConnectionStatus:
     """The game session is in progress."""
     WAITING_FOR_OPPONENT = 15
     """The game is waiting for the opponent to reconnect."""
-    TKO = 16
+    GAME_SESSION_CONTINUED = 16
+    """The game session is continued."""
+    GAME_SESSION_RECONNECTED = 17
+    """The game session is reconnected."""
+    TKO = 18
     """Represents any technical knockout and win of the player."""
-    WAITING_FOR_SERVER = 17
+    WAITING_FOR_SERVER = 19
     """The game is waiting for the server to respond."""
-    WIN = 18
+    WIN = 20
     """The player won the game."""
-    LOSE = 19
+    LOSE = 21
     """The player lost the game."""
 
     status: int = NOT_RUNNING
@@ -115,6 +119,11 @@ class IBGameState:
             ConnectionStatus.TRYING_TO_JOIN: 'TRYING_TO_JOIN',
             ConnectionStatus.JOINED_LOBBY: 'JOINED_LOBBY',
             ConnectionStatus.LOBBY_FAILED: 'LOBBY_FAILED',
+            ConnectionStatus.GAME_READY: 'GAME_READY',
+            ConnectionStatus.GAME_SESSION: 'GAME_SESSION',
+            ConnectionStatus.WAITING_FOR_OPPONENT: 'WAITING_FOR_OPPONENT',
+            ConnectionStatus.GAME_SESSION_CONTINUED: 'GAME_SESSION_CONTINUED',
+            ConnectionStatus.GAME_SESSION_RECONNECTED: 'GAME_SESSION_RECONNECTED',
             ConnectionStatus.TKO: 'TKO',
             ConnectionStatus.WAITING_FOR_SERVER: 'WAITING_FOR_SERVER',
             ConnectionStatus.WIN: 'WIN',

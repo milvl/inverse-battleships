@@ -36,6 +36,7 @@
     "last_action_panel_gain": "Latest update:\nGained a ship!",
     "last_action_panel_lose": "Latest update:\nLost a ship!",
     "score_panel_title": "Score:      \n",
+    "waiting_for_opponent_to_reconnect_msg": "The connection to the opponent was lost.\nWaiting for the opponent to reconnect...",
 
     "game_end_win_msg": "Congratulations!\nYou won!\nScore: ",
     "game_end_lose_msg": "You lost! \nBetter luck next time.\nScore: ",

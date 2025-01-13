@@ -1004,9 +1004,9 @@ func (cm *ClientManager) sendWaitMsg(pClient *Client, errChan chan error) error 
 
 // sendContinueMsg sends a continue message to the client.
 // Expects the client to be valid.
-func (cm *ClientManager) sendContinueMsg(pClient *Client, pLobby *Lobby, playerOnTurn string, board string, errChan chan error) error {
+func (cm *ClientManager) sendContinueMsg(pClient *Client, lobbyID string, opponent string, playerOnTurn string, board string, errChan chan error) error {
 	// send the continue message
-	parts := []string{protocol.CmdContinue, pLobby.id, playerOnTurn, board}
+	parts := []string{protocol.CmdContinue, lobbyID, opponent, playerOnTurn, board}
 
 	pClient.sendMu.Lock()
 	err := cm.sendMessage(pClient.conn, parts)
@@ -1788,8 +1788,8 @@ func (cm *ClientManager) handleLobbyContinue(lobby *Lobby) error {
 
 	// send the game start message to the players
 	errChan := make(chan error, int(protocol.PlayerCount))
-	go cm.sendContinueMsg(pClientPlayer01, lobby, playerOnTurn, player01Board, errChan)
-	go cm.sendContinueMsg(pClientPlayer02, lobby, playerOnTurn, player02Board, errChan)
+	go cm.sendContinueMsg(pClientPlayer01, lobby.id, lobby.player02, playerOnTurn, player01Board, errChan)
+	go cm.sendContinueMsg(pClientPlayer02, lobby.id, lobby.player01, playerOnTurn, player02Board, errChan)
 	var err error
 	for i := 0; i < int(protocol.PlayerCount); i++ {
 		err = <-errChan
@@ -2162,6 +2162,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 		isValidState := false
 		reconnectFail := false
 		var pLobby *Lobby = nil
+		var exists bool = false
 
 		// wait for valid state
 		for {
@@ -2170,7 +2171,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 			}
 
 			cm.rwMutex.RLock()
-			pLobby, exists := cm.playerToLobby[nickname]
+			pLobby, exists = cm.playerToLobby[nickname]
 			cm.rwMutex.RUnlock()
 			if !exists {
 				logging.Error(fmt.Sprintf("Lobby not found for player %s", nickname))
@@ -2179,7 +2180,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 			}
 
 			cm.rwMutex.RLock()
-			isValidState = pLobby.state == protocol.LobbyStateInterrupt
+			isValidState = pLobby.state == protocol.LobbyStateInterrupted
 			cm.rwMutex.RUnlock()
 		}
 
@@ -2239,7 +2240,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 		doWait := shouldLobbyWait(lobby)
 		cm.rwMutex.RUnlock()
 		if doWait {
-			logging.Info(fmt.Sprintf("Client abruptly disconnected from lobby %s. State changed to waiting.", lobby.id))
+			logging.Info(fmt.Sprintf("Client abruptly disconnected from lobby %s. State changed to interrupt.", lobby.id))
 			cm.rwMutex.Lock()
 			lobby.priorInterruptState = lobby.state
 			lobby.state = protocol.LobbyStateInterrupt
@@ -2247,15 +2248,10 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 			lobby.interruptTime = time.Now()
 			cm.rwMutex.Unlock()
 		} else {
-			cm.rwMutex.RLock()
-			delLobby := lobby.state == protocol.LobbyStateWaiting
-			cm.rwMutex.RUnlock()
-			if delLobby {
-				logging.Info(fmt.Sprintf("Client %s has abruptly disconnected from one player lobby \"%s\". Marking lobby for deletion.", nickname, lobby.id))
-				cm.rwMutex.Lock()
-				lobby.state = protocol.LobbyStateFail
-				cm.rwMutex.Unlock()
-			}
+			logging.Info(fmt.Sprintf("Client %s has abruptly disconnected from one player lobby \"%s\". Marking lobby for deletion.", nickname, lobby.id))
+			cm.rwMutex.Lock()
+			lobby.state = protocol.LobbyStateFail
+			cm.rwMutex.Unlock()
 		}
 	}
 

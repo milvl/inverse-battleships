@@ -157,20 +157,32 @@ class ConnectionManager:
             raise ValueError("Empty message received")
         
         # NOTE: should always recieve valid commands (server response)
-        command = parts[CMD_INDEX]
+        command = parts[PART_CMD_INDEX]
 
         if command in [CMD_PING, CMD_PONG, CMD_ACKW_VALID, CMD_CONFIRM_LEAVE, 
                        CMD_LOBBIES, CMD_GAME_LOSE, CMD_GAME_WIN, 
-                       CMD_WAIT, CMD_CONTINUE, CMD_TKO, CMD_LOBBY_PAIRING, CMD_LOBBY_PAIRED,
+                       CMD_WAIT, CMD_TKO, CMD_LOBBY_PAIRING, CMD_LOBBY_PAIRED,
                        CMD_PLAYER_TURN]:
-            return ServerResponse(command, parts[CMD_INDEX + 1:])
+            return ServerResponse(command, parts[PART_CMD_INDEX + 1:])
+        
         elif command == CMD_BOARD:
             board = []
-            rows = parts[PARTS_BOARD_INDEX].split(SEQ_DELIMITER)
+            rows = parts[PART_BOARD_INDEX].split(SEQ_DELIMITER)
             for row in rows:
                 board.append([int(c) for c in row.split(NUM_DELIMITER)])
 
             return ServerResponse(command, [board])
+        
+        elif command == CMD_CONTINUE:
+            lobby_id = parts[PART_CONTINUE_LOBBY_ID_INDEX]
+            opponent = parts[PART_CONTINUE_OPPONENT_INDEX]
+            player_on_turn = parts[PART_CONTINUE_PLAYER_ON_TURN_INDEX]
+            board = []
+            rows = parts[PART_CONTINUE_BOARD_INDEX].split(SEQ_DELIMITER)
+            for row in rows:
+                board.append([int(c) for c in row.split(NUM_DELIMITER)])
+            
+            return ServerResponse(command, [lobby_id, opponent, player_on_turn, board])
 
         
         # TODO parse various types
@@ -575,6 +587,21 @@ class ConnectionManager:
                 self.__send_cmd([CMD_TURN_ACTION, f"{str(action[0])}{NUM_DELIMITER}{str(action[1])}"])
             except Exception as e:
                 raise ConnectionError(f"Error sending action to the server at {self.server_address}: {e}")
+            
+
+    def wait_ackw(self):
+        """
+        Sends an acknowledgment to the server that the player is waiting for the opponent.
+        """
+
+        with self.__lock:
+            if not self.is_running:
+                raise ConnectionError(f"Cannot send acknowledgment to the server at {self.server_address}: not connected")
+            
+            try:
+                self.__send_cmd([CMD_WAITING])
+            except Exception as e:
+                raise ConnectionError(f"Error sending acknowledgment to the server at {self.server_address}: {e}")
 
 
     def __validate_connection(self) -> bool:

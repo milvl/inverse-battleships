@@ -95,7 +95,7 @@ CMD_BOARD = 'BOARD'
 
 # indices
 
-CMD_INDEX = 0
+PART_CMD_INDEX = 0
 """The index of the command in the messages sent between the server and the clients."""
 
 PARAM_LOBBY_ID_INDEX = 0
@@ -110,8 +110,33 @@ PARAM_PLAYER_ON_TURN_INDEX = 0
 PARAM_BOARD_INDEX = 0
 """The index of the board in the messages sent between the server and the clients."""
 
-PARTS_BOARD_INDEX = 1
+PARAM_CONTINUE_LOBBY_ID_INDEX = 0
+"""The index of the lobby id in the continue command."""
+
+PARAM_CONTINUE_OPPONENT_INDEX = 1
+"""The index of the opponent in the continue command."""
+
+PARAM_CONTINUE_PLAYER_ON_TURN_INDEX = 2
+"""The index of the player on turn in the continue command."""
+
+PARAM_CONTINUE_BOARD_INDEX = 3
+"""The index of the board in the continue command."""
+
+PART_BOARD_INDEX = 1
 """The index of the board in the messages sent between the server and the clients."""
+
+PART_CONTINUE_LOBBY_ID_INDEX = 1
+"""The index of the lobby id in the continue command."""
+
+PART_CONTINUE_OPPONENT_INDEX = 2
+"""The index of the opponent in the continue command."""
+
+PART_CONTINUE_PLAYER_ON_TURN_INDEX = 3
+"""The index of the player on turn in the continue command."""
+
+PART_CONTINUE_BOARD_INDEX = 4
+"""The index of the board in the continue command."""
+
 
 # constants
 
