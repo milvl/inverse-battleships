@@ -2,3 +2,4 @@ pygame==2.6.0
 pydantic==2.8.2
 typing-extensions==4.12.2
 termcolor
+pyinstaller

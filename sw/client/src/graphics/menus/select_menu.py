@@ -76,7 +76,26 @@ class SelectMenu(Viewport):
                                  scale_option_rect_radius_to_surface_width: float = 0.1,
                                  scale_title_area_to_screen_height: float = 0.35, 
                                  assets: IBAssets = None) -> List[pygame.Rect]:
-        # TODO DOC, MAGIC NUMBERS
+        """
+        Draws the title and options on the surface.
+
+        :param surface: The surface to draw the title and options on.
+        :type surface: pygame.Surface
+        :param title: The title to draw.
+        :type title: MenuTitle
+        :param options: The options to draw.
+        :type options: List[MenuOption]
+        :param scale_title_rect_radius_to_surface_width: The scale of the title rectangle radius to the surface width, default is 0.05.
+        :type scale_title_rect_radius_to_surface_width: float
+        :param scale_option_rect_radius_to_surface_width: The scale of the option rectangle radius to the surface width, default is 0.1.
+        :type scale_option_rect_radius_to_surface_width: float
+        :param scale_title_area_to_screen_height: The scale of the title area to the screen height, default is 0.35.
+        :type scale_title_area_to_screen_height: float
+        :param assets: The assets of the game.
+        :type assets: IBAssets
+        :return: The update rectangles.
+        :rtype: List[pygame.Rect]
+        """
 
         update_rects = []
         surface_width, surface_height = surface.get_size()
@@ -117,7 +136,20 @@ class SelectMenu(Viewport):
 
     @staticmethod
     def _draw_only_options(surface: pygame.Surface, options: List[MenuOption], assets: IBAssets, scale_option_rect_radius_to_surface_width: float = 0.1) -> List[pygame.Rect]:
-        # TODO DOC
+        """
+        Draws only the options on the surface.
+
+        :param surface: The surface to draw the options on.
+        :type surface: pygame.Surface
+        :param options: The options to draw.
+        :type options: List[MenuOption]
+        :param assets: The assets of the game.
+        :type assets: IBAssets
+        :param scale_option_rect_radius_to_surface_width: The scale of the option rectangle radius to the surface width, default is 0.1.
+        :type scale_option_rect_radius_to_surface_width: float
+        :return: The update rectangles.
+        :rtype: List[pygame.Rect]
+        """
 
         update_rects = []
         surface_width, surface_height = surface.get_size()

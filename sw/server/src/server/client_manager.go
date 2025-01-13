@@ -667,13 +667,18 @@ func (cm *ClientManager) handleDeleteLobby(lobbyID string) error {
 		return fmt.Errorf("lobby not found")
 	}
 
+	doSendTKO := cm.lobbies[lobbyID].state != protocol.LobbyStateFinished
+
 	if cm.lobbies[lobbyID].player01 != "" {
 		pClient01, exists := cm.authClients[cm.lobbies[lobbyID].player01]
 		if exists {
 			logging.Debug(fmt.Sprintf("Removing player 01: %s from lobby %s", pClient01.nickname, lobbyID))
-			err := cm.sendTKO(pClient01)
-			if err != nil {
-				logging.Error(fmt.Sprintf("failed to send TKO message to player 01: %v", err))
+
+			if doSendTKO {
+				err := cm.sendTKO(pClient01)
+				if err != nil {
+					logging.Error(fmt.Sprintf("failed to send TKO message to player 01: %v", err))
+				}
 			}
 		}
 
@@ -684,9 +689,12 @@ func (cm *ClientManager) handleDeleteLobby(lobbyID string) error {
 		pClient02, exists := cm.authClients[cm.lobbies[lobbyID].player02]
 		if exists {
 			logging.Debug(fmt.Sprintf("Removing player 02: %s from lobby %s", pClient02.nickname, lobbyID))
-			err := cm.sendTKO(pClient02)
-			if err != nil {
-				logging.Error(fmt.Sprintf("failed to send TKO message to player 02: %v", err))
+
+			if doSendTKO {
+				err := cm.sendTKO(pClient02)
+				if err != nil {
+					logging.Error(fmt.Sprintf("failed to send TKO message to player 02: %v", err))
+				}
 			}
 		}
 
@@ -2065,8 +2073,6 @@ func (cm *ClientManager) manageLobbies() {
 
 // handleCommand handles a command from the client. It returns a boolean indicating if the client should stay connected.
 // If error is not nil, the stayConnected boolean returned is not defined.
-// TODO: handle these Errs
-// ErrPlayerNotIdle, ErrLobbyNotFound, ErrLobbyFull, ErrInvalidCommand
 func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.IncomingMessage) (bool, error) {
 	// sanity checks
 	if pClient == nil {
@@ -2119,9 +2125,45 @@ func (cm *ClientManager) handleCommand(pClient *Client, pCommand *cmd_validator.
 	return stayConnected, err
 }
 
+// reconnectPlayer reconnects a player to a lobby.
+func (cm *ClientManager) reconnectPlayer(nickname string) {
+	logging.Info(fmt.Sprintf("Client %s has reconnected", nickname))
+	isValidState := false
+	reconnectFail := false
+	var pLobby *Lobby = nil
+	var exists bool = false
+
+	// wait for valid state
+	for {
+		if isValidState {
+			break
+		}
+
+		cm.rwMutex.RLock()
+		pLobby, exists = cm.playerToLobby[nickname]
+		cm.rwMutex.RUnlock()
+		if !exists {
+			logging.Error(fmt.Sprintf("Lobby not found for player %s", nickname))
+			reconnectFail = true
+			break
+		}
+
+		cm.rwMutex.RLock()
+		isValidState = pLobby.state == protocol.LobbyStateInterrupted
+		cm.rwMutex.RUnlock()
+	}
+
+	// reconnect
+	if !reconnectFail {
+		cm.rwMutex.Lock()
+		pLobby.missingPlayer = ""
+		pLobby.state = protocol.LobbyStateContinue
+		cm.rwMutex.Unlock()
+	}
+}
+
 // handleCommand handles a command from the client.
 func (cm *ClientManager) handleConnection(conn net.Conn) {
-	// TODO HERE
 	logging.Debug(fmt.Sprintf("Handling connection from %s.", conn.RemoteAddr().String()))
 
 	// add the client
@@ -2158,39 +2200,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 	isPendingReconnect := cm.checkForPendingReconnect(nickname)
 	cm.rwMutex.RUnlock()
 	if isPendingReconnect {
-		logging.Info(fmt.Sprintf("Client %s has reconnected", nickname))
-		isValidState := false
-		reconnectFail := false
-		var pLobby *Lobby = nil
-		var exists bool = false
-
-		// wait for valid state
-		for {
-			if isValidState {
-				break
-			}
-
-			cm.rwMutex.RLock()
-			pLobby, exists = cm.playerToLobby[nickname]
-			cm.rwMutex.RUnlock()
-			if !exists {
-				logging.Error(fmt.Sprintf("Lobby not found for player %s", nickname))
-				reconnectFail = true
-				break
-			}
-
-			cm.rwMutex.RLock()
-			isValidState = pLobby.state == protocol.LobbyStateInterrupted
-			cm.rwMutex.RUnlock()
-		}
-
-		// reconnect
-		if !reconnectFail {
-			cm.rwMutex.Lock()
-			pLobby.missingPlayer = ""
-			pLobby.state = protocol.LobbyStateContinue
-			cm.rwMutex.Unlock()
-		}
+		cm.reconnectPlayer(nickname)
 	}
 
 	// infinite loop to handle messages
@@ -2230,6 +2240,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 			break
 		}
 	}
+	// client disconnected
 
 	// check if the client was in a lobby
 	cm.rwMutex.RLock()
@@ -2309,13 +2320,12 @@ func (cm *ClientManager) ManageServer(ctx context.Context) error {
 
 			// handle each connection in a separate goroutine
 			go func() {
-				// TODO: Uncomment
-				// // safety measure to recover from panics (exceptions)
-				// defer func() {
-				// 	if r := recover(); r != nil {
-				// 		logging.Error(fmt.Sprintf("Recovered from panic in connection handler: %v", r))
-				// 	}
-				// }()
+				// safety measure to recover from panics (exceptions)
+				defer func() {
+					if r := recover(); r != nil {
+						logging.Error(fmt.Sprintf("Recovered from panic in connection handler: %v", r))
+					}
+				}()
 
 				cm.handleConnection(conn) // NOTE: feasible for hundreds of clients; for thousands of clients, a worker pool would be used
 			}()

@@ -43,7 +43,9 @@ def load_config(path: str) -> Dict:
 
 
 def main():
-    # TODO DOC
+    """
+    The main function of the client application.
+    """
 
     logger.info('Starting the client application...')
 
@@ -117,8 +119,7 @@ def main():
 
             # updates only portions of the screen
             else:
-                # logger.debug(f'Partial update detected, updating areas: \n{pformat(update_result.update_areas, indent=4)}')
-                # TODO uncomment for production
+                logger.debug(f'Partial update detected, updating areas: \n{pformat(update_result.update_areas, indent=4)}')
                 pygame.display.update(update_result.update_areas)
 
         # add a delay to the game loop

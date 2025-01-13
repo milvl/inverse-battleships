@@ -9,10 +9,6 @@ from util.graphics import get_rendered_text_with_size
 from graphics.viewport import Viewport
 from const.typedefs import IBAssets
 import pygame
-
-tmp_logger = get_temp_logger('temp')
-tmp_logger.info('temp logger created')
-# TODO remove
     
 
 class InputMenu(Viewport):
@@ -31,7 +27,12 @@ class InputMenu(Viewport):
 
     @staticmethod
     def __draw_content(obj):
-        # TODO DOC
+        """
+        Draws the content of the input menu.
+
+        :param obj: The instance of the InputMenu class.
+        :type obj: InputMenu
+        """
 
         surface_dimensions = obj.__surface.get_size()
         surface_center = surface_dimensions[0] // 2, surface_dimensions[1] // 2

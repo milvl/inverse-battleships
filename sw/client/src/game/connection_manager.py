@@ -57,6 +57,9 @@ class ConnectionManager:
 
     KEEP_ALIVE_TIMEOUT = 10
     """The timeout for keeping the connection alive."""
+    
+    CLIENT_RECONNECT_TIMEOUT = 60
+    """The timeout for reconnecting the client to the server."""
 
     __WHOLE_MSG_TIMEOUT = 5
     """The timeout for receiving a whole message from the server."""
@@ -183,10 +186,6 @@ class ConnectionManager:
                 board.append([int(c) for c in row.split(NUM_DELIMITER)])
             
             return ServerResponse(command, [lobby_id, opponent, player_on_turn, board])
-
-        
-        # TODO parse various types
-        
         
         raise ValueError(f"Invalid command received: '{command}'")
 
@@ -558,7 +557,7 @@ class ConnectionManager:
             #     raise ConnectionError(f"Error receiving board from the server at {self.server_address}: {e}")
 
             # try:
-            #     res = self.__receive_command_response(CMD_PLAYER_TURN)  # TODO TKO
+            #     res = self.__receive_command_response(CMD_PLAYER_TURN)
             #     player_on_turn = res.params[PARAM_PLAYER_ID_INDEX]
             # except TimeoutError as e:
             #     raise e

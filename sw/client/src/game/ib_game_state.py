@@ -63,6 +63,8 @@ class ConnectionStatus:
     """The player won the game."""
     LOSE = 21
     """The player lost the game."""
+    RECONNECTED = 22
+    """The player reconnected to the game."""
 
     status: int = NOT_RUNNING
     """The status of the connection."""
@@ -78,14 +80,31 @@ class IBGameState:
     """
 
     INIT = -1
+    """The initial state of the game."""
+    
     MAIN_MENU = 0
+    """The main menu of the game."""
+    
     SETTINGS_MENU = 1
+    """The settings menu of the game."""
+    
     CONNECTION_MENU = 2
+    """The connection menu of the game."""
+    
     LOBBY_SELECTION = 3
+    """The lobby selection of the game."""
+    
     LOBBY = 4
+    """The lobby of the game."""
+    
     GAME_SESSION = 5
+    """The game session of the game."""
+    
     GAME_END = 6
-    ALERT = 7
+    """The end of the game."""
+    
+    NET_RECOVERY = 7
+    """The game is reconnecting."""
 
 
     def __init__(self):
@@ -103,7 +122,7 @@ class IBGameState:
             IBGameState.LOBBY: 'LOBBY',
             IBGameState.GAME_SESSION: 'GAME_SESSION',
             IBGameState.GAME_END: 'GAME_END',
-            IBGameState.ALERT: 'ALERT'
+            IBGameState.NET_RECOVERY: 'NET_RECOVERY'
         }
         self.__connection_status_names = {
             ConnectionStatus.NOT_RUNNING: 'NOT_RUNNING',
@@ -127,7 +146,8 @@ class IBGameState:
             ConnectionStatus.TKO: 'TKO',
             ConnectionStatus.WAITING_FOR_SERVER: 'WAITING_FOR_SERVER',
             ConnectionStatus.WIN: 'WIN',
-            ConnectionStatus.LOSE: 'LOSE'
+            ConnectionStatus.LOSE: 'LOSE',
+            ConnectionStatus.RECONNECTED: 'RECONNECTED'
         }
         self.__connection_status = ConnectionStatus()
         logger.debug(f'IBGameState initialized with state: {str(self)}')
@@ -152,7 +172,7 @@ class IBGameState:
         """
 
         # sanity check simplified based on contract
-        if new_state > IBGameState.GAME_END or new_state < IBGameState.INIT:
+        if new_state > IBGameState.NET_RECOVERY or new_state < IBGameState.INIT:
             raise ValueError('Invalid state to set.')
         
         if new_state == self.__state:
@@ -162,7 +182,7 @@ class IBGameState:
 
     
     @property
-    def connection_status(self) -> ConnectionStatus:
+    def connection_status(self) -> int:
         """
         Represents the current connection status.
         """
@@ -171,12 +191,12 @@ class IBGameState:
     
 
     @connection_status.setter
-    def connection_status(self, new_status: ConnectionStatus):
+    def connection_status(self, new_status: int):
         """
         Sets the connection status.
 
         :param new_status: The new connection status.
-        :type new_status: ConnectionStatus
+        :type new_status: int
         """
 
         self.__connection_status.status = new_status

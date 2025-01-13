@@ -15,6 +15,7 @@
     "connection_menu_lobby_select_label": "Select a lobby",
     "connection_menu_lobby_create_label": "Create a lobby",
     "attempt_connection_msg": "Attempting to connect to the server...",
+    "reconnecting_msg": "Connection to the server was lost.\nAttempting to reconnect...",
     "connection_failed_msg": "Could not connect to the server.",
     
     "getting_lobbies_msg": "Getting lobbies...",

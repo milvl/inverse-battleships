@@ -61,7 +61,7 @@ func (s *Server) Start() error {
 	s.p_listener = &listener
 
 	// fmt.Printf("Server is listening on %s\n", s.Address)
-	logging.Info(fmt.Sprintf("Server is listening on %s\n", s.Address))
+	logging.Info(fmt.Sprintf("Server is listening on %s", s.Address))
 
 	return nil
 }

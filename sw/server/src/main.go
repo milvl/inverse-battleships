@@ -34,6 +34,7 @@ func main() {
 	var sockAddr string
 	if args.SocketAddress != "" {
 		sockAddr = args.SocketAddress
+
 	} else if args.ConfigPath != "" {
 		// load the server configuration
 		config, err := util.LoadConfig(args.ConfigPath)
