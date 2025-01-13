@@ -19,7 +19,7 @@ client: venv
 
 venv:
 	@echo "=== Setting up Python virtual environment ==="
-	test -d $(PYTHON_VENV_PATH) || python -m venv $(PYTHON_VENV_PATH)
+	test -d $(PYTHON_VENV_PATH) || python3 -m venv $(PYTHON_VENV_PATH)
 	. $(ACTIVATE) && $(PYTHON_VENV_PATH)/bin/python -m pip install --upgrade pip
 	. $(ACTIVATE) && pip install -r requirements.txt
 
