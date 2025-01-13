@@ -1,0 +1,32 @@
+SHELL := cmd.exe
+
+.PHONY: all cleanup server client venv
+
+PYTHON_VENV_PATH := venv
+ACTIVATE := $(PYTHON_VENV_PATH)\Scripts\activate
+SERVER_EXE := server.exe
+CLIENT_EXE := client.exe
+
+all: server client
+
+server:
+	@echo === Building Go server ===
+	cd server\src && go build -o ..\bin\$(SERVER_EXE) main.go && cd ..\..
+
+client: venv
+	@echo === Building Python client ===
+	cmd /c "$(ACTIVATE) && pyinstaller --onefile --name $(CLIENT_EXE) client/src/main.py --distpath client/bin"
+
+venv:
+	@echo === Setting up Python virtual environment ===
+	if not exist $(PYTHON_VENV_PATH) python -m venv $(PYTHON_VENV_PATH)
+	cmd /c "$(ACTIVATE) && pip install --upgrade pip && pip install -r requirements.txt"
+
+cleanup:
+	@echo === Cleaning up build artifacts ===
+	if exist build rd /s /q build
+	if exist dist rd /s /q dist
+	if exist *.spec del *.spec
+	if exist server\bin rd /s /q server\bin
+	if exist client\bin rd /s /q client\bin
+	if exist $(PYTHON_VENV_PATH) rd /s /q $(PYTHON_VENV_PATH)
