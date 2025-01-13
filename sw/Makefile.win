@@ -20,7 +20,7 @@ client: venv
 venv:
 	@echo === Setting up Python virtual environment ===
 	if not exist $(PYTHON_VENV_PATH) python -m venv $(PYTHON_VENV_PATH)
-	cmd /c "$(ACTIVATE) && pip install --upgrade pip && pip install -r requirements.txt"
+	cmd /c "$(ACTIVATE) && $(PYTHON_VENV_PATH)\Scripts\python.exe -m pip install --upgrade pip && pip install -r requirements.txt"
 
 cleanup:
 	@echo === Cleaning up build artifacts ===
