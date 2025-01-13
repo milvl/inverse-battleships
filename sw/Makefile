@@ -21,7 +21,7 @@ all: server client
 
 server:
 	@echo "=== Building Go server ==="
-	go build -o ..server/bin/$(SERVER_EXE) server/src/main.go
+	cd server/src/ && go build -o ../bin/$(SERVER_EXE) main.go && cd ../..
 
 	# for cross-compile example for Windows:
 	# cd server/src && env GOOS=windows GOARCH=amd64 go build -o ../bin/server.exe main.go
