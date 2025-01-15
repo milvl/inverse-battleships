@@ -784,8 +784,9 @@ class IBGame:
         while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
             # keep alive
             if not self.__is_alive():
-                with self.graphics_lock:
-                    self.__stored_context = self.context
+                if self.game_state.connection_status == ConnectionStatus.GAME_SESSION:
+                    with self.graphics_lock:
+                        self.__stored_context = self.context
                 self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                 break
             
@@ -830,10 +831,10 @@ class IBGame:
                 elif resp.command == CMD_WAIT and self.game_state.connection_status == ConnectionStatus.GAME_SESSION:
                     try:
                         self.__connection_manager.wait_ackw()
+
                     except Exception as e:
                         logger.error(f'Failed to send wait ackw to the server: {e}')
-                        with self.net_lock:
-                            self.game_state.connection_status = ConnectionStatus.FAILED
+                        self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                         with self.graphics_lock:
                             self.context = None
                         break
