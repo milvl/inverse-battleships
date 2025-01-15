@@ -22,9 +22,8 @@ func ToNetMessage(parts []string) (string, error) {
 		}
 
 		// escape the delimiter if present
-		if strings.Contains(part, protocol.MsgDelimiter) {
-			parts[i] = strings.ReplaceAll(part, protocol.MsgDelimiter, "\\"+protocol.MsgDelimiter)
-		}
+		parts[i] = strings.ReplaceAll(parts[i], protocol.MsgDelimiter, protocol.MsgEscape+protocol.MsgDelimiter)
+		parts[i] = strings.ReplaceAll(parts[i], protocol.MsgEscape, protocol.MsgEscape+protocol.MsgEscape)
 	}
 
 	msg := ""

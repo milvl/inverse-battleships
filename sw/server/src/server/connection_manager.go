@@ -31,7 +31,7 @@ type Server struct {
 func escapeSpecialSymbols(input string) string {
 	// Define a replacer to handle escape sequences
 	replacer := strings.NewReplacer(
-		"\\", "\\\\", // backslash
+		// "\\", "\\\\", // backslash
 		"\n", "\\n", // newline
 		"\t", "\\t", // tab
 		"\r", "\\r", // carriage return

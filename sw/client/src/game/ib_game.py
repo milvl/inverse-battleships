@@ -24,7 +24,7 @@ from graphics.menus.primitives import MenuTitle, MenuOption
 from graphics.menus.info_screen import InfoScreen
 from graphics.menus.lobby_select import LobbySelect
 from util.etc import maintains_min_window_size, get_scaled_resolution
-from util.path import get_project_root
+from util.path import get_project_root, is_valid_filename
 from const.typedefs import IBGameDebugInfo, IBGameUpdateResult, PyGameEvents
 from copy import deepcopy
 import pygame
@@ -342,16 +342,21 @@ class IBGame:
         
         self.player_name = self.context.text_input
         user_cfg_path = os.path.join(PROJECT_ROOT_DIR, 'cfg', 'users', f'{self.player_name}.json')
-        if not os.path.exists(user_cfg_path):
-            logger.info(f'User configuration file does not exist, creating a new one: {user_cfg_path}')
-            IBGame.__create_user_cfg(self.player_name)
-        
-        logger.debug(f'User configuration file found: {user_cfg_path}')
-        with open(user_cfg_path, 'r') as f:
-            user_cfg = json.load(f)
-        server_address = user_cfg['server_address'].split(':')
-        self.server_ip = server_address[0]
-        self.server_port = int(server_address[1])
+        if is_valid_filename(self.player_name):
+            if not os.path.exists(user_cfg_path):
+                logger.info(f'User configuration file does not exist, creating a new one: {user_cfg_path}')
+                IBGame.__create_user_cfg(self.player_name)
+            
+            logger.debug(f'User configuration file found: {user_cfg_path}')
+            with open(user_cfg_path, 'r') as f:
+                user_cfg = json.load(f)
+            server_address = user_cfg['server_address'].split(':')
+            self.server_ip = server_address[0]
+            self.server_port = int(server_address[1])
+        else:
+            logger.warning('Invalid player name for configuration file; will not be saved to disk. Using default server address')
+            self.server_ip = DEFAULT_SERVER_IP_ADDRESS
+            self.server_port = int(DEFAULT_SERVER_PORT)
     
 
     def __handle_window_resize(self, resize_event) -> bool:
@@ -1252,7 +1257,10 @@ class IBGame:
         elif res['submit']:
             if IBGame.__is_settings_input_valid(self.context.text_input):
                 logger.info(f'User submitted the input: {self.context.text_input}')
-                IBGame.__create_user_cfg(self.player_name, self.context.text_input)
+                if is_valid_filename(self.player_name):
+                    IBGame.__create_user_cfg(self.player_name, self.context.text_input)
+                else:
+                    logger.warning('Invalid player name for the configuration file; will not be saved to disk.')
                 ip, port = self.context.text_input.split(':')
                 self.server_ip = ip
                 self.server_port = int(port)

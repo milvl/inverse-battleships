@@ -1709,14 +1709,14 @@ func (cm *ClientManager) interruptLobby(pLobby *Lobby) error {
 	pClientPlayer01, p01Exists := cm.authClients[pLobby.player01]
 	pClientPlayer02, p02Exists := cm.authClients[pLobby.player02]
 
-	if p01Exists && p02Exists {
-		logging.Info(fmt.Sprintf("Players managed to reconnect before the handling of lobby \"%s\" interruption", pLobby.id))
-		pLobby.state = protocol.LobbyStateContinue
-		return nil
-	}
+	// if p01Exists && p02Exists {
+	// 	logging.Info(fmt.Sprintf("Players managed to reconnect before the handling of lobby \"%s\" interruption", pLobby.id))
+	// 	pLobby.state = protocol.LobbyStateContinue
+	// 	return nil
+	// }
 
 	var err error
-	if p01Exists {
+	if p01Exists && !pLobby.player01Missing {
 		err = cm.sendWaitMsg(pClientPlayer01, nil)
 	} else {
 		pLobby.player01Missing = true
@@ -1726,7 +1726,7 @@ func (cm *ClientManager) interruptLobby(pLobby *Lobby) error {
 		return fmt.Errorf("failed to send wait message: %w", err)
 	}
 
-	if p02Exists {
+	if p02Exists && !pLobby.player02Missing {
 		err = cm.sendWaitMsg(pClientPlayer02, nil)
 	} else {
 		pLobby.player02Missing = true
@@ -2145,7 +2145,7 @@ func (cm *ClientManager) manageLobbiesToContinue(lobbiesToContinue []string) {
 		err := cm.handleLobbyContinue(lobby)
 		cm.rwMutex.Unlock()
 		if err != nil {
-			logging.Warn(fmt.Sprintf("failed to handle continue in lobby %s: %v", lobbyID, err))
+			logging.Warn(fmt.Sprintf("failed to handle continue in lobby \"%s\": %v", lobbyID, err))
 			cm.rwMutex.Lock()
 			lobby.state = protocol.LobbyStateFail
 			cm.rwMutex.Unlock()
@@ -2255,7 +2255,7 @@ func (cm *ClientManager) reconnectPlayer(nickname string) {
 		cm.rwMutex.Lock()
 		pLobby, exists = cm.playerToLobby[nickname]
 		if !exists {
-			logging.Error(fmt.Sprintf("Lobby not found for player %s", nickname))
+			logging.Error(fmt.Sprintf("Lobby not found for player \"%s\"", nickname))
 			cm.rwMutex.Unlock()
 			break
 		}
@@ -2269,7 +2269,7 @@ func (cm *ClientManager) reconnectPlayer(nickname string) {
 				pLobby.player02Missing = false
 				pLobby.player02Reconnected = true
 			} else {
-				logging.Error(fmt.Sprintf("Player %s to be reconnected not found in lobby %s", nickname, pLobby.id))
+				logging.Error(fmt.Sprintf("Player %s to be reconnected not found in lobby \"%s\"", nickname, pLobby.id))
 				cm.rwMutex.Unlock()
 				break
 			}
@@ -2291,6 +2291,7 @@ func (cm *ClientManager) handleConnection(conn net.Conn) {
 	pClient, err := cm.addClient(conn)
 	if err != nil {
 		logging.Error(fmt.Sprintf("failed to add client: %v", err))
+		cm.rwMutex.Unlock()
 		return
 	}
 	cm.rwMutex.Unlock()

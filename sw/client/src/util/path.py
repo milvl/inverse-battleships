@@ -29,3 +29,25 @@ def get_project_root() -> str:
             base_path = os.path.relpath(os.path.join(__file__, '..', '..', '..'))
 
         return base_path
+    
+
+def is_valid_filename(filename: str) -> bool:
+    """
+    Check if the filename is valid.
+
+    :param filename: The filename to check.
+    :type filename: str
+    :return: True if the filename is valid, False otherwise.
+    :rtype: bool
+    """
+
+    invalid_chars = r'\/:*?"<>|'
+
+    if any(char in filename for char in invalid_chars):
+        return False
+
+    # check if the filename is empty
+    if not filename.strip():
+        return False
+
+    return True

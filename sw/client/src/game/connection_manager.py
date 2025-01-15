@@ -81,7 +81,8 @@ class ConnectionManager:
         for i, part in enumerate(parts):
             if MSG_TERMINATOR in part:
                 raise ValueError(f"Message part {i}: '{part}' contains the message terminator '{MSG_TERMINATOR}'")
-            parts[i] = part.replace(MSG_DELIMITER, f"\\{MSG_DELIMITER}")
+            parts[i] = part.replace(MSG_DELIMITER, f"{MSG_ESCAPE}{MSG_DELIMITER}")
+            parts[i] = parts[i].replace(MSG_ESCAPE, f"{MSG_ESCAPE}{MSG_ESCAPE}")
         
         return f"{MSG_HEADER}{MSG_DELIMITER}{MSG_DELIMITER.join(parts)}{MSG_TERMINATOR}"
     
@@ -101,31 +102,32 @@ class ConnectionManager:
             raise ValueError(f"Invalid message header: '{message[:len(MSG_HEADER)]}'")
         
         parts = []
-        part = []
+        part = ""
         do_escape = False
         for char in message[(len(MSG_HEADER) + 1):]:    # skip the header and the first delimiter
             # end of part encountered
             if char == MSG_TERMINATOR:
-                parts.append(''.join(part))
+                parts.append(part)
                 break
             
             # escape character encountered
-            if char == '\\':
+            if char == MSG_ESCAPE and not do_escape:
                 do_escape = True
                 continue
             
             # escaping sequence
             if do_escape:
-                part.append(char)
+                part += char
                 do_escape = False
                 continue
+
             # regular sequence
             else:
                 if char == MSG_DELIMITER:
-                    parts.append(''.join(part))
-                    part = []
+                    parts.append(part)
+                    part = ""
                 else:
-                    part.append(char)
+                    part += char
         
         return parts
     
@@ -142,7 +144,8 @@ class ConnectionManager:
         """
 
         # NOTE: UTF-8 encoding maybe will be changed to ASCII
-        return message.encode('unicode_escape').decode('utf-8') 
+        res = message.encode('unicode_escape').decode('utf-8')
+        return res.replace(MSG_ESCAPE+MSG_ESCAPE, MSG_ESCAPE)
     
 
     @staticmethod

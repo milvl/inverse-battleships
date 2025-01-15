@@ -2,11 +2,20 @@
 Module with the definition of the constants used in the communication with the server.
 """
 
+DEFAULT_SERVER_IP_ADDRESS = '127.0.0.1'
+"""The default server address."""
+
+DEFAULT_SERVER_PORT = '8080'
+"""The default server port."""
+
 MSG_DELIMITER = ';'
 """The delimiter used to separate the parts of the messages sent between the server and the clients."""
 
 MSG_TERMINATOR = '\n'
 """The terminator used to mark the end of the messages sent between the server and the clients."""
+
+MSG_ESCAPE = '\\'
+"""The escape character used in the messages sent between the server and the clients."""
 
 MSG_HEADER = 'IBGAME'
 """The header of the messages sent between the server and the clients."""
