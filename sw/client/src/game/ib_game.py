@@ -32,6 +32,8 @@ from pygame.locals import *
 
 
 logger = loggers.get_logger(MAIN_LOGGER_NAME)
+tmp_logger = loggers.get_temp_logger('temp')
+tmp_logger.debug('ib_game.py uses temp logger')
 
 PROJECT_ROOT_DIR = get_project_root()
 
@@ -371,7 +373,7 @@ class IBGame:
         else:
             pygame.display.set_mode((scaled_width, scaled_height), pygame.RESIZABLE)
         
-        logger.debug(f'Window resized to: {resize_event.dict['size']}')
+        logger.debug(f"Window resized to: {resize_event.dict['size']}")
         self.update_viewport_surfaces()
         self.update_result.update_areas.insert(0, True)
         if self.debug_mode:
@@ -383,6 +385,8 @@ class IBGame:
     def __handle_context_resize(self):
         """
         Handles the context resize event.
+        ### Changes the context so should be called with the graphics_lock \
+        if the context handling is shared with net handler thread.
         """
 
         self.context.surface = self.presentation_surface
@@ -496,7 +500,8 @@ class IBGame:
 
     def __transition_to_net_recovery(self, state_to_revert_to: int = None, connection_status_to_revert_to: int = None):
         """
-        Transitions to the network recovery state.
+        Transitions to the network recovery state. 
+        ## WARNING: Uses the net_lock and graphics_lock.
 
         :param state_to_revert_to: The state to revert to. Defaults to None.
         :type state_to_revert_to: int, optional 
@@ -635,8 +640,7 @@ class IBGame:
 
         except Exception as e:
             logger.error(f'Failed to get the list of lobbies: {e}')
-            with self.net_lock:
-                self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+            self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
 
         finally:
             with self.graphics_lock:
@@ -664,13 +668,11 @@ class IBGame:
         
         # except TimeoutError:
         #     logger.error('Failed to get the lobby info: Timeout')
-        #     with self.net_lock:
-        #         self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+        #     self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
 
         except Exception as e:
             logger.error(f'Failed to get the lobby info: {e}')
-            with self.net_lock:
-                self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+            self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
 
         finally:
             with self.graphics_lock:
@@ -692,8 +694,7 @@ class IBGame:
 
         except Exception as e:
             logger.error(f'Failed to join the lobby: {e}')
-            with self.net_lock:
-                self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+            self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
 
         finally:
             with self.graphics_lock:
@@ -730,8 +731,7 @@ class IBGame:
 
             except Exception as e:
                 logger.error(f'Failed to wait for the players: {e}')
-                with self.net_lock:
-                    self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+                self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                 with self.graphics_lock:
                     self.context = None
                 break
@@ -784,7 +784,8 @@ class IBGame:
         while not self.__end_net_handler_thread.is_set() and not self.do_exit.is_set():
             # keep alive
             if not self.__is_alive():
-                self.__stored_context = self.context
+                with self.graphics_lock:
+                    self.__stored_context = self.context
                 self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                 break
             
@@ -797,9 +798,9 @@ class IBGame:
 
             except Exception as e:
                 logger.error(f'Failed to receive message from the server: {e}')
-                with self.net_lock:
+                with self.graphics_lock:
                     self.__stored_context = self.context
-                    self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+                self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                 with self.graphics_lock:
                     self.context = None
                 break
@@ -808,11 +809,12 @@ class IBGame:
                 if resp.command == CMD_PING:
                     try:
                         self.__connection_manager.pong()
+
                     except Exception as e:
                         logger.error(f'Failed to send pong to the server: {e}')
-                        with self.net_lock:
+                        with self.graphics_lock:
                             self.__stored_context = self.context
-                            self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+                        self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                         with self.graphics_lock:
                             self.context = None
                         break
@@ -825,7 +827,7 @@ class IBGame:
                     self.__game_session_updates['player_on_turn'] = resp.params[PARAM_PLAYER_ON_TURN_INDEX]
                     do_update = True
 
-                elif resp.command == CMD_WAIT:
+                elif resp.command == CMD_WAIT and self.game_state.connection_status == ConnectionStatus.GAME_SESSION:
                     try:
                         self.__connection_manager.wait_ackw()
                     except Exception as e:
@@ -836,13 +838,14 @@ class IBGame:
                             self.context = None
                         break
 
-                    self.__stored_context = self.context
+                    with self.graphics_lock:
+                        self.__stored_context = self.context
                     with self.net_lock:
                         self.game_state.connection_status = ConnectionStatus.WAITING_FOR_OPPONENT
                     with self.graphics_lock:
                         self.context = None
 
-                elif resp.command == CMD_CONTINUE:
+                elif resp.command == CMD_CONTINUE and self.game_state.connection_status == ConnectionStatus.WAITING_FOR_OPPONENT:
                     with self.net_lock:
                         self.game_state.connection_status = ConnectionStatus.GAME_SESSION_CONTINUED
                         self.__game_session_updates['player_on_turn'] = resp.params[PARAM_CONTINUE_PLAYER_ON_TURN_INDEX]
@@ -855,8 +858,8 @@ class IBGame:
                     with self.net_lock:
                         self.game_state.state = IBGameState.GAME_END
                         self.game_state.connection_status = ConnectionStatus.WIN if resp.command == CMD_GAME_WIN else ConnectionStatus.LOSE
-                    self.__last_end_score = self.context.last_score
                     with self.graphics_lock:
+                        self.__last_end_score = self.context.last_score
                         self.context = None
                     break
                 
@@ -875,9 +878,9 @@ class IBGame:
 
                 except Exception as e:
                     logger.error(f'Failed to send action to the server: {e}')
-                    with self.net_lock:
+                    with self.graphics_lock:
                         self.__stored_context = self.context
-                        self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+                    self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
                     with self.graphics_lock:
                         self.context = None
                     break
@@ -946,10 +949,10 @@ class IBGame:
 
         with self.net_lock:
             if self.game_state.connection_status == ConnectionStatus.NOT_RUNNING:
-                self.context = InfoScreen(self.presentation_surface, 
-                                        self.assets, 
-                                        self.assets['strings']['attempt_connection_msg']
-                                        )
+                with self.graphics_lock:
+                    self.context = InfoScreen(self.presentation_surface, 
+                                              self.assets, 
+                                              self.assets['strings']['attempt_connection_msg'])
                 self.__connection_manager = ConnectionManager(self.server_ip, self.server_port)
                 self.__net_handler_thread = threading.Thread(target=self.__establish_connection)
                 self.__net_handler_thread.start()
@@ -957,14 +960,12 @@ class IBGame:
             elif self.game_state.connection_status == ConnectionStatus.CONNECTED:
                 logger.debug('Connection established')
                 self.__stop_net_handler_thread()
-                self.context = SelectMenu(self.presentation_surface,
-                                        self.assets,
-                                        None,
-                                        [
-                                            MenuOption(self.assets['strings']['connection_menu_lobby_select_label']),
-                                            MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])
-                                        ]
-                                        )
+                with self.graphics_lock:
+                    self.context = SelectMenu(self.presentation_surface,
+                                            self.assets,
+                                            None,
+                                            [MenuOption(self.assets['strings']['connection_menu_lobby_select_label']),
+                                            MenuOption(self.assets['strings']['connection_menu_lobby_create_label'])])
                 self.__net_handler_thread = threading.Thread(target=self.__handle_net_connection_menu)
                 self.__net_handler_thread.start()
                 self.game_state.connection_status = ConnectionStatus.CONNECTED_IN_PROGRESS
@@ -983,7 +984,8 @@ class IBGame:
 
         if self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBIES:
             self.__lobbies = []
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobbies_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobbies_msg'])
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_get_lobbies)
             self.__net_handler_thread.start()
 
@@ -993,10 +995,12 @@ class IBGame:
             self.__net_handler_thread.start()
             logger.debug('Received lobbies response')
             if not self.__lobbies:
-                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['no_lobbies_msg'])
+                with self.graphics_lock:
+                    self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['no_lobbies_msg'])
             else:
                 options = [MenuOption(lobby) for lobby in self.__lobbies]
-                self.context = LobbySelect(self.presentation_surface, self.assets, options)
+                with self.graphics_lock:
+                    self.context = LobbySelect(self.presentation_surface, self.assets, options)
             
 
         # update the graphics
@@ -1013,21 +1017,25 @@ class IBGame:
 
         if self.game_state.connection_status == ConnectionStatus.LOBBY_FAILED:
             self.__net_handler_thread.join()
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['lobby_failed_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['lobby_failed_msg'])
 
         elif self.game_state.connection_status == ConnectionStatus.REQUESTED_LOBBY:
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobby_info_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['getting_lobby_info_msg'])
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_get_lobby)
             self.__net_handler_thread.start()
 
         elif self.game_state.connection_status == ConnectionStatus.TRYING_TO_JOIN:
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['joining_lobby_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['joining_lobby_msg'])
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_join_lobby)
             self.__net_handler_thread.start()
 
         elif self.game_state.connection_status == ConnectionStatus.JOINED_LOBBY:
             logger.debug('Received lobby response')
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['waiting_for_opponent_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['waiting_for_opponent_msg'])
             self.__net_handler_thread.join()
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_wait_for_players)
             self.__net_handler_thread.start()
@@ -1036,7 +1044,8 @@ class IBGame:
         elif self.game_state.connection_status == ConnectionStatus.GAME_READY:
             logger.debug('Opponent joined the lobby')
             self.__net_handler_thread.join()
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['preparing_game_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['preparing_game_msg'])
             self.__net_handler_thread = threading.Thread(target=self.__handle_net_game_ready)
             self.__net_handler_thread.start()
             self.__net_handler_thread.join()
@@ -1061,7 +1070,8 @@ class IBGame:
                 raise ValueError("Logic error: The opponent name is not set")
             self.__action_input_queue = Queue()
 
-            self.context = GameSession(self.presentation_surface, self.assets)
+            with self.graphics_lock:
+                self.context = GameSession(self.presentation_surface, self.assets)
 
             with self.net_lock:
                 self.__game_session_updates['player_name'] = self.player_name
@@ -1078,14 +1088,16 @@ class IBGame:
             self.update_result.update_areas.insert(0, True)
         
         elif self.game_state.connection_status == ConnectionStatus.WAITING_FOR_OPPONENT:
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['waiting_for_opponent_to_reconnect_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['waiting_for_opponent_to_reconnect_msg'])
             self.context.redraw()
             self.update_result.update_areas.insert(0, True)
 
         elif self.game_state.connection_status == ConnectionStatus.GAME_SESSION_CONTINUED:
-            self.context = self.__stored_context
-            self.context.surface = self.presentation_surface
-            self.__stored_context = None
+            with self.graphics_lock:
+                self.context = self.__stored_context
+                self.context.surface = self.presentation_surface
+                self.__stored_context = None
             with self.net_lock:
                 self.context.update(self.__game_session_updates)
                 self.__game_session_updates = {}
@@ -1100,9 +1112,10 @@ class IBGame:
             self.__net_handler_thread.start()
             self.__action_input_queue = Queue()
 
-            self.context = GameSession(self.presentation_surface, self.assets) if not self.__stored_context else self.__stored_context
-            self.context.surface = self.presentation_surface
-            self.__stored_context = None
+            with self.graphics_lock:
+                self.context = GameSession(self.presentation_surface, self.assets) if not self.__stored_context else self.__stored_context
+                self.context.surface = self.presentation_surface
+                self.__stored_context = None
             with self.net_lock:
                 self.context.update(self.__game_session_updates)
                 self.__game_session_updates = {}
@@ -1141,7 +1154,8 @@ class IBGame:
 
         if self.game_state.connection_status == ConnectionStatus.FAILED:
             self.__stop_net_handler_thread()
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['connection_failed_msg'])
             self.game_state.connection_status = ConnectionStatus.NOT_RUNNING
             self.context.redraw()
             self.update_result.update_areas.insert(0, True)
@@ -1153,7 +1167,8 @@ class IBGame:
 
         else:
             self.__stop_net_handler_thread()
-            self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['reconnecting_msg'])
+            with self.graphics_lock:
+                self.context = InfoScreen(self.presentation_surface, self.assets, self.assets['strings']['reconnecting_msg'])
             self.context.redraw()
             self.update_result.update_areas.insert(0, True)
             self.__net_handler_thread = threading.Thread(target=self.__retry_connection)
@@ -1261,6 +1276,8 @@ class IBGame:
     def __handle_update_feedback_connection_menu(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the CONNECTION_MENU state.
+        ### Can change context and usually runs with net handler thread (that can manipulate context) \
+        so should be called with graphics_lock.
 
         :param res: The feedback from the update method.
         :type res: Dict[str, Any]
@@ -1294,11 +1311,13 @@ class IBGame:
                 logger.info('Changing the state to LOBBY_SELECTION')
                 self.game_state.connection_status = ConnectionStatus.REQUESTED_LOBBIES
                 self.game_state.state = IBGameState.LOBBY_SELECTION
+                self.__stop_net_handler_thread()
             
             elif self.context.selected_option_text == self.assets['strings']['connection_menu_lobby_create_label']:
                 logger.info('Changing the state to LOBBY')
                 self.game_state.connection_status = ConnectionStatus.REQUESTED_LOBBY
                 self.game_state.state = IBGameState.LOBBY
+                self.__stop_net_handler_thread()
 
             else:
                 logger.error('Unknown option selected.')
@@ -1316,6 +1335,8 @@ class IBGame:
     def __handle_update_feedback_lobby_selection(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the LOBBY_SELECTION state.
+        ### Can change context and usually runs with net handler thread (that can manipulate context) \
+        so should be called with graphics_lock.
 
         :param res: The feedback from the update method.
         :type res: Dict[str, Any]
@@ -1354,6 +1375,8 @@ class IBGame:
     def __handle_update_feedback_lobby(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the LOBBY state.
+        ### Can change context and usually runs with net handler thread (that can manipulate context) \
+        so should be called with graphics_lock.
 
         :param res: The feedback from the update method.
         :type res: Dict[str, Any]
@@ -1386,6 +1409,8 @@ class IBGame:
     def __handle_update_feedback_game_session(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the GAME_SESSION state.
+        ### Can change context and usually runs with net handler thread (that can manipulate context) \
+        so should be called with graphics_lock.
 
         :param res: The feedback from the update method.
         :type res: Dict[str, Any]
@@ -1404,6 +1429,8 @@ class IBGame:
     def __handle_update_feedback_net_recovery(self, res: Dict[str, Any]):
         """
         Handles the feedback from the update method in the NET_RECOVERY state.
+        ### Can change context and usually runs with net handler thread (that can manipulate context) \
+        so should be called with graphics_lock.
 
         :param res: The feedback from the update method.
         :type res: Dict[str, Any]
@@ -1535,8 +1562,9 @@ class IBGame:
             self.__prepare_connection_menu()
         
         # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
+        with self.graphics_lock:
+            if self.resized and self.context:
+                self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1561,8 +1589,9 @@ class IBGame:
             self.__prepare_lobby()
 
         # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
+        with self.graphics_lock:
+            if self.resized and self.context:
+                self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1586,8 +1615,9 @@ class IBGame:
             self.__prepare_lobby_selection()
 
         # handle the window resize event
-        if self.resized:
-            self.__handle_context_resize()
+        with self.graphics_lock:
+            if self.resized and self.context:
+                self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1611,8 +1641,9 @@ class IBGame:
         if not self.context:
             self.__prepare_game_session()
 
-        if self.resized:
-            self.__handle_context_resize()
+        with self.net_lock:
+            if self.resized and self.context:
+                self.__handle_context_resize()
 
         # process the input
         inputs = self.__proccess_input(events)
@@ -1640,8 +1671,9 @@ class IBGame:
         if not self.context:
             self.__prepare_net_recovery_screen()
 
-        if self.resized:
-            self.__handle_context_resize()
+        with self.graphics_lock:
+            if self.resized and self.context:
+                self.__handle_context_resize()
 
         inputs = self.__proccess_input(events)
 

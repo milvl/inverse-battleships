@@ -56,21 +56,39 @@ var validCmdsMap = map[string]int{
 
 // lobbyStates is a list of lobby statuses.
 const (
-	LobbyStateCreated uint8 = iota
-	LobbyStatePaired
+	// LobbyStateUnititialized is value used for uninitialized states.
+	LobbyStateUnititialized uint8 = iota
+	// LobbyStateCreated is the initial state of a lobby before adding any players.
+	LobbyStateCreated
+	// LobbyStateWaiting is the state of a lobby when one player is in, waiting for another.
 	LobbyStateWaiting
+	// LobbyStatePaired is the state of a lobby when second player joins.
+	LobbyStatePaired
+	// LobbyStateUnready is the state of a lobby when both players are in, but did not send ready.
 	LobbyStateUnready
+	// LobbyStatePlayer01Turn is the state of a lobby when player 01 should receive a turn message.
 	LobbyStatePlayer01Turn
+	// LobbyStatePlayer01Playing is the state of a lobby when player 01 is playing.
 	LobbyStatePlayer01Playing
+	// LobbyStatePlayer01Played is the state of a lobby when player 01 played and board should be sent to both players.
 	LobbyStatePlayer01Played
+	// LobbyStatePlayer02Turn is the state of a lobby when player 02 should receive a turn message.
 	LobbyStatePlayer02Turn
+	// LobbyStatePlayer02Playing is the state of a lobby when player 02 is playing.
 	LobbyStatePlayer02Playing
+	// LobbyStatePlayer02Played is the state of a lobby when player 02 played and board should be sent to both players.
 	LobbyStatePlayer02Played
+	// LobbyStateInterrupt is the state of a lobby when a player disconnects.
 	LobbyStateInterrupt
-	LobbyStateInterruptPending
+	// LobbyStateInterrupted is the state of a lobby waiting for players to reconnect.
 	LobbyStateInterrupted
+	// LobbyStatePlayerReconnected is the state of a lobby when a player reconnects and has to receive the board and wait message.
+	LobbyStatePlayerReconnected
+	// LobbyStateContinue is the state of a lobby when all players are ready to continue and previous state should be restored.
 	LobbyStateContinue
+	// LobbyStateFinished is the state of a lobby when the game ends expectedly.
 	LobbyStateFinished
+	// LobbyStateFail is the state of a lobby when the game ends unexpectedly.
 	LobbyStateFail
 )
 

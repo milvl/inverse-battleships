@@ -123,10 +123,13 @@ def __create_handler(handler_config: dict) -> logging.Handler:
     :return: Handler
     """
 
-    formater = None
+    formatter = None
     if handler_config['output'] == 'stdout' or handler_config['output'] == 'console':
         handler = logging.StreamHandler(sys.stdout)
-        formatter = ColoredFormater(handler_config['format'], datefmt=handler_config['datefmt'])
+        if handler_config.get('color', True) == False:
+            formatter = logging.Formatter(handler_config['format'], datefmt=handler_config['datefmt'])
+        else:
+            formatter = ColoredFormater(handler_config['format'], datefmt=handler_config['datefmt'])
     elif handler_config['output'] == 'stderr':
         handler = logging.StreamHandler(sys.stderr)
         formatter = logging.Formatter(handler_config['format'], datefmt=handler_config['datefmt'])

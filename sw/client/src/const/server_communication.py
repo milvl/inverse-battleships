@@ -143,7 +143,7 @@ PART_CONTINUE_BOARD_INDEX = 4
 PLAYER_NICKNAME_MAX_LENGTH = 20
 """The maximum length of the player's nickname."""
 
-SERVER_ADDRESS_MAX_LENGTH = 18 # 9 IP, 5 port, 1 colon, 3 dots
+SERVER_ADDRESS_MAX_LENGTH = 21 # 12 IP, 5 port, 1 colon, 3 dots
 """The maximum length of the server address."""
 
 SERVER_CONNECTION_TIMEOUT = 5
