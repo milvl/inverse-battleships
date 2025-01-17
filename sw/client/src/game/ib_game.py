@@ -699,7 +699,8 @@ class IBGame:
 
         except Exception as e:
             logger.error(f'Failed to join the lobby: {e}')
-            self.__transition_to_net_recovery(IBGameState.CONNECTION_MENU, ConnectionStatus.CONNECTED)
+            with self.net_lock:
+                self.game_state.connection_status = ConnectionStatus.LOBBY_FAILED
 
         finally:
             with self.graphics_lock:
