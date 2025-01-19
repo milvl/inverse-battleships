@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: defs_windows_amd64.go in package runtime</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	defs_windows_amd64.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/runtime.html">runtime</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19],
+input[id=r20]:checked ~pre label[for=r20],
+input[id=r21]:checked ~pre label[for=r21],
+input[id=r22]:checked ~pre label[for=r22],
+input[id=r23]:checked ~pre label[for=r23]
+{background: #226; color: #ff8;}
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="r20" type="radio" name="g"/>
+<input id="r21" type="radio" name="g"/>
+<input id="r22" type="radio" name="g"/>
+<input id="r23" type="radio" name="g"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2009 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="keyword">package</span> runtime</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">const</span> <a href="../../pkg/runtime.html#name-_CONTEXT_CONTROL" class="ident">_CONTEXT_CONTROL</a> = <span class="lit-number">0x100001</span></code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-m128a" class="ident">m128a</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-10"><code>	low  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-11"><code>	high <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a></code></span>
+<span class="codeline" id="line-12"><code>}</code></span>
+<span class="codeline" id="line-13"><code></code></span>
+<span class="codeline" id="line-14"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-context" class="ident">context</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-15"><code>	p1home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-16"><code>	p2home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-17"><code>	p3home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-18"><code>	p4home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-19"><code>	p5home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-20"><code>	p6home               <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-21"><code>	contextflags         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-22"><code>	mxcsr                <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-23"><code>	segcs                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-24"><code>	segds                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-25"><code>	seges                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-26"><code>	segfs                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-27"><code>	seggs                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-28"><code>	segss                <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-29"><code>	eflags               <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-30"><code>	dr0                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-31"><code>	dr1                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-32"><code>	dr2                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-33"><code>	dr3                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-34"><code>	dr6                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-35"><code>	dr7                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-36"><code>	rax                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-37"><code>	rcx                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-38"><code>	rdx                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-39"><code>	rbx                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-40"><code>	rsp                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-41"><code>	rbp                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-42"><code>	rsi                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-43"><code>	rdi                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-44"><code>	r8                   <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-45"><code>	r9                   <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-46"><code>	r10                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-47"><code>	r11                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-48"><code>	r12                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-49"><code>	r13                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-50"><code>	r14                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-51"><code>	r15                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-52"><code>	rip                  <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-53"><code>	anon0                [<span class="lit-number">512</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-54"><code>	vectorregister       [<span class="lit-number">26</span>]<a href="#line-9" class="ident">m128a</a></code></span>
+<span class="codeline" id="line-55"><code>	vectorcontrol        <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-56"><code>	debugcontrol         <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-57"><code>	lastbranchtorip      <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-58"><code>	lastbranchfromrip    <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-59"><code>	lastexceptiontorip   <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-60"><code>	lastexceptionfromrip <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-61"><code>}</code></span>
+<span class="codeline" id="line-62"><code></code></span>
+<span class="codeline" id="line-63"><code><span class="keyword">func</span> (<label for="r0" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r1" class="ident">ip</label>() <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a> { <span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r0" class="ident">c</label>.<a href="#line-52" class="ident">rip</a>) }</code></span>
+<span class="codeline" id="line-64"><code><span class="keyword">func</span> (<label for="r2" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r3" class="ident">sp</label>() <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a> { <span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r2" class="ident">c</label>.<a href="#line-40" class="ident">rsp</a>) }</code></span>
+<span class="codeline" id="line-65"><code></code></span>
+<span class="codeline" id="line-66"><code><span class="comment">// AMD64 does not have link register, so this returns 0.</span></code></span>
+<span class="codeline" id="line-67"><code><span class="keyword">func</span> (<label for="r4" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r5" class="ident">lr</label>() <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>      { <span class="keyword">return</span> <span class="lit-number">0</span> }</code></span>
+<span class="codeline" id="line-68"><code><span class="keyword">func</span> (<label for="r6" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r7" class="ident">set_lr</label>(<label for="r8" class="ident">x</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) {}</code></span>
+<span class="codeline" id="line-69"><code></code></span>
+<span class="codeline" id="line-70"><code><span class="keyword">func</span> (<label for="r9" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r10" class="ident">set_ip</label>(<label for="r11" class="ident">x</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) { <label for="r9" class="ident">c</label>.<a href="#line-52" class="ident">rip</a> = <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a>(<label for="r11" class="ident">x</label>) }</code></span>
+<span class="codeline" id="line-71"><code><span class="keyword">func</span> (<label for="r12" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r13" class="ident">set_sp</label>(<label for="r14" class="ident">x</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) { <label for="r12" class="ident">c</label>.<a href="#line-40" class="ident">rsp</a> = <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a>(<label for="r14" class="ident">x</label>) }</code></span>
+<span class="codeline" id="line-72"><code><span class="keyword">func</span> (<label for="r15" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) <label for="r16" class="ident">set_fp</label>(<label for="r17" class="ident">x</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) { <label for="r15" class="ident">c</label>.<a href="#line-41" class="ident">rbp</a> = <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a>(<label for="r17" class="ident">x</label>) }</code></span>
+<span class="codeline" id="line-73"><code></code></span>
+<span class="codeline" id="line-74"><code><span class="keyword">func</span> <label for="r18" class="ident"><a href="../../pkg/runtime.html#name-prepareContextForSigResume" class="ident">prepareContextForSigResume</a></label>(<label for="r19" class="ident">c</label> *<a href="#line-14" class="ident">context</a>) {</code></span>
+<span class="codeline" id="line-75"><code>	<label for="r19" class="ident">c</label>.<a href="#line-44" class="ident">r8</a> = <label for="r19" class="ident">c</label>.<a href="#line-40" class="ident">rsp</a></code></span>
+<span class="codeline" id="line-76"><code>	<label for="r19" class="ident">c</label>.<a href="#line-45" class="ident">r9</a> = <label for="r19" class="ident">c</label>.<a href="#line-52" class="ident">rip</a></code></span>
+<span class="codeline" id="line-77"><code>}</code></span>
+<span class="codeline" id="line-78"><code></code></span>
+<span class="codeline" id="line-79"><code><span class="keyword">func</span> <label for="r20" class="ident"><a href="../../pkg/runtime.html#name-dumpregs" class="ident">dumpregs</a></label>(<label for="r21" class="ident">r</label> *<a href="#line-14" class="ident">context</a>) {</code></span>
+<span class="codeline" id="line-80"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rax     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-36" class="ident">rax</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-81"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rbx     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-39" class="ident">rbx</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-82"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rcx     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-37" class="ident">rcx</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-83"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rdx     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-38" class="ident">rdx</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-84"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rdi     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-43" class="ident">rdi</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-85"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rsi     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-42" class="ident">rsi</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-86"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rbp     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-41" class="ident">rbp</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-87"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rsp     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-40" class="ident">rsp</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-88"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r8      "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-44" class="ident">r8</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-89"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r9      "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-45" class="ident">r9</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-90"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r10     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-46" class="ident">r10</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-91"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r11     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-47" class="ident">r11</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-92"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r12     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-48" class="ident">r12</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-93"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r13     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-49" class="ident">r13</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-94"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r14     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-50" class="ident">r14</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-95"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"r15     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-51" class="ident">r15</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-96"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rip     "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-52" class="ident">rip</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-97"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"rflags  "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-29" class="ident">eflags</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-98"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"cs      "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-23" class="ident">segcs</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-99"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"fs      "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-26" class="ident">segfs</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-100"><code>	<a href="../../pkg/builtin.html#name-print" class="ident">print</a>(<span class="lit-string">"gs      "</span>, <a href="print.go.html#line-14" class="ident">hex</a>(<label for="r21" class="ident">r</label>.<a href="#line-27" class="ident">seggs</a>), <span class="lit-string">"\n"</span>)</code></span>
+<span class="codeline" id="line-101"><code>}</code></span>
+<span class="codeline" id="line-102"><code></code></span>
+<span class="codeline" id="line-103"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-_DISPATCHER_CONTEXT" class="ident">_DISPATCHER_CONTEXT</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-104"><code>	controlPc        <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-105"><code>	imageBase        <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-106"><code>	functionEntry    <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-107"><code>	establisherFrame <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-108"><code>	targetIp         <a href="../../pkg/builtin.html#name-uint64" class="ident">uint64</a></code></span>
+<span class="codeline" id="line-109"><code>	context          *<a href="#line-14" class="ident">context</a></code></span>
+<span class="codeline" id="line-110"><code>	languageHandler  <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-111"><code>	handlerData      <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-112"><code>}</code></span>
+<span class="codeline" id="line-113"><code></code></span>
+<span class="codeline" id="line-114"><code><span class="keyword">func</span> (<label for="r22" class="ident">c</label> *<a href="#line-103" class="ident">_DISPATCHER_CONTEXT</a>) <label for="r23" class="ident">ctx</label>() *<a href="#line-14" class="ident">context</a> {</code></span>
+<span class="codeline" id="line-115"><code>	<span class="keyword">return</span> <label for="r22" class="ident">c</label>.<a href="#line-109" class="ident">context</a></code></span>
+<span class="codeline" id="line-116"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

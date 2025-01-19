@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: inverse-battleships-server/const/protocol</title>
+<link href="../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>protocol</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../../index.html#pkg-inverse-battleships-server/const/protocol">inverse-battleships-server/const/protocol</a><i> (on <a href="https://pkg.go.dev/inverse-battleships-server/const/protocol" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports <a href="../../../dep/inverse-battleships-server/const/protocol.html">one package</a>, and imported by <a href="../../../dep/inverse-battleships-server/const/protocol.html#imported-by">3 packages</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<span class="nodocs">    <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html">server_communication.go</a></span></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (only one, which is exported)</i></span></span>
+
+<div class="anchor value-res" id="name-IsValidCmd">	<input type='checkbox' class="fold" id="IsValidCmd-fold-content"><label for="IsValidCmd-fold-content"> func <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-96">IsValidCmd</a>(cmd <a href="../../builtin.html#name-string">string</a>) <a href="../../builtin.html#name-bool">bool</a></label><span id='IsValidCmd-fold-content-docs' class="fold-docs">
+<span class="md-text">		IsValidCmd checks if a command is valid.</span>
+
+</span></div></div>
+<div id="exported-variables"><span class="title">Package-Level Variables<span class="title-stat"><i> (only one, which is unexported)</i></span></span>
+
+	<input type='checkbox' class="showhide" id="unexported-variables-showhide"><i><label for="unexported-variables-showhide" class="show-inline">/* one unexported ... */</label><label for="unexported-variables-showhide" class="hide-inline">/* one unexported: */</label></i><div class="anchor value-res hidden" id="name-validCmdsMap"><i>	<input type='checkbox' class="fold" id="validCmdsMap-fold-content"><label for="validCmdsMap-fold-content">  var <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-32">validCmdsMap</a> map[<a href="../../builtin.html#name-string">string</a>]<a href="../../builtin.html#name-int">int</a></label><span id='validCmdsMap-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmdsMap is a map of valid commands.</span>
+
+</span></i></div></div>
+<div id="exported-constants"><span class="title">Package-Level Constants<span class="title-stat"><i> (total 66, all are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-BoardBoatsCount">	<input type='checkbox' class="fold" id="BoardBoatsCount-fold-content"><label for="BoardBoatsCount-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-119">BoardBoatsCount</a> = 11</label><span id='BoardBoatsCount-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellBoat">	<input type='checkbox' class="fold" id="BoardCellBoat-fold-content"><label for="BoardCellBoat-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-114">BoardCellBoat</a> = 3</label><span id='BoardCellBoat-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellFree">	<input type='checkbox' class="fold" id="BoardCellFree-fold-content"><label for="BoardCellFree-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-110">BoardCellFree</a> = 0</label><span id='BoardCellFree-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellOpponentLost">	<input type='checkbox' class="fold" id="BoardCellOpponentLost-fold-content"><label for="BoardCellOpponentLost-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-116">BoardCellOpponentLost</a> = -2</label><span id='BoardCellOpponentLost-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellOwner">	<input type='checkbox' class="fold" id="BoardCellOwner-fold-content"><label for="BoardCellOwner-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-111">BoardCellOwner</a> = 1</label><span id='BoardCellOwner-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellOwnerLost">	<input type='checkbox' class="fold" id="BoardCellOwnerLost-fold-content"><label for="BoardCellOwnerLost-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-115">BoardCellOwnerLost</a> = -1</label><span id='BoardCellOwnerLost-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellPlayer01">	<input type='checkbox' class="fold" id="BoardCellPlayer01-fold-content"><label for="BoardCellPlayer01-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-112">BoardCellPlayer01</a> = 1</label><span id='BoardCellPlayer01-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellPlayer01Lost">	<input type='checkbox' class="fold" id="BoardCellPlayer01Lost-fold-content"><label for="BoardCellPlayer01Lost-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-117">BoardCellPlayer01Lost</a> = -1</label><span id='BoardCellPlayer01Lost-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellPlayer02">	<input type='checkbox' class="fold" id="BoardCellPlayer02-fold-content"><label for="BoardCellPlayer02-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-113">BoardCellPlayer02</a> = 2</label><span id='BoardCellPlayer02-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardCellPlayer02Lost">	<input type='checkbox' class="fold" id="BoardCellPlayer02Lost-fold-content"><label for="BoardCellPlayer02Lost-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-118">BoardCellPlayer02Lost</a> = -2</label><span id='BoardCellPlayer02Lost-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-BoardSize">	<input type='checkbox' class="fold" id="BoardSize-fold-content"><label for="BoardSize-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-109">BoardSize</a> = 9</label><span id='BoardSize-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-CmdAction">	<input type='checkbox' class="fold" id="CmdAction-fold-content"><label for="CmdAction-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-22">CmdAction</a> = "ACTION" // <span class="md-text">15</span></label><span id='CmdAction-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdBoard">	<input type='checkbox' class="fold" id="CmdBoard-fold-content"><label for="CmdBoard-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-23">CmdBoard</a> = "BOARD" // <span class="md-text">16</span></label><span id='CmdBoard-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdClientReady">	<input type='checkbox' class="fold" id="CmdClientReady-fold-content"><label for="CmdClientReady-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-19">CmdClientReady</a> = "READY" // <span class="md-text">12</span></label><span id='CmdClientReady-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdContinue">	<input type='checkbox' class="fold" id="CmdContinue-fold-content"><label for="CmdContinue-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-28">CmdContinue</a> = "CONTINUE" // <span class="md-text">21</span></label><span id='CmdContinue-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdCreateLobby">	<input type='checkbox' class="fold" id="CmdCreateLobby-fold-content"><label for="CmdCreateLobby-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-15">CmdCreateLobby</a> = "CREATE" // <span class="md-text">8</span></label><span id='CmdCreateLobby-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdCreateLobbyAck">	<input type='checkbox' class="fold" id="CmdCreateLobbyAck-fold-content"><label for="CmdCreateLobbyAck-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-17">CmdCreateLobbyAck</a> = "PAIRING" // <span class="md-text">10</span></label><span id='CmdCreateLobbyAck-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdHandshakeAck">	<input type='checkbox' class="fold" id="CmdHandshakeAck-fold-content"><label for="CmdHandshakeAck-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-9">CmdHandshakeAck</a> = "DEAL" // <span class="md-text">2</span></label><span id='CmdHandshakeAck-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdHandshakeReqv">	<input type='checkbox' class="fold" id="CmdHandshakeReqv-fold-content"><label for="CmdHandshakeReqv-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-7">CmdHandshakeReqv</a> = "HAND" // <span class="md-text">0</span></label><span id='CmdHandshakeReqv-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdHandshakeResp">	<input type='checkbox' class="fold" id="CmdHandshakeResp-fold-content"><label for="CmdHandshakeResp-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-8">CmdHandshakeResp</a> = "SHAKE" // <span class="md-text">1</span></label><span id='CmdHandshakeResp-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdJoinLobby">	<input type='checkbox' class="fold" id="CmdJoinLobby-fold-content"><label for="CmdJoinLobby-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-16">CmdJoinLobby</a> = "BRING_IT" // <span class="md-text">9</span></label><span id='CmdJoinLobby-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdJoinLobbyAck">	<input type='checkbox' class="fold" id="CmdJoinLobbyAck-fold-content"><label for="CmdJoinLobbyAck-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-18">CmdJoinLobbyAck</a> = "PAIRED" // <span class="md-text">11</span></label><span id='CmdJoinLobbyAck-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdLeave">	<input type='checkbox' class="fold" id="CmdLeave-fold-content"><label for="CmdLeave-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-12">CmdLeave</a> = "LEAVE" // <span class="md-text">5</span></label><span id='CmdLeave-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdLeaveAck">	<input type='checkbox' class="fold" id="CmdLeaveAck-fold-content"><label for="CmdLeaveAck-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-13">CmdLeaveAck</a> = "BYE" // <span class="md-text">6</span></label><span id='CmdLeaveAck-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdLobbies">	<input type='checkbox' class="fold" id="CmdLobbies-fold-content"><label for="CmdLobbies-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-14">CmdLobbies</a> = "LOBBIES" // <span class="md-text">7</span></label><span id='CmdLobbies-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdLose">	<input type='checkbox' class="fold" id="CmdLose-fold-content"><label for="CmdLose-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-25">CmdLose</a> = "LOST" // <span class="md-text">18</span></label><span id='CmdLose-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdPartIndex">	<input type='checkbox' class="fold" id="CmdPartIndex-fold-content"><label for="CmdPartIndex-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-121">CmdPartIndex</a> = 1</label><span id='CmdPartIndex-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-CmdPing">	<input type='checkbox' class="fold" id="CmdPing-fold-content"><label for="CmdPing-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-10">CmdPing</a> = "PING" // <span class="md-text">3</span></label><span id='CmdPing-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdPlayerTurn">	<input type='checkbox' class="fold" id="CmdPlayerTurn-fold-content"><label for="CmdPlayerTurn-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-20">CmdPlayerTurn</a> = "TURN" // <span class="md-text">13</span></label><span id='CmdPlayerTurn-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdPong">	<input type='checkbox' class="fold" id="CmdPong-fold-content"><label for="CmdPong-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-11">CmdPong</a> = "PONG" // <span class="md-text">4</span></label><span id='CmdPong-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdTKO">	<input type='checkbox' class="fold" id="CmdTKO-fold-content"><label for="CmdTKO-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-21">CmdTKO</a> = "TKO" // <span class="md-text">14</span></label><span id='CmdTKO-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdWait">	<input type='checkbox' class="fold" id="CmdWait-fold-content"><label for="CmdWait-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-26">CmdWait</a> = "WAIT" // <span class="md-text">19</span></label><span id='CmdWait-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdWaiting">	<input type='checkbox' class="fold" id="CmdWaiting-fold-content"><label for="CmdWaiting-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-27">CmdWaiting</a> = "WAITING" // <span class="md-text">20</span></label><span id='CmdWaiting-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CmdWin">	<input type='checkbox' class="fold" id="CmdWin-fold-content"><label for="CmdWin-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-24">CmdWin</a> = "WIN" // <span class="md-text">17</span></label><span id='CmdWin-fold-content-docs' class="fold-docs">
+<span class="md-text">		validCmds is a list of valid commands.</span>
+
+</span></div><div class="anchor value-res" id="name-CompleteMsgTimeout">	<input type='checkbox' class="fold" id="CompleteMsgTimeout-fold-content"><label for="CompleteMsgTimeout-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-130">CompleteMsgTimeout</a> <a href="../../time.html">time</a>.<a href="../../time.html#name-Duration">Duration</a> = 5000000000</label><span id='CompleteMsgTimeout-fold-content-docs' class="fold-docs">
+<span class="md-text">		CompleteMsgTimeout is the time to wait for a valid message.</span>
+
+</span></div><div class="anchor value-res" id="name-HeaderPartIndex">	<input type='checkbox' class="fold" id="HeaderPartIndex-fold-content"><label for="HeaderPartIndex-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-120">HeaderPartIndex</a> = 0</label><span id='HeaderPartIndex-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-KeepAliveTimeout">	<input type='checkbox' class="fold" id="KeepAliveTimeout-fold-content"><label for="KeepAliveTimeout-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-133">KeepAliveTimeout</a> <a href="../../time.html">time</a>.<a href="../../time.html#name-Duration">Duration</a> = 5000000000</label><span id='KeepAliveTimeout-fold-content-docs' class="fold-docs">
+<span class="md-text">		KeepAliveTimeout is the time to wait for a keep-alive message.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyIDIndex">	<input type='checkbox' class="fold" id="LobbyIDIndex-fold-content"><label for="LobbyIDIndex-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-125">LobbyIDIndex</a> = 0</label><span id='LobbyIDIndex-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateContinue">	<input type='checkbox' class="fold" id="LobbyStateContinue-fold-content"><label for="LobbyStateContinue-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-88">LobbyStateContinue</a> <a href="../../builtin.html#name-uint8">uint8</a> = 14</label><span id='LobbyStateContinue-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateContinue is the state of a lobby when all players are ready to continue and previous state should be restored.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateCreated">	<input type='checkbox' class="fold" id="LobbyStateCreated-fold-content"><label for="LobbyStateCreated-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-62">LobbyStateCreated</a> <a href="../../builtin.html#name-uint8">uint8</a> = 1</label><span id='LobbyStateCreated-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateCreated is the initial state of a lobby before adding any players.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateFail">	<input type='checkbox' class="fold" id="LobbyStateFail-fold-content"><label for="LobbyStateFail-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-92">LobbyStateFail</a> <a href="../../builtin.html#name-uint8">uint8</a> = 16</label><span id='LobbyStateFail-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateFail is the state of a lobby when the game ends unexpectedly.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateFinished">	<input type='checkbox' class="fold" id="LobbyStateFinished-fold-content"><label for="LobbyStateFinished-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-90">LobbyStateFinished</a> <a href="../../builtin.html#name-uint8">uint8</a> = 15</label><span id='LobbyStateFinished-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateFinished is the state of a lobby when the game ends expectedly.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateInterrupt">	<input type='checkbox' class="fold" id="LobbyStateInterrupt-fold-content"><label for="LobbyStateInterrupt-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-82">LobbyStateInterrupt</a> <a href="../../builtin.html#name-uint8">uint8</a> = 11</label><span id='LobbyStateInterrupt-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateInterrupt is the state of a lobby when a player disconnects.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateInterrupted">	<input type='checkbox' class="fold" id="LobbyStateInterrupted-fold-content"><label for="LobbyStateInterrupted-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-84">LobbyStateInterrupted</a> <a href="../../builtin.html#name-uint8">uint8</a> = 12</label><span id='LobbyStateInterrupted-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateInterrupted is the state of a lobby waiting for players to reconnect.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePaired">	<input type='checkbox' class="fold" id="LobbyStatePaired-fold-content"><label for="LobbyStatePaired-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-66">LobbyStatePaired</a> <a href="../../builtin.html#name-uint8">uint8</a> = 3</label><span id='LobbyStatePaired-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePaired is the state of a lobby when second player joins.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer01Played">	<input type='checkbox' class="fold" id="LobbyStatePlayer01Played-fold-content"><label for="LobbyStatePlayer01Played-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-74">LobbyStatePlayer01Played</a> <a href="../../builtin.html#name-uint8">uint8</a> = 7</label><span id='LobbyStatePlayer01Played-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer01Played is the state of a lobby when player 01 played and board should be sent to both players.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer01Playing">	<input type='checkbox' class="fold" id="LobbyStatePlayer01Playing-fold-content"><label for="LobbyStatePlayer01Playing-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-72">LobbyStatePlayer01Playing</a> <a href="../../builtin.html#name-uint8">uint8</a> = 6</label><span id='LobbyStatePlayer01Playing-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer01Playing is the state of a lobby when player 01 is playing.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer01Turn">	<input type='checkbox' class="fold" id="LobbyStatePlayer01Turn-fold-content"><label for="LobbyStatePlayer01Turn-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-70">LobbyStatePlayer01Turn</a> <a href="../../builtin.html#name-uint8">uint8</a> = 5</label><span id='LobbyStatePlayer01Turn-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer01Turn is the state of a lobby when player 01 should receive a turn message.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer02Played">	<input type='checkbox' class="fold" id="LobbyStatePlayer02Played-fold-content"><label for="LobbyStatePlayer02Played-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-80">LobbyStatePlayer02Played</a> <a href="../../builtin.html#name-uint8">uint8</a> = 10</label><span id='LobbyStatePlayer02Played-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer02Played is the state of a lobby when player 02 played and board should be sent to both players.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer02Playing">	<input type='checkbox' class="fold" id="LobbyStatePlayer02Playing-fold-content"><label for="LobbyStatePlayer02Playing-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-78">LobbyStatePlayer02Playing</a> <a href="../../builtin.html#name-uint8">uint8</a> = 9</label><span id='LobbyStatePlayer02Playing-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer02Playing is the state of a lobby when player 02 is playing.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayer02Turn">	<input type='checkbox' class="fold" id="LobbyStatePlayer02Turn-fold-content"><label for="LobbyStatePlayer02Turn-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-76">LobbyStatePlayer02Turn</a> <a href="../../builtin.html#name-uint8">uint8</a> = 8</label><span id='LobbyStatePlayer02Turn-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayer02Turn is the state of a lobby when player 02 should receive a turn message.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStatePlayerReconnected">	<input type='checkbox' class="fold" id="LobbyStatePlayerReconnected-fold-content"><label for="LobbyStatePlayerReconnected-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-86">LobbyStatePlayerReconnected</a> <a href="../../builtin.html#name-uint8">uint8</a> = 13</label><span id='LobbyStatePlayerReconnected-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStatePlayerReconnected is the state of a lobby when a player reconnects and has to receive the board and wait message.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateUnititialized">	<input type='checkbox' class="fold" id="LobbyStateUnititialized-fold-content"><label for="LobbyStateUnititialized-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-60">LobbyStateUnititialized</a> <a href="../../builtin.html#name-uint8">uint8</a> = 0</label><span id='LobbyStateUnititialized-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateUnititialized is value used for uninitialized states.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateUnready">	<input type='checkbox' class="fold" id="LobbyStateUnready-fold-content"><label for="LobbyStateUnready-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-68">LobbyStateUnready</a> <a href="../../builtin.html#name-uint8">uint8</a> = 4</label><span id='LobbyStateUnready-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateUnready is the state of a lobby when both players are in, but did not send ready.</span>
+
+</span></div><div class="anchor value-res" id="name-LobbyStateWaiting">	<input type='checkbox' class="fold" id="LobbyStateWaiting-fold-content"><label for="LobbyStateWaiting-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-64">LobbyStateWaiting</a> <a href="../../builtin.html#name-uint8">uint8</a> = 2</label><span id='LobbyStateWaiting-fold-content-docs' class="fold-docs">
+<span class="md-text">		LobbyStateWaiting is the state of a lobby when one player is in, waiting for another.</span>
+
+</span></div><div class="anchor value-res" id="name-MinPartsCount">	<input type='checkbox' class="fold" id="MinPartsCount-fold-content"><label for="MinPartsCount-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-122">MinPartsCount</a> = 2</label><span id='MinPartsCount-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-MsgDelimiter">	<input type='checkbox' class="fold" id="MsgDelimiter-fold-content"><label for="MsgDelimiter-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-103">MsgDelimiter</a> = ";"</label><span id='MsgDelimiter-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-MsgEscape">	<input type='checkbox' class="fold" id="MsgEscape-fold-content"><label for="MsgEscape-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-105">MsgEscape</a> = "\\"</label><span id='MsgEscape-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-MsgHeader">	<input type='checkbox' class="fold" id="MsgHeader-fold-content"><label for="MsgHeader-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-106">MsgHeader</a> = "IBGAME"</label><span id='MsgHeader-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-MsgTerminator">	<input type='checkbox' class="fold" id="MsgTerminator-fold-content"><label for="MsgTerminator-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-104">MsgTerminator</a> = "\n"</label><span id='MsgTerminator-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-NicknameIndex">	<input type='checkbox' class="fold" id="NicknameIndex-fold-content"><label for="NicknameIndex-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-124">NicknameIndex</a> = 0</label><span id='NicknameIndex-fold-content-docs' class="fold-docs">
+<span class="md-text">		indexes for the IncomingMessage params slice</span>
+
+</span></div><div class="anchor value-res" id="name-NumDelimiter">	<input type='checkbox' class="fold" id="NumDelimiter-fold-content"><label for="NumDelimiter-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-107">NumDelimiter</a> = ":"</label><span id='NumDelimiter-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-PlayerCount">	<input type='checkbox' class="fold" id="PlayerCount-fold-content"><label for="PlayerCount-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-139">PlayerCount</a> <a href="../../builtin.html#name-uint8">uint8</a> = 2</label><span id='PlayerCount-fold-content-docs' class="fold-docs">
+<span class="md-text">		PlayerCount is the number of players in a game.</span>
+
+</span></div><div class="anchor value-res" id="name-PlayerReconnectTimeout">	<input type='checkbox' class="fold" id="PlayerReconnectTimeout-fold-content"><label for="PlayerReconnectTimeout-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-136">PlayerReconnectTimeout</a> <a href="../../time.html">time</a>.<a href="../../time.html#name-Duration">Duration</a> = 60000000000</label><span id='PlayerReconnectTimeout-fold-content-docs' class="fold-docs">
+<span class="md-text">		PlayerReconnectTimeout is the time to wait for a player to reconnect.</span>
+
+</span></div><div class="anchor value-res" id="name-PositionIndex">	<input type='checkbox' class="fold" id="PositionIndex-fold-content"><label for="PositionIndex-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-126">PositionIndex</a> = 0</label><span id='PositionIndex-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div><div class="anchor value-res" id="name-SeqDelimiter">	<input type='checkbox' class="fold" id="SeqDelimiter-fold-content"><label for="SeqDelimiter-fold-content">const <a href="../../../src/inverse-battleships-server/const/protocol/server_communication.go.html#line-108">SeqDelimiter</a> = ","</label><span id='SeqDelimiter-fold-content-docs' class="fold-docs">
+<span class="md-text">		constants for the message header and commands</span>
+
+</span></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

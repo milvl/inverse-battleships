@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: custom_errors.go in package inverse-battleships-server/const/custom_errors</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	custom_errors.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html">inverse-battleships-server/const/custom_errors</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0
+{background: brown; color: #eed;}
+</style><input id="i0" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<div class="anchor" id="doc"><span class="codeline" id="line-1"><code><span class="comment">// custom_errors package represents custom errors defined in the project.</span></code></span></div><span class="codeline" id="line-2"><code><span class="keyword">package</span> custom_errors</code></span>
+<span class="codeline" id="line-3"><code></code></span>
+<span class="codeline" id="line-4"><code><span class="keyword">import</span> <label for="i0"><span class="lit-string i0">"errors"</span></label></code></span>
+<span class="codeline" id="line-5"><code></code></span>
+<span class="codeline" id="line-6"><code><span class="comment">// ErrNilPointer is an error that occurs when a nil pointer is encountered.</span></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrNilPointer" class="ident">ErrNilPointer</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"nil pointer error"</span>)</code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="comment">// ErrNilConn is an error that occurs when a nil connection is encountered.</span></code></span>
+<span class="codeline" id="line-10"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrNilConn" class="ident">ErrNilConn</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"nil connection error"</span>)</code></span>
+<span class="codeline" id="line-11"><code></code></span>
+<span class="codeline" id="line-12"><code><span class="comment">// ErrInvalidCommand is an error that occurs when an invalid command is encountered.</span></code></span>
+<span class="codeline" id="line-13"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrInvalidCommand" class="ident">ErrInvalidCommand</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"invalid command"</span>)</code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code><span class="comment">// ErrPlayerNotIdle is an error that occurs when a player is not in idle state.</span></code></span>
+<span class="codeline" id="line-16"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrPlayerNotIdle" class="ident">ErrPlayerNotIdle</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"player is not in idle state"</span>)</code></span>
+<span class="codeline" id="line-17"><code></code></span>
+<span class="codeline" id="line-18"><code><span class="comment">// ErrLobbyNotFound is an error that occurs when a lobby is not found.</span></code></span>
+<span class="codeline" id="line-19"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrLobbyNotFound" class="ident">ErrLobbyNotFound</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"lobby not found"</span>)</code></span>
+<span class="codeline" id="line-20"><code></code></span>
+<span class="codeline" id="line-21"><code><span class="comment">// ErrLobbyFull is an error that occurs when a lobby is full.</span></code></span>
+<span class="codeline" id="line-22"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrLobbyFull" class="ident">ErrLobbyFull</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"lobby is full"</span>)</code></span>
+<span class="codeline" id="line-23"><code></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">// ErrPlayerNotFound is an error that occurs when a player is not found.</span></code></span>
+<span class="codeline" id="line-25"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrPlayerNotFound" class="ident">ErrPlayerNotFound</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"player not found"</span>)</code></span>
+<span class="codeline" id="line-26"><code></code></span>
+<span class="codeline" id="line-27"><code><span class="comment">// ErrCmdParsing is an error that occurs when a command is not parsed correctly.</span></code></span>
+<span class="codeline" id="line-28"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrCmdParseInvalParam" class="ident">ErrCmdParseInvalParam</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"error while parsing command parameters (malformed parameters)"</span>)</code></span>
+<span class="codeline" id="line-29"><code></code></span>
+<span class="codeline" id="line-30"><code><span class="comment">// ErrNotPlayerTurn is an error that occurs when it is not a player's turn but they try to make a move.</span></code></span>
+<span class="codeline" id="line-31"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrNotPlayerTurn" class="ident">ErrNotPlayerTurn</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"not player's turn"</span>)</code></span>
+<span class="codeline" id="line-32"><code></code></span>
+<span class="codeline" id="line-33"><code><span class="comment">// ErrInvalidMove is an error that occurs when an invalid move is made.</span></code></span>
+<span class="codeline" id="line-34"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrInvalidMove" class="ident">ErrInvalidMove</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"invalid move"</span>)</code></span>
+<span class="codeline" id="line-35"><code></code></span>
+<span class="codeline" id="line-36"><code><span class="comment">// ErrSendMsg is an error that occurs when a message cannot be sent.</span></code></span>
+<span class="codeline" id="line-37"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/custom_errors.html#name-ErrSendMsg" class="ident">ErrSendMsg</a> = <a href="../../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../../errors/errors.go.html#line-61" class="ident">New</a>(<span class="lit-string">"error while sending message"</span>)</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

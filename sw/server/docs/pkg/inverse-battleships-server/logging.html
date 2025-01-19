@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: inverse-battleships-server/logging</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>logging</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../index.html#pkg-inverse-battleships-server/logging">inverse-battleships-server/logging</a><i> (on <a href="https://pkg.go.dev/inverse-battleships-server/logging" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports <a href="../../dep/inverse-battleships-server/logging.html">7 packages</a>, and imported by <a href="../../dep/inverse-battleships-server/logging.html#imported-by">4 packages</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<span class="nodocs">    <a href="../../src/inverse-battleships-server/logging/logging.go.html">logging.go</a></span></div>
+<div id="exported-types"><span class="title">Package-Level Type Names<span class="title-stat"><i> (total 2, both are exported)</i></span></span>
+
+<div id="exported-types-buttons" class="js-on">	/* sort exporteds by: <label id="sort-types-by-alphabet" class="button">alphabet</label> | <label id="sort-types-by-popularity" class="button">popularity</label> */</div><div class="anchor type-res" id="name-Logger" data-popularity="530">	<input type='checkbox' class="fold" id="Logger-fold-content"><label for="Logger-fold-content"> type <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-56">Logger</a> <i>(struct)</i></label><span id='Logger-fold-content-docs' class="fold-docs">
+<span class="md-text">		Logger struct with configurable output</span>
+
+		<input type='checkbox' class="fold" id="Logger-fold-fields"><label for="Logger-fold-fields">Fields (<i>total 4, in which 1 is exported</i>)</label><span id='Logger-fold-fields-items' class="fold-items"><span>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/logging/logging.go.html#line-60">Output</a> <i>*<a href="../log.html">log</a>.<a href="../log.html#name-Logger">Logger</a></i></span></span>
+			<input type='checkbox' class="showhide" id="Logger-showhide-fields"><i><label for="Logger-showhide-fields" class="show-inline">/* 3 unexporteds ... */</label><label for="Logger-showhide-fields" class="hide-inline">/* 3 unexporteds: */</label></i><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/logging/logging.go.html#line-59">doTraceCall</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/logging/logging.go.html#line-57">enabledLevels</a> <i><a href="#name-LogLevel">LogLevel</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/logging/logging.go.html#line-58">timeFormat</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span></span>
+		<input type='checkbox' class="fold" id="Logger-fold-methods"><label for="Logger-fold-methods">Methods (<i>total 6, in which 5 are exported</i>)</label><span id='Logger-fold-methods-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="Logger-fold-method-Critical"><label for="Logger-fold-method-Critical">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-175">Critical</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-Critical-docs' class="fold-docs">
+<span class="md-text">				Critical logs a message at the CRITICAL level for the given logger</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Logger-fold-method-Debug"><label for="Logger-fold-method-Debug">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-155">Debug</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-Debug-docs' class="fold-docs">
+<span class="md-text">				Deebug logs a message at the DEBUG level for the given logger</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Logger-fold-method-Error"><label for="Logger-fold-method-Error">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-170">Error</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-Error-docs' class="fold-docs">
+<span class="md-text">				Error logs a message at the ERROR level for the given logger</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Logger-fold-method-Info"><label for="Logger-fold-method-Info">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-160">Info</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-Info-docs' class="fold-docs">
+<span class="md-text">				Info logs a message at the INFO level for the given logger</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Logger-fold-method-Warn"><label for="Logger-fold-method-Warn">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-165">Warn</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-Warn-docs' class="fold-docs">
+<span class="md-text">				Warn logs a message at the WARNING level for the given logger</span>
+</span></span>
+			<input type='checkbox' class="showhide" id="Logger-showhide-methods"><i><label for="Logger-showhide-methods" class="show-inline">/* one unexported ... */</label><label for="Logger-showhide-methods" class="hide-inline">/* one unexported: */</label></i><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="Logger-fold-method-logMessage"><label for="Logger-fold-method-logMessage">(*Logger) <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-113">logMessage</a>(level <a href="#name-LogLevel">LogLevel</a>, message <a href="../builtin.html#name-string">string</a>)</label><span id='Logger-fold-method-logMessage-docs' class="fold-docs">
+<span class="md-text">				logMessage logs a message at the given level</span>
+</span></i></span></span>
+		<input type='checkbox' class="fold" id="Logger-fold-results"><label for="Logger-fold-results">As Outputs Of (<i>at least 3, in which 2 are exported</i>)</label><span id='Logger-fold-results-items' class="fold-items"><span>
+			func <a href="#name-NewDefaultLogger">NewDefaultLogger</a>() *<b>Logger</b></span><span>
+			func <a href="#name-NewLogger">NewLogger</a>(enabledLevels <a href="#name-LogLevel">LogLevel</a>, timeFormat <a href="../builtin.html#name-string">string</a>, doTraceCall <a href="../builtin.html#name-bool">bool</a>, stream *<a href="../os.html">os</a>.<a href="../os.html#name-File">File</a>) *<b>Logger</b></span>
+			<input type='checkbox' class="showhide" id="Logger-showhide-inputofs"><i><label for="Logger-showhide-inputofs" class="show-inline">/* at least one unexported ... */</label><label for="Logger-showhide-inputofs" class="hide-inline">/* at least one unexported: */</label></i><span class="hidden"><i>
+			func <a href="#name-getGlobalLogger">getGlobalLogger</a>() *<b>Logger</b></i></span></span>
+		<input type='checkbox' class="fold" id="Logger-fold-values"><label for="Logger-fold-values">As Types Of (<i>only one, which is unexported</i>)</label><span id='Logger-fold-values-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Logger-showhide-values"><i><label for="Logger-showhide-values" class="show-inline">/* one unexported ... */</label><label for="Logger-showhide-values" class="hide-inline">/* one unexported: */</label></i><span class="hidden"><i>
+			  var <a href="#name-globalLogger">globalLogger</a> *<b>Logger</b></i></span></span>
+
+</span></div><div class="anchor type-res" id="name-LogLevel" data-popularity="155">	<input type='checkbox' class="fold" id="LogLevel-fold-content"><label for="LogLevel-fold-content"> type <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-14">LogLevel</a> <a href="../builtin.html#name-uint8">uint8</a> <i>(basic type)</i></label><span id='LogLevel-fold-content-docs' class="fold-docs">
+<span class="md-text">		LogLevel defines different levels of logging</span>
+
+		<input type='checkbox' class="fold" id="LogLevel-fold-params"><label for="LogLevel-fold-params">As Inputs Of (<i>at least 4, in which 1 is exported</i>)</label><span id='LogLevel-fold-params-items' class="fold-items"><span>
+			func <a href="#name-NewLogger">NewLogger</a>(enabledLevels <b>LogLevel</b>, timeFormat <a href="../builtin.html#name-string">string</a>, doTraceCall <a href="../builtin.html#name-bool">bool</a>, stream *<a href="../os.html">os</a>.<a href="../os.html#name-File">File</a>) *<a href="#name-Logger">Logger</a></span>
+			<input type='checkbox' class="showhide" id="LogLevel-showhide-outputofs"><i><label for="LogLevel-showhide-outputofs" class="show-inline">/* 3+ unexporteds ... */</label><label for="LogLevel-showhide-outputofs" class="hide-inline">/* 3+ unexporteds: */</label></i><span class="hidden"><i>
+			func <a href="#name-isAllowed">isAllowed</a>(enabledLevels <b>LogLevel</b>, level <b>LogLevel</b>) <a href="../builtin.html#name-bool">bool</a></i></span><span class="hidden"><i>
+			func <a href="#name-isAllowed">isAllowed</a>(enabledLevels <b>LogLevel</b>, level <b>LogLevel</b>) <a href="../builtin.html#name-bool">bool</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-Logger">Logger</a>).<a href="../../src/inverse-battleships-server/logging/logging.go.html#line-113">logMessage</a>(level <b>LogLevel</b>, message <a href="../builtin.html#name-string">string</a>)</i></span></span>
+		<input type='checkbox' class="fold" id="LogLevel-fold-values"><label for="LogLevel-fold-values">As Types Of (<i>total 6, in which 5 are exported</i>)</label><span id='LogLevel-fold-values-items' class="fold-items"><span>
+			const <a href="#name-CRITICAL">CRITICAL</a></span><span>
+			const <a href="#name-DEBUG">DEBUG</a></span><span>
+			const <a href="#name-ERROR">ERROR</a></span><span>
+			const <a href="#name-INFO">INFO</a></span><span>
+			const <a href="#name-WARNING">WARNING</a></span>
+			<input type='checkbox' class="showhide" id="LogLevel-showhide-values"><i><label for="LogLevel-showhide-values" class="show-inline">/* one unexported ... */</label><label for="LogLevel-showhide-values" class="hide-inline">/* one unexported: */</label></i><span class="hidden"><i>
+			const <a href="#name-defaultAllowedLevels">defaultAllowedLevels</a></i></span></span>
+
+</span></div></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (total 10, in which 7 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-Critical">	<input type='checkbox' class="fold" id="Critical-fold-content"><label for="Critical-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-200">Critical</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Critical-fold-content-docs' class="fold-docs">
+<span class="md-text">		Critical logs a message at the CRITICAL level</span>
+
+</span></div><div class="anchor value-res" id="name-Debug">	<input type='checkbox' class="fold" id="Debug-fold-content"><label for="Debug-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-180">Debug</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Debug-fold-content-docs' class="fold-docs">
+<span class="md-text">		Debug logs a message at the CRITICAL level</span>
+
+</span></div><div class="anchor value-res" id="name-Error">	<input type='checkbox' class="fold" id="Error-fold-content"><label for="Error-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-195">Error</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Error-fold-content-docs' class="fold-docs">
+<span class="md-text">		Error logs a message at the ERROR level</span>
+
+</span></div><div class="anchor value-res" id="name-Info">	<input type='checkbox' class="fold" id="Info-fold-content"><label for="Info-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-185">Info</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Info-fold-content-docs' class="fold-docs">
+<span class="md-text">		Info logs a message at the INFO level</span>
+
+</span></div><div class="anchor value-res" id="name-NewDefaultLogger">	<input type='checkbox' class="fold" id="NewDefaultLogger-fold-content"><label for="NewDefaultLogger-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-89">NewDefaultLogger</a>() *<a href="#name-Logger">Logger</a></label><span id='NewDefaultLogger-fold-content-docs' class="fold-docs">
+<span class="md-text">		NewDefaultLogger creates a new logger instance with default configuration.</span>
+
+</span></div><div class="anchor value-res" id="name-NewLogger">	<input type='checkbox' class="fold" id="NewLogger-fold-content"><label for="NewLogger-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-75">NewLogger</a>(enabledLevels <a href="#name-LogLevel">LogLevel</a>, timeFormat <a href="../builtin.html#name-string">string</a>, doTraceCall <a href="../builtin.html#name-bool">bool</a>, stream *<a href="../os.html">os</a>.<a href="../os.html#name-File">File</a>) *<a href="#name-Logger">Logger</a></label><span id='NewLogger-fold-content-docs' class="fold-docs">
+<span class="md-text">		NewLogger creates a new logger instance with the given configuration.
+		Argument enabledLevels is a bitmask of LogLevel values.
+		Example usage: "DEBUG" returns a logger that logs messages at the DEBUG level.
+		Example usage: "DEBUG | INFO | WARNING" returns a logger that logs messages at the DEBUG, INFO, and WARNING levels.
+		If timeFormat is empty, no timestamp will be added.</span>
+
+</span></div><div class="anchor value-res" id="name-Warn">	<input type='checkbox' class="fold" id="Warn-fold-content"><label for="Warn-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-190">Warn</a>(message <a href="../builtin.html#name-string">string</a>)</label><span id='Warn-fold-content-docs' class="fold-docs">
+<span class="md-text">		Warn logs a message at the WARNING level</span>
+
+</span></div>	<input type='checkbox' class="showhide" id="unexported-functions-showhide"><i><label for="unexported-functions-showhide" class="show-inline">/* 3 unexporteds ... */</label><label for="unexported-functions-showhide" class="hide-inline">/* 3 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-colorize"><i>	<input type='checkbox' class="fold" id="colorize-fold-content"><label for="colorize-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-108">colorize</a>(color <a href="../builtin.html#name-string">string</a>, message <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-string">string</a></label><span id='colorize-fold-content-docs' class="fold-docs">
+<span class="md-text">		colorize colorizes a message with the given color</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-getGlobalLogger"><i>	<input type='checkbox' class="fold" id="getGlobalLogger-fold-content"><label for="getGlobalLogger-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-94">getGlobalLogger</a>() *<a href="#name-Logger">Logger</a></label><span id='getGlobalLogger-fold-content-docs' class="fold-docs">
+<span class="md-text">		getGlobalLogger returns the global logger instance</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-isAllowed"><i>	<input type='checkbox' class="fold" id="isAllowed-fold-content"><label for="isAllowed-fold-content"> func <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-103">isAllowed</a>(enabledLevels <a href="#name-LogLevel">LogLevel</a>, level <a href="#name-LogLevel">LogLevel</a>) <a href="../builtin.html#name-bool">bool</a></label><span id='isAllowed-fold-content-docs' class="fold-docs">
+<span class="md-text">		isAllowed checks if the given level is allowed</span>
+
+</span></i></div></div>
+<div id="exported-variables"><span class="title">Package-Level Variables<span class="title-stat"><i> (total 5, none are exported)</i></span></span>
+
+	<input type='checkbox' class="showhide" id="unexported-variables-showhide"><i><label for="unexported-variables-showhide" class="show-inline">/* 5 unexporteds ... */</label><label for="unexported-variables-showhide" class="hide-inline">/* 5 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-colors"><i>	<input type='checkbox' class="fold" id="colors-fold-content"><label for="colors-fold-content">  var <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-35">colors</a> map[<a href="#name-LogLevel">LogLevel</a>]<a href="../builtin.html#name-string">string</a></label><span id='colors-fold-content-docs' class="fold-docs">
+<span class="md-text">		colors maps log levels to color codes</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-defaultOut"><i>	<input type='checkbox' class="fold" id="defaultOut-fold-content"><label for="defaultOut-fold-content">  var <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-67">defaultOut</a> *<a href="../os.html">os</a>.<a href="../os.html#name-File">File</a></label><span id='defaultOut-fold-content-docs' class="fold-docs">
+<span class="md-text">		Global logger instance</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-globalLogger"><i>	<input type='checkbox' class="fold" id="globalLogger-fold-content"><label for="globalLogger-fold-content">  var <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-65">globalLogger</a> *<a href="#name-Logger">Logger</a></label><span id='globalLogger-fold-content-docs' class="fold-docs">
+<span class="md-text">		Global logger instance</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-logLevelStrings"><i>	<input type='checkbox' class="fold" id="logLevelStrings-fold-content"><label for="logLevelStrings-fold-content">  var <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-47">logLevelStrings</a> map[<a href="#name-LogLevel">LogLevel</a>]<a href="../builtin.html#name-string">string</a></label><span id='logLevelStrings-fold-content-docs' class="fold-docs">
+<span class="md-text">		logLevelStrings maps log levels to their string representations</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-once"><i>	<input type='checkbox' class="fold" id="once-fold-content"><label for="once-fold-content">  var <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-66">once</a> <a href="../sync.html">sync</a>.<a href="../sync.html#name-Once">Once</a></label><span id='once-fold-content-docs' class="fold-docs">
+<span class="md-text">		Global logger instance</span>
+
+</span></i></div></div>
+<div id="exported-constants"><span class="title">Package-Level Constants<span class="title-stat"><i> (total 9, in which 5 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-CRITICAL">	<input type='checkbox' class="fold" id="CRITICAL-fold-content"><label for="CRITICAL-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-22">CRITICAL</a> <a href="#name-LogLevel">LogLevel</a> = 16 // <span class="md-text">1 &lt;&lt; 4 == 16</span></label><span id='CRITICAL-fold-content-docs' class="fold-docs">
+<span class="md-text">		Enum values for LogLevel</span>
+
+</span></div><div class="anchor value-res" id="name-DEBUG">	<input type='checkbox' class="fold" id="DEBUG-fold-content"><label for="DEBUG-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-18">DEBUG</a> <a href="#name-LogLevel">LogLevel</a> = 1 // <span class="md-text">1 &lt;&lt; 0 == 1</span></label><span id='DEBUG-fold-content-docs' class="fold-docs">
+<span class="md-text">		Enum values for LogLevel</span>
+
+</span></div><div class="anchor value-res" id="name-ERROR">	<input type='checkbox' class="fold" id="ERROR-fold-content"><label for="ERROR-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-21">ERROR</a> <a href="#name-LogLevel">LogLevel</a> = 8 // <span class="md-text">1 &lt;&lt; 3 == 8</span></label><span id='ERROR-fold-content-docs' class="fold-docs">
+<span class="md-text">		Enum values for LogLevel</span>
+
+</span></div><div class="anchor value-res" id="name-INFO">	<input type='checkbox' class="fold" id="INFO-fold-content"><label for="INFO-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-19">INFO</a> <a href="#name-LogLevel">LogLevel</a> = 2 // <span class="md-text">1 &lt;&lt; 1 == 2</span></label><span id='INFO-fold-content-docs' class="fold-docs">
+<span class="md-text">		Enum values for LogLevel</span>
+
+</span></div><div class="anchor value-res" id="name-WARNING">	<input type='checkbox' class="fold" id="WARNING-fold-content"><label for="WARNING-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-20">WARNING</a> <a href="#name-LogLevel">LogLevel</a> = 4 // <span class="md-text">1 &lt;&lt; 2 == 4</span></label><span id='WARNING-fold-content-docs' class="fold-docs">
+<span class="md-text">		Enum values for LogLevel</span>
+
+</span></div>	<input type='checkbox' class="showhide" id="unexported-constants-showhide"><i><label for="unexported-constants-showhide" class="show-inline">/* 4 unexporteds ... */</label><label for="unexported-constants-showhide" class="hide-inline">/* 4 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-defaultAllowedLevels"><i>	<input type='checkbox' class="fold" id="defaultAllowedLevels-fold-content"><label for="defaultAllowedLevels-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-26">defaultAllowedLevels</a> <a href="#name-LogLevel">LogLevel</a> = 31</label><span id='defaultAllowedLevels-fold-content-docs' class="fold-docs">
+<span class="md-text">		defaultAllowedLevels represents the default log levels</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-defaultDoTraceCall"><i>	<input type='checkbox' class="fold" id="defaultDoTraceCall-fold-content"><label for="defaultDoTraceCall-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-32">defaultDoTraceCall</a> = true</label><span id='defaultDoTraceCall-fold-content-docs' class="fold-docs">
+<span class="md-text">		defaultDoTraceCall represents whether to trace the caller</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-defaultTimeFormat"><i>	<input type='checkbox' class="fold" id="defaultTimeFormat-fold-content"><label for="defaultTimeFormat-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-29">defaultTimeFormat</a> = "15:04:05.000000"</label><span id='defaultTimeFormat-fold-content-docs' class="fold-docs">
+<span class="md-text">		defaultTimeFormat represents the default time format</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-resetColor"><i>	<input type='checkbox' class="fold" id="resetColor-fold-content"><label for="resetColor-fold-content">const <a href="../../src/inverse-battleships-server/logging/logging.go.html#line-44">resetColor</a> = "\x1b[0m"</label><span id='resetColor-fold-content-docs' class="fold-docs">
+<span class="md-text">		resetColor represents reset color code</span>
+
+</span></i></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: connection_manager.go in package inverse-battleships-server/server</title>
+<link href="../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	connection_manager.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../pkg/inverse-battleships-server/server.html">inverse-battleships-server/server</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19],
+input[id=r20]:checked ~pre label[for=r20],
+input[id=r21]:checked ~pre label[for=r21],
+input[id=r22]:checked ~pre label[for=r22],
+input[id=r23]:checked ~pre label[for=r23],
+input[id=r24]:checked ~pre label[for=r24],
+input[id=r25]:checked ~pre label[for=r25],
+input[id=r26]:checked ~pre label[for=r26],
+input[id=r27]:checked ~pre label[for=r27],
+input[id=r28]:checked ~pre label[for=r28],
+input[id=r29]:checked ~pre label[for=r29],
+input[id=r30]:checked ~pre label[for=r30],
+input[id=r31]:checked ~pre label[for=r31],
+input[id=r32]:checked ~pre label[for=r32],
+input[id=r33]:checked ~pre label[for=r33]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1,
+input[id=i2]:checked ~pre .i2,
+input[id=i3]:checked ~pre .i3,
+input[id=i4]:checked ~pre .i4,
+input[id=i5]:checked ~pre .i5
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="r20" type="radio" name="g"/>
+<input id="r21" type="radio" name="g"/>
+<input id="r22" type="radio" name="g"/>
+<input id="r23" type="radio" name="g"/>
+<input id="r24" type="radio" name="g"/>
+<input id="r25" type="radio" name="g"/>
+<input id="r26" type="radio" name="g"/>
+<input id="r27" type="radio" name="g"/>
+<input id="r28" type="radio" name="g"/>
+<input id="r29" type="radio" name="g"/>
+<input id="r30" type="radio" name="g"/>
+<input id="r31" type="radio" name="g"/>
+<input id="r32" type="radio" name="g"/>
+<input id="r33" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+<input id="i2" type="radio" name="i"/>
+<input id="i3" type="radio" name="i"/>
+<input id="i4" type="radio" name="i"/>
+<input id="i5" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="keyword">package</span> server</code></span>
+<span class="codeline" id="line-2"><code></code></span>
+<span class="codeline" id="line-3"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-4"><code>	<label for="i0"><span class="lit-string i0">"errors"</span></label></code></span>
+<span class="codeline" id="line-5"><code>	<label for="i1"><span class="lit-string i1">"fmt"</span></label></code></span>
+<span class="codeline" id="line-6"><code>	<label for="i2"><span class="lit-string i2">"inverse-battleships-server/logging"</span></label></code></span>
+<span class="codeline" id="line-7"><code>	<label for="i3"><span class="lit-string i3">"net"</span></label></code></span>
+<span class="codeline" id="line-8"><code>	<label for="i4"><span class="lit-string i4">"strings"</span></label></code></span>
+<span class="codeline" id="line-9"><code>	<label for="i5"><span class="lit-string i5">"time"</span></label></code></span>
+<span class="codeline" id="line-10"><code>)</code></span>
+<span class="codeline" id="line-11"><code></code></span>
+<span class="codeline" id="line-12"><code><span class="comment">// connectionType represents the type of connection (e.g., "tcp")</span></code></span>
+<span class="codeline" id="line-13"><code><span class="keyword">const</span> <a href="../../../pkg/inverse-battleships-server/server.html#name-connectionType" class="ident">connectionType</a> = <span class="lit-string">"tcp"</span></code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code><span class="comment">// bufferSize represents the size of the buffer used to read messages</span></code></span>
+<span class="codeline" id="line-16"><code><span class="keyword">const</span> <a href="../../../pkg/inverse-battleships-server/server.html#name-bufferSize" class="ident">bufferSize</a> = <span class="lit-number">1024</span> <span class="comment">// 1024 bytes == 1024 characters == 1KiB</span></code></span>
+<span class="codeline" id="line-17"><code></code></span>
+<span class="codeline" id="line-18"><code><span class="comment">// timeout represents the time for reading a message</span></code></span>
+<span class="codeline" id="line-19"><code><span class="keyword">const</span> <a href="../../../pkg/inverse-battleships-server/server.html#name-timeout" class="ident">timeout</a> = <span class="lit-number">1</span> * <a href="../../../pkg/time.html" class="ident i5">time</a>.<a href="../../time/time.go.html#line-655" class="ident">Second</a></code></span>
+<span class="codeline" id="line-20"><code></code></span>
+<span class="codeline" id="line-21"><code><span class="comment">// connectionTimeout represents the time to wait for a connection</span></code></span>
+<span class="codeline" id="line-22"><code><span class="keyword">const</span> <a href="../../../pkg/inverse-battleships-server/server.html#name-connectionTimeout" class="ident">connectionTimeout</a> = <span class="lit-number">100</span> * <a href="../../../pkg/time.html" class="ident i5">time</a>.<a href="../../time/time.go.html#line-654" class="ident">Millisecond</a></code></span>
+<span class="codeline" id="line-23"><code></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">// Server is the main structure that holds the TCP server's state.</span></code></span>
+<span class="codeline" id="line-25"><code><span class="keyword">type</span> <a href="../../../pkg/inverse-battleships-server/server.html#name-Server" class="ident">Server</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-26"><code>	Address    <a href="../../../pkg/builtin.html#name-string" class="ident">string</a>        <span class="comment">// address the server listens on (e.g., "127.0.0.1:8080")</span></code></span>
+<span class="codeline" id="line-27"><code>	p_listener *<a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-402" class="ident">Listener</a> <span class="comment">// TCP listener</span></code></span>
+<span class="codeline" id="line-28"><code>}</code></span>
+<span class="codeline" id="line-29"><code></code></span>
+<span class="codeline" id="line-30"><code><span class="comment">// escapeSpecialSymbols escapes special symbols in a string.</span></code></span>
+<span class="codeline" id="line-31"><code><span class="keyword">func</span> <label for="r0" class="ident"><a href="../../../pkg/inverse-battleships-server/server.html#name-escapeSpecialSymbols" class="ident">escapeSpecialSymbols</a></label>(<label for="r1" class="ident">input</label> <a href="../../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../../pkg/builtin.html#name-string" class="ident">string</a> {</code></span>
+<span class="codeline" id="line-32"><code>	<span class="comment">// Define a replacer to handle escape sequences</span></code></span>
+<span class="codeline" id="line-33"><code>	<label for="r2" class="ident">replacer</label> := <a href="../../../pkg/strings.html" class="ident i4">strings</a>.<a href="../../strings/replace.go.html#line-32" class="ident">NewReplacer</a>(</code></span>
+<span class="codeline" id="line-34"><code>		<span class="comment">// "\\", "\\\\", // backslash</span></code></span>
+<span class="codeline" id="line-35"><code>		<span class="lit-string">"\n"</span>, <span class="lit-string">"\\n"</span>, <span class="comment">// newline</span></code></span>
+<span class="codeline" id="line-36"><code>		<span class="lit-string">"\t"</span>, <span class="lit-string">"\\t"</span>, <span class="comment">// tab</span></code></span>
+<span class="codeline" id="line-37"><code>		<span class="lit-string">"\r"</span>, <span class="lit-string">"\\r"</span>, <span class="comment">// carriage return</span></code></span>
+<span class="codeline" id="line-38"><code>		<span class="comment">// "\"", "\\\"", // double quote</span></code></span>
+<span class="codeline" id="line-39"><code><span class="comment">		// "'", "\\'", // single quote</span></code></span>
+<span class="codeline" id="line-40"><code>	)</code></span>
+<span class="codeline" id="line-41"><code></code></span>
+<span class="codeline" id="line-42"><code>	<span class="comment">// Replace all special symbols</span></code></span>
+<span class="codeline" id="line-43"><code>	<span class="keyword">return</span> <label for="r2" class="ident">replacer</label>.<a href="../../strings/replace.go.html#line-95" class="ident">Replace</a>(<label for="r1" class="ident">input</label>)</code></span>
+<span class="codeline" id="line-44"><code>}</code></span>
+<span class="codeline" id="line-45"><code></code></span>
+<span class="codeline" id="line-46"><code><span class="comment">// NewServer initializes and returns a new Server instance.</span></code></span>
+<span class="codeline" id="line-47"><code><span class="keyword">func</span> <label for="r3" class="ident"><a href="../../../pkg/inverse-battleships-server/server.html#name-NewServer" class="ident">NewServer</a></label>(<label for="r4" class="ident">address</label> <a href="../../../pkg/builtin.html#name-string" class="ident">string</a>) *<a href="#line-25" class="ident">Server</a> {</code></span>
+<span class="codeline" id="line-48"><code>	<span class="keyword">return</span> &amp;<a href="#line-25" class="ident">Server</a>{</code></span>
+<span class="codeline" id="line-49"><code>		<a href="#line-26" class="ident">Address</a>:    <label for="r4" class="ident">address</label>,</code></span>
+<span class="codeline" id="line-50"><code>		<a href="#line-27" class="ident">p_listener</a>: <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a>,</code></span>
+<span class="codeline" id="line-51"><code>	}</code></span>
+<span class="codeline" id="line-52"><code>}</code></span>
+<span class="codeline" id="line-53"><code></code></span>
+<span class="codeline" id="line-54"><code><span class="comment">// Start launches the TCP server and begins listening for incoming connections.</span></code></span>
+<span class="codeline" id="line-55"><code><span class="keyword">func</span> (<label for="r5" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r6" class="ident">Start</label>() <a href="../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-56"><code>	<label for="r7" class="ident">listener</label>, <label for="r8" class="ident">err</label> := <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/dial.go.html#line-837" class="ident">Listen</a>(<a href="#line-13" class="ident">connectionType</a>, <label for="r5" class="ident">s</label>.<a href="#line-26" class="ident">Address</a>)</code></span>
+<span class="codeline" id="line-57"><code>	<span class="keyword">if</span> <label for="r8" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-58"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to start server: %w"</span>, <label for="r8" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-59"><code>	}</code></span>
+<span class="codeline" id="line-60"><code></code></span>
+<span class="codeline" id="line-61"><code>	<label for="r5" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> = &amp;<label for="r7" class="ident">listener</label></code></span>
+<span class="codeline" id="line-62"><code></code></span>
+<span class="codeline" id="line-63"><code>	<span class="comment">// fmt.Printf("Server is listening on %s\n", s.Address)</span></code></span>
+<span class="codeline" id="line-64"><code>	<a href="../../../pkg/inverse-battleships-server/logging.html" class="ident i2">logging</a>.<a href="../logging/logging.go.html#line-185" class="ident">Info</a>(<a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/print.go.html#line-237" class="ident">Sprintf</a>(<span class="lit-string">"Server is listening on %s"</span>, <label for="r5" class="ident">s</label>.<a href="#line-26" class="ident">Address</a>))</code></span>
+<span class="codeline" id="line-65"><code></code></span>
+<span class="codeline" id="line-66"><code>	<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-67"><code>}</code></span>
+<span class="codeline" id="line-68"><code></code></span>
+<span class="codeline" id="line-69"><code><span class="comment">// Stop stops the TCP server and closes the listener.</span></code></span>
+<span class="codeline" id="line-70"><code><span class="keyword">func</span> (<label for="r9" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r10" class="ident">Stop</label>() <a href="../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-71"><code>	<span class="comment">// sanity check</span></code></span>
+<span class="codeline" id="line-72"><code>	<span class="keyword">if</span> <label for="r9" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> == <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-73"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"server is not running"</span>)</code></span>
+<span class="codeline" id="line-74"><code>	}</code></span>
+<span class="codeline" id="line-75"><code></code></span>
+<span class="codeline" id="line-76"><code>	<label for="r11" class="ident">err</label> := (*<label for="r9" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a>).<a href="../../net/net.go.html#line-408" class="ident">Close</a>()</code></span>
+<span class="codeline" id="line-77"><code>	<span class="keyword">if</span> <label for="r11" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-78"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to stop server: %w"</span>, <label for="r11" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-79"><code>	}</code></span>
+<span class="codeline" id="line-80"><code></code></span>
+<span class="codeline" id="line-81"><code>	<span class="comment">// fmt.Println("Server has been stopped")</span></code></span>
+<span class="codeline" id="line-82"><code>	<a href="../../../pkg/inverse-battleships-server/logging.html" class="ident i2">logging</a>.<a href="../logging/logging.go.html#line-185" class="ident">Info</a>(<span class="lit-string">"Server has been stopped"</span>)</code></span>
+<span class="codeline" id="line-83"><code></code></span>
+<span class="codeline" id="line-84"><code>	<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-85"><code>}</code></span>
+<span class="codeline" id="line-86"><code></code></span>
+<span class="codeline" id="line-87"><code><span class="comment">// AcceptConnection accepts a new connection from a client.</span></code></span>
+<span class="codeline" id="line-88"><code><span class="keyword">func</span> (<label for="r12" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r13" class="ident">AcceptConnection</label>() (<a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-119" class="ident">Conn</a>, <a href="../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-89"><code>	<span class="comment">// sanity check</span></code></span>
+<span class="codeline" id="line-90"><code>	<span class="keyword">if</span> <label for="r12" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> == <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-91"><code>		<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"server is not running"</span>)</code></span>
+<span class="codeline" id="line-92"><code>	}</code></span>
+<span class="codeline" id="line-93"><code></code></span>
+<span class="codeline" id="line-94"><code>	<span class="comment">// set timeout for accepting connections</span></code></span>
+<span class="codeline" id="line-95"><code>	(*<label for="r12" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a>).(*<a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/tcpsock.go.html#line-336" class="ident">TCPListener</a>).<a href="../../net/tcpsock.go.html#line-398" class="ident">SetDeadline</a>(<a href="../../../pkg/time.html" class="ident i5">time</a>.<a href="../../time/time.go.html#line-1159" class="ident">Now</a>().<a href="../../time/time.go.html#line-886" class="ident">Add</a>(<a href="#line-22" class="ident">connectionTimeout</a>))</code></span>
+<span class="codeline" id="line-96"><code></code></span>
+<span class="codeline" id="line-97"><code>	<label for="r14" class="ident">conn</label>, <label for="r15" class="ident">err</label> := (*<label for="r12" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a>).<a href="../../net/net.go.html#line-404" class="ident">Accept</a>()</code></span>
+<span class="codeline" id="line-98"><code>	<span class="keyword">if</span> <label for="r15" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-99"><code>		<span class="comment">// gracefully handle timeout</span></code></span>
+<span class="codeline" id="line-100"><code>		<span class="keyword">var</span> <label for="r16" class="ident">nErr</label> <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-415" class="ident">Error</a></code></span>
+<span class="codeline" id="line-101"><code>		<span class="keyword">if</span> <a href="../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../errors/wrap.go.html#line-97" class="ident">As</a>(<label for="r15" class="ident">err</label>, &amp;<label for="r16" class="ident">nErr</label>) &amp;&amp; <label for="r16" class="ident">nErr</label>.<a href="../../net/net.go.html#line-417" class="ident">Timeout</a>() {</code></span>
+<span class="codeline" id="line-102"><code>			<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <label for="r15" class="ident">err</label></code></span>
+<span class="codeline" id="line-103"><code>		}</code></span>
+<span class="codeline" id="line-104"><code></code></span>
+<span class="codeline" id="line-105"><code>		<span class="comment">// some other error occurred</span></code></span>
+<span class="codeline" id="line-106"><code>		<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to accept connection: %w"</span>, <label for="r15" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-107"><code>	}</code></span>
+<span class="codeline" id="line-108"><code></code></span>
+<span class="codeline" id="line-109"><code>	<span class="keyword">return</span> <label for="r14" class="ident">conn</label>, <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-110"><code>}</code></span>
+<span class="codeline" id="line-111"><code></code></span>
+<span class="codeline" id="line-112"><code><span class="comment">// CloseConnection closes the connection with the client.</span></code></span>
+<span class="codeline" id="line-113"><code><span class="keyword">func</span> (<label for="r17" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r18" class="ident">CloseConnection</label>(<label for="r19" class="ident">conn</label> <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-119" class="ident">Conn</a>) <a href="../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-114"><code>	<span class="comment">// sanity check</span></code></span>
+<span class="codeline" id="line-115"><code>	<span class="keyword">if</span> <label for="r17" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> == <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-116"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"server is not running"</span>)</code></span>
+<span class="codeline" id="line-117"><code>	}</code></span>
+<span class="codeline" id="line-118"><code></code></span>
+<span class="codeline" id="line-119"><code>	<label for="r20" class="ident">err</label> := <label for="r19" class="ident">conn</label>.<a href="../../net/net.go.html#line-132" class="ident">Close</a>()</code></span>
+<span class="codeline" id="line-120"><code>	<span class="keyword">if</span> <label for="r20" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-121"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to close connection: %w"</span>, <label for="r20" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-122"><code>	}</code></span>
+<span class="codeline" id="line-123"><code></code></span>
+<span class="codeline" id="line-124"><code>	<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-125"><code>}</code></span>
+<span class="codeline" id="line-126"><code></code></span>
+<span class="codeline" id="line-127"><code><span class="comment">// ReadMessage reads a message from the client.</span></code></span>
+<span class="codeline" id="line-128"><code><span class="keyword">func</span> (<label for="r21" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r22" class="ident">ReadMessage</label>(<label for="r23" class="ident">conn</label> <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-119" class="ident">Conn</a>) (<a href="../../../pkg/builtin.html#name-string" class="ident">string</a>, <a href="../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-129"><code>	<span class="comment">// sanity check</span></code></span>
+<span class="codeline" id="line-130"><code>	<span class="keyword">if</span> <label for="r21" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> == <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-131"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"server is not running"</span>)</code></span>
+<span class="codeline" id="line-132"><code>	}</code></span>
+<span class="codeline" id="line-133"><code></code></span>
+<span class="codeline" id="line-134"><code>	<span class="comment">// set timeout for reading messages</span></code></span>
+<span class="codeline" id="line-135"><code>	<label for="r23" class="ident">conn</label>.<a href="../../net/net.go.html#line-166" class="ident">SetReadDeadline</a>(<a href="../../../pkg/time.html" class="ident i5">time</a>.<a href="../../time/time.go.html#line-1159" class="ident">Now</a>().<a href="../../time/time.go.html#line-886" class="ident">Add</a>(<a href="#line-19" class="ident">timeout</a>))</code></span>
+<span class="codeline" id="line-136"><code></code></span>
+<span class="codeline" id="line-137"><code>	<span class="comment">// NOTE maybe make buffer size dynamic based on message type</span></code></span>
+<span class="codeline" id="line-138"><code>	<label for="r24" class="ident">buffer</label> := <a href="../../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../../pkg/builtin.html#name-byte" class="ident">byte</a>, <a href="#line-16" class="ident">bufferSize</a>)</code></span>
+<span class="codeline" id="line-139"><code>	<label for="r25" class="ident">n</label>, <label for="r26" class="ident">err</label> := <label for="r23" class="ident">conn</label>.<a href="../../net/net.go.html#line-123" class="ident">Read</a>(<label for="r24" class="ident">buffer</label>)</code></span>
+<span class="codeline" id="line-140"><code>	<span class="keyword">if</span> <label for="r26" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-141"><code>		<span class="comment">// gracefully handle timeout</span></code></span>
+<span class="codeline" id="line-142"><code>		<span class="keyword">var</span> <label for="r27" class="ident">nErr</label> <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-415" class="ident">Error</a></code></span>
+<span class="codeline" id="line-143"><code>		<span class="keyword">if</span> <a href="../../../pkg/errors.html" class="ident i0">errors</a>.<a href="../../errors/wrap.go.html#line-97" class="ident">As</a>(<label for="r26" class="ident">err</label>, &amp;<label for="r27" class="ident">nErr</label>) &amp;&amp; <label for="r27" class="ident">nErr</label>.<a href="../../net/net.go.html#line-417" class="ident">Timeout</a>() {</code></span>
+<span class="codeline" id="line-144"><code>			<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r26" class="ident">err</label></code></span>
+<span class="codeline" id="line-145"><code>		}</code></span>
+<span class="codeline" id="line-146"><code></code></span>
+<span class="codeline" id="line-147"><code>		<span class="comment">// some other error occurred</span></code></span>
+<span class="codeline" id="line-148"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to read message: %w"</span>, <label for="r26" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-149"><code>	}</code></span>
+<span class="codeline" id="line-150"><code></code></span>
+<span class="codeline" id="line-151"><code>	<a href="../../../pkg/inverse-battleships-server/logging.html" class="ident i2">logging</a>.<a href="../logging/logging.go.html#line-180" class="ident">Debug</a>(<a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/print.go.html#line-237" class="ident">Sprintf</a>(<span class="lit-string">"Received message: \"%s\" from %s"</span>, <a href="#line-31" class="ident">escapeSpecialSymbols</a>(<a href="../../../pkg/builtin.html#name-string" class="ident">string</a>(<label for="r24" class="ident">buffer</label>[:<label for="r25" class="ident">n</label>])), <label for="r23" class="ident">conn</label>.<a href="../../net/net.go.html#line-138" class="ident">RemoteAddr</a>().<a href="../../net/net.go.html#line-113" class="ident">String</a>()))</code></span>
+<span class="codeline" id="line-152"><code>	<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-string" class="ident">string</a>(<label for="r24" class="ident">buffer</label>[:<label for="r25" class="ident">n</label>]), <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-153"><code>}</code></span>
+<span class="codeline" id="line-154"><code></code></span>
+<span class="codeline" id="line-155"><code><span class="comment">// SendMessage sends a message to the client.</span></code></span>
+<span class="codeline" id="line-156"><code><span class="keyword">func</span> (<label for="r28" class="ident">s</label> *<a href="#line-25" class="ident">Server</a>) <label for="r29" class="ident">SendMessage</label>(<label for="r30" class="ident">conn</label> <a href="../../../pkg/net.html" class="ident i3">net</a>.<a href="../../net/net.go.html#line-119" class="ident">Conn</a>, <label for="r31" class="ident">message</label> <a href="../../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-157"><code>	<span class="comment">// sanity check</span></code></span>
+<span class="codeline" id="line-158"><code>	<span class="keyword">if</span> <label for="r28" class="ident">s</label>.<a href="#line-27" class="ident">p_listener</a> == <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-159"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"server is not running"</span>)</code></span>
+<span class="codeline" id="line-160"><code>	} <span class="keyword">else</span> <span class="keyword">if</span> <a href="../../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r31" class="ident">message</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-161"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"message is empty"</span>)</code></span>
+<span class="codeline" id="line-162"><code>	}</code></span>
+<span class="codeline" id="line-163"><code></code></span>
+<span class="codeline" id="line-164"><code>	<span class="comment">// check if message is too long</span></code></span>
+<span class="codeline" id="line-165"><code>	<span class="keyword">if</span> <a href="../../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r31" class="ident">message</label>) &gt; <a href="#line-16" class="ident">bufferSize</a> {</code></span>
+<span class="codeline" id="line-166"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"message is too long"</span>)</code></span>
+<span class="codeline" id="line-167"><code>	}</code></span>
+<span class="codeline" id="line-168"><code></code></span>
+<span class="codeline" id="line-169"><code>	<label for="r32" class="ident">_</label>, <label for="r33" class="ident">err</label> := <label for="r30" class="ident">conn</label>.<a href="../../net/net.go.html#line-128" class="ident">Write</a>([]<a href="../../../pkg/builtin.html#name-byte" class="ident">byte</a>(<label for="r31" class="ident">message</label>))</code></span>
+<span class="codeline" id="line-170"><code>	<span class="keyword">if</span> <label for="r33" class="ident">err</label> != <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-171"><code>		<span class="keyword">return</span> <a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/errors.go.html#line-22" class="ident">Errorf</a>(<span class="lit-string">"failed to send message: %w"</span>, <label for="r33" class="ident">err</label>)</code></span>
+<span class="codeline" id="line-172"><code>	}</code></span>
+<span class="codeline" id="line-173"><code></code></span>
+<span class="codeline" id="line-174"><code>	<a href="../../../pkg/inverse-battleships-server/logging.html" class="ident i2">logging</a>.<a href="../logging/logging.go.html#line-180" class="ident">Debug</a>(<a href="../../../pkg/fmt.html" class="ident i1">fmt</a>.<a href="../../fmt/print.go.html#line-237" class="ident">Sprintf</a>(<span class="lit-string">"Sent message: \"%s\" to %s"</span>, <a href="#line-31" class="ident">escapeSpecialSymbols</a>(<label for="r31" class="ident">message</label>), <label for="r30" class="ident">conn</label>.<a href="../../net/net.go.html#line-138" class="ident">RemoteAddr</a>().<a href="../../net/net.go.html#line-113" class="ident">String</a>()))</code></span>
+<span class="codeline" id="line-175"><code>	<span class="keyword">return</span> <a href="../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-176"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

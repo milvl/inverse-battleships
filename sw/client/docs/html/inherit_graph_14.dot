@@ -1,0 +1,18 @@
+digraph "Graphical Class Hierarchy"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node14 [label="ABC",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip=" "];
+  Node14 -> Node0 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node0 [label="RectText",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classprimitives_1_1RectText.html",tooltip=" "];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="MenuOption",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classprimitives_1_1MenuOption.html",tooltip=" "];
+  Node0 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="MenuTitle",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classprimitives_1_1MenuTitle.html",tooltip=" "];
+  Node0 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="TextInput",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classprimitives_1_1TextInput.html",tooltip=" "];
+  Node14 -> Node19 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node19 [label="Viewport",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classviewport_1_1Viewport.html",tooltip=" "];
+}

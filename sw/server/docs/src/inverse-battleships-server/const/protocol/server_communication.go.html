@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: server_communication.go in package inverse-battleships-server/const/protocol</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	server_communication.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html">inverse-battleships-server/const/protocol</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="keyword">package</span> protocol</code></span>
+<span class="codeline" id="line-2"><code></code></span>
+<span class="codeline" id="line-3"><code><span class="keyword">import</span> <label for="i0"><span class="lit-string i0">"time"</span></label></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="comment">// validCmds is a list of valid commands.</span></code></span>
+<span class="codeline" id="line-6"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-7"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdHandshakeReqv" class="ident">CmdHandshakeReqv</a>  = <span class="lit-string">"HAND"</span>     <span class="comment">// 0</span></code></span>
+<span class="codeline" id="line-8"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdHandshakeResp" class="ident">CmdHandshakeResp</a>  = <span class="lit-string">"SHAKE"</span>    <span class="comment">// 1</span></code></span>
+<span class="codeline" id="line-9"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdHandshakeAck" class="ident">CmdHandshakeAck</a>   = <span class="lit-string">"DEAL"</span>     <span class="comment">// 2</span></code></span>
+<span class="codeline" id="line-10"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdPing" class="ident">CmdPing</a>           = <span class="lit-string">"PING"</span>     <span class="comment">// 3</span></code></span>
+<span class="codeline" id="line-11"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdPong" class="ident">CmdPong</a>           = <span class="lit-string">"PONG"</span>     <span class="comment">// 4</span></code></span>
+<span class="codeline" id="line-12"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdLeave" class="ident">CmdLeave</a>          = <span class="lit-string">"LEAVE"</span>    <span class="comment">// 5</span></code></span>
+<span class="codeline" id="line-13"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdLeaveAck" class="ident">CmdLeaveAck</a>       = <span class="lit-string">"BYE"</span>      <span class="comment">// 6</span></code></span>
+<span class="codeline" id="line-14"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdLobbies" class="ident">CmdLobbies</a>        = <span class="lit-string">"LOBBIES"</span>  <span class="comment">// 7</span></code></span>
+<span class="codeline" id="line-15"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdCreateLobby" class="ident">CmdCreateLobby</a>    = <span class="lit-string">"CREATE"</span>   <span class="comment">// 8</span></code></span>
+<span class="codeline" id="line-16"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdJoinLobby" class="ident">CmdJoinLobby</a>      = <span class="lit-string">"BRING_IT"</span> <span class="comment">// 9</span></code></span>
+<span class="codeline" id="line-17"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdCreateLobbyAck" class="ident">CmdCreateLobbyAck</a> = <span class="lit-string">"PAIRING"</span>  <span class="comment">// 10</span></code></span>
+<span class="codeline" id="line-18"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdJoinLobbyAck" class="ident">CmdJoinLobbyAck</a>   = <span class="lit-string">"PAIRED"</span>   <span class="comment">// 11</span></code></span>
+<span class="codeline" id="line-19"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdClientReady" class="ident">CmdClientReady</a>    = <span class="lit-string">"READY"</span>    <span class="comment">// 12</span></code></span>
+<span class="codeline" id="line-20"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdPlayerTurn" class="ident">CmdPlayerTurn</a>     = <span class="lit-string">"TURN"</span>     <span class="comment">// 13</span></code></span>
+<span class="codeline" id="line-21"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdTKO" class="ident">CmdTKO</a>            = <span class="lit-string">"TKO"</span>      <span class="comment">// 14</span></code></span>
+<span class="codeline" id="line-22"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdAction" class="ident">CmdAction</a>         = <span class="lit-string">"ACTION"</span>   <span class="comment">// 15</span></code></span>
+<span class="codeline" id="line-23"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdBoard" class="ident">CmdBoard</a>          = <span class="lit-string">"BOARD"</span>    <span class="comment">// 16</span></code></span>
+<span class="codeline" id="line-24"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdWin" class="ident">CmdWin</a>            = <span class="lit-string">"WIN"</span>      <span class="comment">// 17</span></code></span>
+<span class="codeline" id="line-25"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdLose" class="ident">CmdLose</a>           = <span class="lit-string">"LOST"</span>     <span class="comment">// 18</span></code></span>
+<span class="codeline" id="line-26"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdWait" class="ident">CmdWait</a>           = <span class="lit-string">"WAIT"</span>     <span class="comment">// 19</span></code></span>
+<span class="codeline" id="line-27"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdWaiting" class="ident">CmdWaiting</a>        = <span class="lit-string">"WAITING"</span>  <span class="comment">// 20</span></code></span>
+<span class="codeline" id="line-28"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdContinue" class="ident">CmdContinue</a>       = <span class="lit-string">"CONTINUE"</span> <span class="comment">// 21</span></code></span>
+<span class="codeline" id="line-29"><code>)</code></span>
+<span class="codeline" id="line-30"><code></code></span>
+<span class="codeline" id="line-31"><code><span class="comment">// validCmdsMap is a map of valid commands.</span></code></span>
+<span class="codeline" id="line-32"><code><span class="keyword">var</span> <a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-validCmdsMap" class="ident">validCmdsMap</a> = <span class="keyword">map</span>[<a href="../../../../pkg/builtin.html#name-string" class="ident">string</a>]<a href="../../../../pkg/builtin.html#name-int" class="ident">int</a>{</code></span>
+<span class="codeline" id="line-33"><code>	<a href="#line-7" class="ident">CmdHandshakeReqv</a>:  <span class="lit-number">0</span>,</code></span>
+<span class="codeline" id="line-34"><code>	<a href="#line-8" class="ident">CmdHandshakeResp</a>:  <span class="lit-number">1</span>,</code></span>
+<span class="codeline" id="line-35"><code>	<a href="#line-9" class="ident">CmdHandshakeAck</a>:   <span class="lit-number">2</span>,</code></span>
+<span class="codeline" id="line-36"><code>	<a href="#line-10" class="ident">CmdPing</a>:           <span class="lit-number">3</span>,</code></span>
+<span class="codeline" id="line-37"><code>	<a href="#line-11" class="ident">CmdPong</a>:           <span class="lit-number">4</span>,</code></span>
+<span class="codeline" id="line-38"><code>	<a href="#line-12" class="ident">CmdLeave</a>:          <span class="lit-number">5</span>,</code></span>
+<span class="codeline" id="line-39"><code>	<a href="#line-13" class="ident">CmdLeaveAck</a>:       <span class="lit-number">6</span>,</code></span>
+<span class="codeline" id="line-40"><code>	<a href="#line-14" class="ident">CmdLobbies</a>:        <span class="lit-number">7</span>,</code></span>
+<span class="codeline" id="line-41"><code>	<a href="#line-15" class="ident">CmdCreateLobby</a>:    <span class="lit-number">8</span>,</code></span>
+<span class="codeline" id="line-42"><code>	<a href="#line-16" class="ident">CmdJoinLobby</a>:      <span class="lit-number">9</span>,</code></span>
+<span class="codeline" id="line-43"><code>	<a href="#line-17" class="ident">CmdCreateLobbyAck</a>: <span class="lit-number">10</span>,</code></span>
+<span class="codeline" id="line-44"><code>	<a href="#line-18" class="ident">CmdJoinLobbyAck</a>:   <span class="lit-number">11</span>,</code></span>
+<span class="codeline" id="line-45"><code>	<a href="#line-19" class="ident">CmdClientReady</a>:    <span class="lit-number">12</span>,</code></span>
+<span class="codeline" id="line-46"><code>	<a href="#line-20" class="ident">CmdPlayerTurn</a>:     <span class="lit-number">13</span>,</code></span>
+<span class="codeline" id="line-47"><code>	<a href="#line-21" class="ident">CmdTKO</a>:            <span class="lit-number">14</span>,</code></span>
+<span class="codeline" id="line-48"><code>	<a href="#line-22" class="ident">CmdAction</a>:         <span class="lit-number">15</span>,</code></span>
+<span class="codeline" id="line-49"><code>	<a href="#line-23" class="ident">CmdBoard</a>:          <span class="lit-number">16</span>,</code></span>
+<span class="codeline" id="line-50"><code>	<a href="#line-24" class="ident">CmdWin</a>:            <span class="lit-number">17</span>,</code></span>
+<span class="codeline" id="line-51"><code>	<a href="#line-25" class="ident">CmdLose</a>:           <span class="lit-number">18</span>,</code></span>
+<span class="codeline" id="line-52"><code>	<a href="#line-26" class="ident">CmdWait</a>:           <span class="lit-number">19</span>,</code></span>
+<span class="codeline" id="line-53"><code>	<a href="#line-27" class="ident">CmdWaiting</a>:        <span class="lit-number">20</span>,</code></span>
+<span class="codeline" id="line-54"><code>	<a href="#line-28" class="ident">CmdContinue</a>:       <span class="lit-number">21</span>,</code></span>
+<span class="codeline" id="line-55"><code>}</code></span>
+<span class="codeline" id="line-56"><code></code></span>
+<span class="codeline" id="line-57"><code><span class="comment">// lobbyStates is a list of lobby statuses.</span></code></span>
+<span class="codeline" id="line-58"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-59"><code>	<span class="comment">// LobbyStateUnititialized is value used for uninitialized states.</span></code></span>
+<span class="codeline" id="line-60"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateUnititialized" class="ident">LobbyStateUnititialized</a> <a href="../../../../pkg/builtin.html#name-uint8" class="ident">uint8</a> = <a href="../../../../pkg/builtin.html#name-iota" class="ident">iota</a></code></span>
+<span class="codeline" id="line-61"><code>	<span class="comment">// LobbyStateCreated is the initial state of a lobby before adding any players.</span></code></span>
+<span class="codeline" id="line-62"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateCreated" class="ident">LobbyStateCreated</a></code></span>
+<span class="codeline" id="line-63"><code>	<span class="comment">// LobbyStateWaiting is the state of a lobby when one player is in, waiting for another.</span></code></span>
+<span class="codeline" id="line-64"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateWaiting" class="ident">LobbyStateWaiting</a></code></span>
+<span class="codeline" id="line-65"><code>	<span class="comment">// LobbyStatePaired is the state of a lobby when second player joins.</span></code></span>
+<span class="codeline" id="line-66"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePaired" class="ident">LobbyStatePaired</a></code></span>
+<span class="codeline" id="line-67"><code>	<span class="comment">// LobbyStateUnready is the state of a lobby when both players are in, but did not send ready.</span></code></span>
+<span class="codeline" id="line-68"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateUnready" class="ident">LobbyStateUnready</a></code></span>
+<span class="codeline" id="line-69"><code>	<span class="comment">// LobbyStatePlayer01Turn is the state of a lobby when player 01 should receive a turn message.</span></code></span>
+<span class="codeline" id="line-70"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer01Turn" class="ident">LobbyStatePlayer01Turn</a></code></span>
+<span class="codeline" id="line-71"><code>	<span class="comment">// LobbyStatePlayer01Playing is the state of a lobby when player 01 is playing.</span></code></span>
+<span class="codeline" id="line-72"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer01Playing" class="ident">LobbyStatePlayer01Playing</a></code></span>
+<span class="codeline" id="line-73"><code>	<span class="comment">// LobbyStatePlayer01Played is the state of a lobby when player 01 played and board should be sent to both players.</span></code></span>
+<span class="codeline" id="line-74"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer01Played" class="ident">LobbyStatePlayer01Played</a></code></span>
+<span class="codeline" id="line-75"><code>	<span class="comment">// LobbyStatePlayer02Turn is the state of a lobby when player 02 should receive a turn message.</span></code></span>
+<span class="codeline" id="line-76"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer02Turn" class="ident">LobbyStatePlayer02Turn</a></code></span>
+<span class="codeline" id="line-77"><code>	<span class="comment">// LobbyStatePlayer02Playing is the state of a lobby when player 02 is playing.</span></code></span>
+<span class="codeline" id="line-78"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer02Playing" class="ident">LobbyStatePlayer02Playing</a></code></span>
+<span class="codeline" id="line-79"><code>	<span class="comment">// LobbyStatePlayer02Played is the state of a lobby when player 02 played and board should be sent to both players.</span></code></span>
+<span class="codeline" id="line-80"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayer02Played" class="ident">LobbyStatePlayer02Played</a></code></span>
+<span class="codeline" id="line-81"><code>	<span class="comment">// LobbyStateInterrupt is the state of a lobby when a player disconnects.</span></code></span>
+<span class="codeline" id="line-82"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateInterrupt" class="ident">LobbyStateInterrupt</a></code></span>
+<span class="codeline" id="line-83"><code>	<span class="comment">// LobbyStateInterrupted is the state of a lobby waiting for players to reconnect.</span></code></span>
+<span class="codeline" id="line-84"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateInterrupted" class="ident">LobbyStateInterrupted</a></code></span>
+<span class="codeline" id="line-85"><code>	<span class="comment">// LobbyStatePlayerReconnected is the state of a lobby when a player reconnects and has to receive the board and wait message.</span></code></span>
+<span class="codeline" id="line-86"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStatePlayerReconnected" class="ident">LobbyStatePlayerReconnected</a></code></span>
+<span class="codeline" id="line-87"><code>	<span class="comment">// LobbyStateContinue is the state of a lobby when all players are ready to continue and previous state should be restored.</span></code></span>
+<span class="codeline" id="line-88"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateContinue" class="ident">LobbyStateContinue</a></code></span>
+<span class="codeline" id="line-89"><code>	<span class="comment">// LobbyStateFinished is the state of a lobby when the game ends expectedly.</span></code></span>
+<span class="codeline" id="line-90"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateFinished" class="ident">LobbyStateFinished</a></code></span>
+<span class="codeline" id="line-91"><code>	<span class="comment">// LobbyStateFail is the state of a lobby when the game ends unexpectedly.</span></code></span>
+<span class="codeline" id="line-92"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyStateFail" class="ident">LobbyStateFail</a></code></span>
+<span class="codeline" id="line-93"><code>)</code></span>
+<span class="codeline" id="line-94"><code></code></span>
+<span class="codeline" id="line-95"><code><span class="comment">// IsValidCmd checks if a command is valid.</span></code></span>
+<span class="codeline" id="line-96"><code><span class="keyword">func</span> <label for="r0" class="ident"><a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-IsValidCmd" class="ident">IsValidCmd</a></label>(<label for="r1" class="ident">cmd</label> <a href="../../../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../../../pkg/builtin.html#name-bool" class="ident">bool</a> {</code></span>
+<span class="codeline" id="line-97"><code>	<label for="r2" class="ident">_</label>, <label for="r3" class="ident">ok</label> := <a href="#line-32" class="ident">validCmdsMap</a>[<label for="r1" class="ident">cmd</label>]</code></span>
+<span class="codeline" id="line-98"><code>	<span class="keyword">return</span> <label for="r3" class="ident">ok</label></code></span>
+<span class="codeline" id="line-99"><code>}</code></span>
+<span class="codeline" id="line-100"><code></code></span>
+<span class="codeline" id="line-101"><code><span class="comment">// constants for the message header and commands</span></code></span>
+<span class="codeline" id="line-102"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-103"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-MsgDelimiter" class="ident">MsgDelimiter</a>          = <span class="lit-string">";"</span></code></span>
+<span class="codeline" id="line-104"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-MsgTerminator" class="ident">MsgTerminator</a>         = <span class="lit-string">"\n"</span></code></span>
+<span class="codeline" id="line-105"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-MsgEscape" class="ident">MsgEscape</a>             = <span class="lit-string">"\\"</span></code></span>
+<span class="codeline" id="line-106"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-MsgHeader" class="ident">MsgHeader</a>             = <span class="lit-string">"IBGAME"</span></code></span>
+<span class="codeline" id="line-107"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-NumDelimiter" class="ident">NumDelimiter</a>          = <span class="lit-string">":"</span></code></span>
+<span class="codeline" id="line-108"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-SeqDelimiter" class="ident">SeqDelimiter</a>          = <span class="lit-string">","</span></code></span>
+<span class="codeline" id="line-109"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardSize" class="ident">BoardSize</a>             = <span class="lit-number">9</span></code></span>
+<span class="codeline" id="line-110"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellFree" class="ident">BoardCellFree</a>         = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-111"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellOwner" class="ident">BoardCellOwner</a>        = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-112"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellPlayer01" class="ident">BoardCellPlayer01</a>     = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-113"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellPlayer02" class="ident">BoardCellPlayer02</a>     = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-114"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellBoat" class="ident">BoardCellBoat</a>         = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-115"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellOwnerLost" class="ident">BoardCellOwnerLost</a>    = -<span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-116"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellOpponentLost" class="ident">BoardCellOpponentLost</a> = -<span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-117"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellPlayer01Lost" class="ident">BoardCellPlayer01Lost</a> = -<span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-118"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardCellPlayer02Lost" class="ident">BoardCellPlayer02Lost</a> = -<span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-119"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-BoardBoatsCount" class="ident">BoardBoatsCount</a>       = <span class="lit-number">11</span></code></span>
+<span class="codeline" id="line-120"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-HeaderPartIndex" class="ident">HeaderPartIndex</a>       = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-121"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CmdPartIndex" class="ident">CmdPartIndex</a>          = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-122"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-MinPartsCount" class="ident">MinPartsCount</a>         = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-123"><code>	<span class="comment">// indexes for the IncomingMessage params slice</span></code></span>
+<span class="codeline" id="line-124"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-NicknameIndex" class="ident">NicknameIndex</a> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-125"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-LobbyIDIndex" class="ident">LobbyIDIndex</a>  = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-126"><code>	<a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-PositionIndex" class="ident">PositionIndex</a> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-127"><code>)</code></span>
+<span class="codeline" id="line-128"><code></code></span>
+<span class="codeline" id="line-129"><code><span class="comment">// CompleteMsgTimeout is the time to wait for a valid message.</span></code></span>
+<span class="codeline" id="line-130"><code><span class="keyword">const</span> <a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-CompleteMsgTimeout" class="ident">CompleteMsgTimeout</a> = <span class="lit-number">5</span> * <a href="../../../../pkg/time.html" class="ident i0">time</a>.<a href="../../../time/time.go.html#line-655" class="ident">Second</a></code></span>
+<span class="codeline" id="line-131"><code></code></span>
+<span class="codeline" id="line-132"><code><span class="comment">// KeepAliveTimeout is the time to wait for a keep-alive message.</span></code></span>
+<span class="codeline" id="line-133"><code><span class="keyword">const</span> <a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-KeepAliveTimeout" class="ident">KeepAliveTimeout</a> = <span class="lit-number">5</span> * <a href="../../../../pkg/time.html" class="ident i0">time</a>.<a href="../../../time/time.go.html#line-655" class="ident">Second</a></code></span>
+<span class="codeline" id="line-134"><code></code></span>
+<span class="codeline" id="line-135"><code><span class="comment">// PlayerReconnectTimeout is the time to wait for a player to reconnect.</span></code></span>
+<span class="codeline" id="line-136"><code><span class="keyword">const</span> <a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-PlayerReconnectTimeout" class="ident">PlayerReconnectTimeout</a> = <span class="lit-number">60</span> * <a href="../../../../pkg/time.html" class="ident i0">time</a>.<a href="../../../time/time.go.html#line-655" class="ident">Second</a></code></span>
+<span class="codeline" id="line-137"><code></code></span>
+<span class="codeline" id="line-138"><code><span class="comment">// PlayerCount is the number of players in a game.</span></code></span>
+<span class="codeline" id="line-139"><code><span class="keyword">const</span> <a href="../../../../pkg/inverse-battleships-server/const/protocol.html#name-PlayerCount" class="ident">PlayerCount</a> <a href="../../../../pkg/builtin.html#name-uint8" class="ident">uint8</a> = <span class="lit-number">2</span></code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: symlink_windows.go in package internal/syscall/windows</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	symlink_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../../pkg/internal/syscall/windows.html">internal/syscall/windows</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0
+{background: brown; color: #eed;}
+</style><input id="i0" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2018 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="keyword">package</span> windows</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">import</span> <label for="i0"><span class="lit-string i0">"syscall"</span></label></code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-10"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-ERROR_INVALID_PARAMETER" class="ident">ERROR_INVALID_PARAMETER</a> <a href="../../../../pkg/syscall.html" class="ident i0">syscall</a>.<a href="../../../syscall/syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">87</span></code></span>
+<span class="codeline" id="line-11"><code></code></span>
+<span class="codeline" id="line-12"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FILE_SUPPORTS_OBJECT_IDS" class="ident">FILE_SUPPORTS_OBJECT_IDS</a>      = <span class="lit-number">0x00010000</span></code></span>
+<span class="codeline" id="line-13"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FILE_SUPPORTS_OPEN_BY_FILE_ID" class="ident">FILE_SUPPORTS_OPEN_BY_FILE_ID</a> = <span class="lit-number">0x01000000</span></code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code>	<span class="comment">// symlink support for CreateSymbolicLink() starting with Windows 10 (1703, v10.0.14972)</span></code></span>
+<span class="codeline" id="line-16"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE" class="ident">SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE</a> = <span class="lit-number">0x2</span></code></span>
+<span class="codeline" id="line-17"><code></code></span>
+<span class="codeline" id="line-18"><code>	<span class="comment">// FileInformationClass values</span></code></span>
+<span class="codeline" id="line-19"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileBasicInfo" class="ident">FileBasicInfo</a>                  = <span class="lit-number">0</span>    <span class="comment">// FILE_BASIC_INFO</span></code></span>
+<span class="codeline" id="line-20"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileStandardInfo" class="ident">FileStandardInfo</a>               = <span class="lit-number">1</span>    <span class="comment">// FILE_STANDARD_INFO</span></code></span>
+<span class="codeline" id="line-21"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileNameInfo" class="ident">FileNameInfo</a>                   = <span class="lit-number">2</span>    <span class="comment">// FILE_NAME_INFO</span></code></span>
+<span class="codeline" id="line-22"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileStreamInfo" class="ident">FileStreamInfo</a>                 = <span class="lit-number">7</span>    <span class="comment">// FILE_STREAM_INFO</span></code></span>
+<span class="codeline" id="line-23"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileCompressionInfo" class="ident">FileCompressionInfo</a>            = <span class="lit-number">8</span>    <span class="comment">// FILE_COMPRESSION_INFO</span></code></span>
+<span class="codeline" id="line-24"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileAttributeTagInfo" class="ident">FileAttributeTagInfo</a>           = <span class="lit-number">9</span>    <span class="comment">// FILE_ATTRIBUTE_TAG_INFO</span></code></span>
+<span class="codeline" id="line-25"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileIdBothDirectoryInfo" class="ident">FileIdBothDirectoryInfo</a>        = <span class="lit-number">0xa</span>  <span class="comment">// FILE_ID_BOTH_DIR_INFO</span></code></span>
+<span class="codeline" id="line-26"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileIdBothDirectoryRestartInfo" class="ident">FileIdBothDirectoryRestartInfo</a> = <span class="lit-number">0xb</span>  <span class="comment">// FILE_ID_BOTH_DIR_INFO</span></code></span>
+<span class="codeline" id="line-27"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileRemoteProtocolInfo" class="ident">FileRemoteProtocolInfo</a>         = <span class="lit-number">0xd</span>  <span class="comment">// FILE_REMOTE_PROTOCOL_INFO</span></code></span>
+<span class="codeline" id="line-28"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileFullDirectoryInfo" class="ident">FileFullDirectoryInfo</a>          = <span class="lit-number">0xe</span>  <span class="comment">// FILE_FULL_DIR_INFO</span></code></span>
+<span class="codeline" id="line-29"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileFullDirectoryRestartInfo" class="ident">FileFullDirectoryRestartInfo</a>   = <span class="lit-number">0xf</span>  <span class="comment">// FILE_FULL_DIR_INFO</span></code></span>
+<span class="codeline" id="line-30"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileStorageInfo" class="ident">FileStorageInfo</a>                = <span class="lit-number">0x10</span> <span class="comment">// FILE_STORAGE_INFO</span></code></span>
+<span class="codeline" id="line-31"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileAlignmentInfo" class="ident">FileAlignmentInfo</a>              = <span class="lit-number">0x11</span> <span class="comment">// FILE_ALIGNMENT_INFO</span></code></span>
+<span class="codeline" id="line-32"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileIdInfo" class="ident">FileIdInfo</a>                     = <span class="lit-number">0x12</span> <span class="comment">// FILE_ID_INFO</span></code></span>
+<span class="codeline" id="line-33"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileIdExtdDirectoryInfo" class="ident">FileIdExtdDirectoryInfo</a>        = <span class="lit-number">0x13</span> <span class="comment">// FILE_ID_EXTD_DIR_INFO</span></code></span>
+<span class="codeline" id="line-34"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FileIdExtdDirectoryRestartInfo" class="ident">FileIdExtdDirectoryRestartInfo</a> = <span class="lit-number">0x14</span> <span class="comment">// FILE_ID_EXTD_DIR_INFO</span></code></span>
+<span class="codeline" id="line-35"><code>)</code></span>
+<span class="codeline" id="line-36"><code></code></span>
+<span class="codeline" id="line-37"><code><span class="keyword">type</span> <a href="../../../../pkg/internal/syscall/windows.html#name-FILE_ATTRIBUTE_TAG_INFO" class="ident">FILE_ATTRIBUTE_TAG_INFO</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-38"><code>	FileAttributes <a href="../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-39"><code>	ReparseTag     <a href="../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-40"><code>}</code></span>
+<span class="codeline" id="line-41"><code></code></span>
+<span class="codeline" id="line-42"><code><span class="comment">//sys	GetFileInformationByHandleEx(handle syscall.Handle, class uint32, info *byte, bufsize uint32) (err error)</span></code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

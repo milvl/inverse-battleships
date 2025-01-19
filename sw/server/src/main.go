@@ -15,6 +15,7 @@ import (
 	"syscall"
 )
 
+// main function that starts the server and handles everything
 func main() {
 	// to handle signals
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

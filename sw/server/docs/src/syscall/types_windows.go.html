@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: types_windows.go in package syscall</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	types_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/syscall.html">syscall</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13]
+{background: #226; color: #ff8;}
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2011 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="keyword">package</span> syscall</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-8"><code>	<span class="comment">// Windows errors.</span></code></span>
+<span class="codeline" id="line-9"><code>	<a href="../../pkg/syscall.html#name-ERROR_FILE_NOT_FOUND" class="ident">ERROR_FILE_NOT_FOUND</a>      <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-10"><code>	<a href="../../pkg/syscall.html#name-ERROR_PATH_NOT_FOUND" class="ident">ERROR_PATH_NOT_FOUND</a>      <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-11"><code>	<a href="../../pkg/syscall.html#name-ERROR_ACCESS_DENIED" class="ident">ERROR_ACCESS_DENIED</a>       <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-12"><code>	<a href="../../pkg/syscall.html#name-ERROR_NO_MORE_FILES" class="ident">ERROR_NO_MORE_FILES</a>       <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">18</span></code></span>
+<span class="codeline" id="line-13"><code>	<a href="../../pkg/syscall.html#name-ERROR_HANDLE_EOF" class="ident">ERROR_HANDLE_EOF</a>          <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">38</span></code></span>
+<span class="codeline" id="line-14"><code>	<a href="../../pkg/syscall.html#name-ERROR_NETNAME_DELETED" class="ident">ERROR_NETNAME_DELETED</a>     <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">64</span></code></span>
+<span class="codeline" id="line-15"><code>	<a href="../../pkg/syscall.html#name-ERROR_FILE_EXISTS" class="ident">ERROR_FILE_EXISTS</a>         <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">80</span></code></span>
+<span class="codeline" id="line-16"><code>	<a href="../../pkg/syscall.html#name-ERROR_BROKEN_PIPE" class="ident">ERROR_BROKEN_PIPE</a>         <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">109</span></code></span>
+<span class="codeline" id="line-17"><code>	<a href="../../pkg/syscall.html#name-ERROR_BUFFER_OVERFLOW" class="ident">ERROR_BUFFER_OVERFLOW</a>     <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">111</span></code></span>
+<span class="codeline" id="line-18"><code>	<a href="../../pkg/syscall.html#name-ERROR_INSUFFICIENT_BUFFER" class="ident">ERROR_INSUFFICIENT_BUFFER</a> <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">122</span></code></span>
+<span class="codeline" id="line-19"><code>	<a href="../../pkg/syscall.html#name-ERROR_MOD_NOT_FOUND" class="ident">ERROR_MOD_NOT_FOUND</a>       <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">126</span></code></span>
+<span class="codeline" id="line-20"><code>	<a href="../../pkg/syscall.html#name-ERROR_PROC_NOT_FOUND" class="ident">ERROR_PROC_NOT_FOUND</a>      <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">127</span></code></span>
+<span class="codeline" id="line-21"><code>	<a href="../../pkg/syscall.html#name-ERROR_DIR_NOT_EMPTY" class="ident">ERROR_DIR_NOT_EMPTY</a>       <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">145</span></code></span>
+<span class="codeline" id="line-22"><code>	<a href="../../pkg/syscall.html#name-ERROR_ALREADY_EXISTS" class="ident">ERROR_ALREADY_EXISTS</a>      <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">183</span></code></span>
+<span class="codeline" id="line-23"><code>	<a href="../../pkg/syscall.html#name-ERROR_ENVVAR_NOT_FOUND" class="ident">ERROR_ENVVAR_NOT_FOUND</a>    <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">203</span></code></span>
+<span class="codeline" id="line-24"><code>	<a href="../../pkg/syscall.html#name-ERROR_MORE_DATA" class="ident">ERROR_MORE_DATA</a>           <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">234</span></code></span>
+<span class="codeline" id="line-25"><code>	<a href="../../pkg/syscall.html#name-ERROR_OPERATION_ABORTED" class="ident">ERROR_OPERATION_ABORTED</a>   <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">995</span></code></span>
+<span class="codeline" id="line-26"><code>	<a href="../../pkg/syscall.html#name-ERROR_IO_PENDING" class="ident">ERROR_IO_PENDING</a>          <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">997</span></code></span>
+<span class="codeline" id="line-27"><code>	<a href="../../pkg/syscall.html#name-ERROR_NOT_FOUND" class="ident">ERROR_NOT_FOUND</a>           <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">1168</span></code></span>
+<span class="codeline" id="line-28"><code>	<a href="../../pkg/syscall.html#name-ERROR_PRIVILEGE_NOT_HELD" class="ident">ERROR_PRIVILEGE_NOT_HELD</a>  <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">1314</span></code></span>
+<span class="codeline" id="line-29"><code>	<a href="../../pkg/syscall.html#name-WSAEACCES" class="ident">WSAEACCES</a>                 <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">10013</span></code></span>
+<span class="codeline" id="line-30"><code>	<a href="../../pkg/syscall.html#name-WSAENOPROTOOPT" class="ident">WSAENOPROTOOPT</a>            <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">10042</span></code></span>
+<span class="codeline" id="line-31"><code>	<a href="../../pkg/syscall.html#name-WSAECONNABORTED" class="ident">WSAECONNABORTED</a>           <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">10053</span></code></span>
+<span class="codeline" id="line-32"><code>	<a href="../../pkg/syscall.html#name-WSAECONNRESET" class="ident">WSAECONNRESET</a>             <a href="syscall_windows.go.html#line-129" class="ident">Errno</a> = <span class="lit-number">10054</span></code></span>
+<span class="codeline" id="line-33"><code>)</code></span>
+<span class="codeline" id="line-34"><code></code></span>
+<span class="codeline" id="line-35"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-36"><code>	<span class="comment">// Invented values to support what package os expects.</span></code></span>
+<span class="codeline" id="line-37"><code>	<a href="../../pkg/syscall.html#name-O_RDONLY" class="ident">O_RDONLY</a>   = <span class="lit-number">0x00000</span></code></span>
+<span class="codeline" id="line-38"><code>	<a href="../../pkg/syscall.html#name-O_WRONLY" class="ident">O_WRONLY</a>   = <span class="lit-number">0x00001</span></code></span>
+<span class="codeline" id="line-39"><code>	<a href="../../pkg/syscall.html#name-O_RDWR" class="ident">O_RDWR</a>     = <span class="lit-number">0x00002</span></code></span>
+<span class="codeline" id="line-40"><code>	<a href="../../pkg/syscall.html#name-O_CREAT" class="ident">O_CREAT</a>    = <span class="lit-number">0x00040</span></code></span>
+<span class="codeline" id="line-41"><code>	<a href="../../pkg/syscall.html#name-O_EXCL" class="ident">O_EXCL</a>     = <span class="lit-number">0x00080</span></code></span>
+<span class="codeline" id="line-42"><code>	<a href="../../pkg/syscall.html#name-O_NOCTTY" class="ident">O_NOCTTY</a>   = <span class="lit-number">0x00100</span></code></span>
+<span class="codeline" id="line-43"><code>	<a href="../../pkg/syscall.html#name-O_TRUNC" class="ident">O_TRUNC</a>    = <span class="lit-number">0x00200</span></code></span>
+<span class="codeline" id="line-44"><code>	<a href="../../pkg/syscall.html#name-O_NONBLOCK" class="ident">O_NONBLOCK</a> = <span class="lit-number">0x00800</span></code></span>
+<span class="codeline" id="line-45"><code>	<a href="../../pkg/syscall.html#name-O_APPEND" class="ident">O_APPEND</a>   = <span class="lit-number">0x00400</span></code></span>
+<span class="codeline" id="line-46"><code>	<a href="../../pkg/syscall.html#name-O_SYNC" class="ident">O_SYNC</a>     = <span class="lit-number">0x01000</span></code></span>
+<span class="codeline" id="line-47"><code>	<a href="../../pkg/syscall.html#name-O_ASYNC" class="ident">O_ASYNC</a>    = <span class="lit-number">0x02000</span></code></span>
+<span class="codeline" id="line-48"><code>	<a href="../../pkg/syscall.html#name-O_CLOEXEC" class="ident">O_CLOEXEC</a>  = <span class="lit-number">0x80000</span></code></span>
+<span class="codeline" id="line-49"><code>)</code></span>
+<span class="codeline" id="line-50"><code></code></span>
+<span class="codeline" id="line-51"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-52"><code>	<span class="comment">// More invented values for signals</span></code></span>
+<span class="codeline" id="line-53"><code>	<a href="../../pkg/syscall.html#name-SIGHUP" class="ident">SIGHUP</a>  = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x1</span>)</code></span>
+<span class="codeline" id="line-54"><code>	<a href="../../pkg/syscall.html#name-SIGINT" class="ident">SIGINT</a>  = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x2</span>)</code></span>
+<span class="codeline" id="line-55"><code>	<a href="../../pkg/syscall.html#name-SIGQUIT" class="ident">SIGQUIT</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x3</span>)</code></span>
+<span class="codeline" id="line-56"><code>	<a href="../../pkg/syscall.html#name-SIGILL" class="ident">SIGILL</a>  = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x4</span>)</code></span>
+<span class="codeline" id="line-57"><code>	<a href="../../pkg/syscall.html#name-SIGTRAP" class="ident">SIGTRAP</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x5</span>)</code></span>
+<span class="codeline" id="line-58"><code>	<a href="../../pkg/syscall.html#name-SIGABRT" class="ident">SIGABRT</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x6</span>)</code></span>
+<span class="codeline" id="line-59"><code>	<a href="../../pkg/syscall.html#name-SIGBUS" class="ident">SIGBUS</a>  = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x7</span>)</code></span>
+<span class="codeline" id="line-60"><code>	<a href="../../pkg/syscall.html#name-SIGFPE" class="ident">SIGFPE</a>  = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x8</span>)</code></span>
+<span class="codeline" id="line-61"><code>	<a href="../../pkg/syscall.html#name-SIGKILL" class="ident">SIGKILL</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0x9</span>)</code></span>
+<span class="codeline" id="line-62"><code>	<a href="../../pkg/syscall.html#name-SIGSEGV" class="ident">SIGSEGV</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0xb</span>)</code></span>
+<span class="codeline" id="line-63"><code>	<a href="../../pkg/syscall.html#name-SIGPIPE" class="ident">SIGPIPE</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0xd</span>)</code></span>
+<span class="codeline" id="line-64"><code>	<a href="../../pkg/syscall.html#name-SIGALRM" class="ident">SIGALRM</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0xe</span>)</code></span>
+<span class="codeline" id="line-65"><code>	<a href="../../pkg/syscall.html#name-SIGTERM" class="ident">SIGTERM</a> = <a href="syscall_windows.go.html#line-1300" class="ident">Signal</a>(<span class="lit-number">0xf</span>)</code></span>
+<span class="codeline" id="line-66"><code>)</code></span>
+<span class="codeline" id="line-67"><code></code></span>
+<span class="codeline" id="line-68"><code><span class="keyword">var</span> <a href="../../pkg/syscall.html#name-signals" class="ident">signals</a> = [...]<a href="../../pkg/builtin.html#name-string" class="ident">string</a>{</code></span>
+<span class="codeline" id="line-69"><code>	<span class="lit-number">1</span>:  <span class="lit-string">"hangup"</span>,</code></span>
+<span class="codeline" id="line-70"><code>	<span class="lit-number">2</span>:  <span class="lit-string">"interrupt"</span>,</code></span>
+<span class="codeline" id="line-71"><code>	<span class="lit-number">3</span>:  <span class="lit-string">"quit"</span>,</code></span>
+<span class="codeline" id="line-72"><code>	<span class="lit-number">4</span>:  <span class="lit-string">"illegal instruction"</span>,</code></span>
+<span class="codeline" id="line-73"><code>	<span class="lit-number">5</span>:  <span class="lit-string">"trace/breakpoint trap"</span>,</code></span>
+<span class="codeline" id="line-74"><code>	<span class="lit-number">6</span>:  <span class="lit-string">"aborted"</span>,</code></span>
+<span class="codeline" id="line-75"><code>	<span class="lit-number">7</span>:  <span class="lit-string">"bus error"</span>,</code></span>
+<span class="codeline" id="line-76"><code>	<span class="lit-number">8</span>:  <span class="lit-string">"floating point exception"</span>,</code></span>
+<span class="codeline" id="line-77"><code>	<span class="lit-number">9</span>:  <span class="lit-string">"killed"</span>,</code></span>
+<span class="codeline" id="line-78"><code>	<span class="lit-number">10</span>: <span class="lit-string">"user defined signal 1"</span>,</code></span>
+<span class="codeline" id="line-79"><code>	<span class="lit-number">11</span>: <span class="lit-string">"segmentation fault"</span>,</code></span>
+<span class="codeline" id="line-80"><code>	<span class="lit-number">12</span>: <span class="lit-string">"user defined signal 2"</span>,</code></span>
+<span class="codeline" id="line-81"><code>	<span class="lit-number">13</span>: <span class="lit-string">"broken pipe"</span>,</code></span>
+<span class="codeline" id="line-82"><code>	<span class="lit-number">14</span>: <span class="lit-string">"alarm clock"</span>,</code></span>
+<span class="codeline" id="line-83"><code>	<span class="lit-number">15</span>: <span class="lit-string">"terminated"</span>,</code></span>
+<span class="codeline" id="line-84"><code>}</code></span>
+<span class="codeline" id="line-85"><code></code></span>
+<span class="codeline" id="line-86"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-87"><code>	<a href="../../pkg/syscall.html#name-GENERIC_READ" class="ident">GENERIC_READ</a>    = <span class="lit-number">0x80000000</span></code></span>
+<span class="codeline" id="line-88"><code>	<a href="../../pkg/syscall.html#name-GENERIC_WRITE" class="ident">GENERIC_WRITE</a>   = <span class="lit-number">0x40000000</span></code></span>
+<span class="codeline" id="line-89"><code>	<a href="../../pkg/syscall.html#name-GENERIC_EXECUTE" class="ident">GENERIC_EXECUTE</a> = <span class="lit-number">0x20000000</span></code></span>
+<span class="codeline" id="line-90"><code>	<a href="../../pkg/syscall.html#name-GENERIC_ALL" class="ident">GENERIC_ALL</a>     = <span class="lit-number">0x10000000</span></code></span>
+<span class="codeline" id="line-91"><code></code></span>
+<span class="codeline" id="line-92"><code>	<a href="../../pkg/syscall.html#name-FILE_LIST_DIRECTORY" class="ident">FILE_LIST_DIRECTORY</a>   = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-93"><code>	<a href="../../pkg/syscall.html#name-FILE_APPEND_DATA" class="ident">FILE_APPEND_DATA</a>      = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-94"><code>	<a href="../../pkg/syscall.html#name-FILE_WRITE_ATTRIBUTES" class="ident">FILE_WRITE_ATTRIBUTES</a> = <span class="lit-number">0x00000100</span></code></span>
+<span class="codeline" id="line-95"><code></code></span>
+<span class="codeline" id="line-96"><code>	<a href="../../pkg/syscall.html#name-FILE_SHARE_READ" class="ident">FILE_SHARE_READ</a>              = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-97"><code>	<a href="../../pkg/syscall.html#name-FILE_SHARE_WRITE" class="ident">FILE_SHARE_WRITE</a>             = <span class="lit-number">0x00000002</span></code></span>
+<span class="codeline" id="line-98"><code>	<a href="../../pkg/syscall.html#name-FILE_SHARE_DELETE" class="ident">FILE_SHARE_DELETE</a>            = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-99"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_READONLY" class="ident">FILE_ATTRIBUTE_READONLY</a>      = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-100"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_HIDDEN" class="ident">FILE_ATTRIBUTE_HIDDEN</a>        = <span class="lit-number">0x00000002</span></code></span>
+<span class="codeline" id="line-101"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_SYSTEM" class="ident">FILE_ATTRIBUTE_SYSTEM</a>        = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-102"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_DIRECTORY" class="ident">FILE_ATTRIBUTE_DIRECTORY</a>     = <span class="lit-number">0x00000010</span></code></span>
+<span class="codeline" id="line-103"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_ARCHIVE" class="ident">FILE_ATTRIBUTE_ARCHIVE</a>       = <span class="lit-number">0x00000020</span></code></span>
+<span class="codeline" id="line-104"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_NORMAL" class="ident">FILE_ATTRIBUTE_NORMAL</a>        = <span class="lit-number">0x00000080</span></code></span>
+<span class="codeline" id="line-105"><code>	<a href="../../pkg/syscall.html#name-FILE_ATTRIBUTE_REPARSE_POINT" class="ident">FILE_ATTRIBUTE_REPARSE_POINT</a> = <span class="lit-number">0x00000400</span></code></span>
+<span class="codeline" id="line-106"><code></code></span>
+<span class="codeline" id="line-107"><code>	<a href="../../pkg/syscall.html#name-INVALID_FILE_ATTRIBUTES" class="ident">INVALID_FILE_ATTRIBUTES</a> = <span class="lit-number">0xffffffff</span></code></span>
+<span class="codeline" id="line-108"><code></code></span>
+<span class="codeline" id="line-109"><code>	<a href="../../pkg/syscall.html#name-CREATE_NEW" class="ident">CREATE_NEW</a>        = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-110"><code>	<a href="../../pkg/syscall.html#name-CREATE_ALWAYS" class="ident">CREATE_ALWAYS</a>     = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-111"><code>	<a href="../../pkg/syscall.html#name-OPEN_EXISTING" class="ident">OPEN_EXISTING</a>     = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-112"><code>	<a href="../../pkg/syscall.html#name-OPEN_ALWAYS" class="ident">OPEN_ALWAYS</a>       = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-113"><code>	<a href="../../pkg/syscall.html#name-TRUNCATE_EXISTING" class="ident">TRUNCATE_EXISTING</a> = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-114"><code></code></span>
+<span class="codeline" id="line-115"><code>	<a href="../../pkg/syscall.html#name-FILE_FLAG_OPEN_REPARSE_POINT" class="ident">FILE_FLAG_OPEN_REPARSE_POINT</a> = <span class="lit-number">0x00200000</span></code></span>
+<span class="codeline" id="line-116"><code>	<a href="../../pkg/syscall.html#name-FILE_FLAG_BACKUP_SEMANTICS" class="ident">FILE_FLAG_BACKUP_SEMANTICS</a>   = <span class="lit-number">0x02000000</span></code></span>
+<span class="codeline" id="line-117"><code>	<a href="../../pkg/syscall.html#name-FILE_FLAG_OVERLAPPED" class="ident">FILE_FLAG_OVERLAPPED</a>         = <span class="lit-number">0x40000000</span></code></span>
+<span class="codeline" id="line-118"><code></code></span>
+<span class="codeline" id="line-119"><code>	<a href="../../pkg/syscall.html#name-HANDLE_FLAG_INHERIT" class="ident">HANDLE_FLAG_INHERIT</a>    = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-120"><code>	<a href="../../pkg/syscall.html#name-STARTF_USESTDHANDLES" class="ident">STARTF_USESTDHANDLES</a>   = <span class="lit-number">0x00000100</span></code></span>
+<span class="codeline" id="line-121"><code>	<a href="../../pkg/syscall.html#name-STARTF_USESHOWWINDOW" class="ident">STARTF_USESHOWWINDOW</a>   = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-122"><code>	<a href="../../pkg/syscall.html#name-DUPLICATE_CLOSE_SOURCE" class="ident">DUPLICATE_CLOSE_SOURCE</a> = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-123"><code>	<a href="../../pkg/syscall.html#name-DUPLICATE_SAME_ACCESS" class="ident">DUPLICATE_SAME_ACCESS</a>  = <span class="lit-number">0x00000002</span></code></span>
+<span class="codeline" id="line-124"><code></code></span>
+<span class="codeline" id="line-125"><code>	<a href="../../pkg/syscall.html#name-STD_INPUT_HANDLE" class="ident">STD_INPUT_HANDLE</a>  = -<span class="lit-number">10</span></code></span>
+<span class="codeline" id="line-126"><code>	<a href="../../pkg/syscall.html#name-STD_OUTPUT_HANDLE" class="ident">STD_OUTPUT_HANDLE</a> = -<span class="lit-number">11</span></code></span>
+<span class="codeline" id="line-127"><code>	<a href="../../pkg/syscall.html#name-STD_ERROR_HANDLE" class="ident">STD_ERROR_HANDLE</a>  = -<span class="lit-number">12</span></code></span>
+<span class="codeline" id="line-128"><code></code></span>
+<span class="codeline" id="line-129"><code>	<a href="../../pkg/syscall.html#name-FILE_BEGIN" class="ident">FILE_BEGIN</a>   = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-130"><code>	<a href="../../pkg/syscall.html#name-FILE_CURRENT" class="ident">FILE_CURRENT</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-131"><code>	<a href="../../pkg/syscall.html#name-FILE_END" class="ident">FILE_END</a>     = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-132"><code></code></span>
+<span class="codeline" id="line-133"><code>	<a href="../../pkg/syscall.html#name-LANG_ENGLISH" class="ident">LANG_ENGLISH</a>       = <span class="lit-number">0x09</span></code></span>
+<span class="codeline" id="line-134"><code>	<a href="../../pkg/syscall.html#name-SUBLANG_ENGLISH_US" class="ident">SUBLANG_ENGLISH_US</a> = <span class="lit-number">0x01</span></code></span>
+<span class="codeline" id="line-135"><code></code></span>
+<span class="codeline" id="line-136"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_ALLOCATE_BUFFER" class="ident">FORMAT_MESSAGE_ALLOCATE_BUFFER</a> = <span class="lit-number">256</span></code></span>
+<span class="codeline" id="line-137"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_IGNORE_INSERTS" class="ident">FORMAT_MESSAGE_IGNORE_INSERTS</a>  = <span class="lit-number">512</span></code></span>
+<span class="codeline" id="line-138"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_FROM_STRING" class="ident">FORMAT_MESSAGE_FROM_STRING</a>     = <span class="lit-number">1024</span></code></span>
+<span class="codeline" id="line-139"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_FROM_HMODULE" class="ident">FORMAT_MESSAGE_FROM_HMODULE</a>    = <span class="lit-number">2048</span></code></span>
+<span class="codeline" id="line-140"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_FROM_SYSTEM" class="ident">FORMAT_MESSAGE_FROM_SYSTEM</a>     = <span class="lit-number">4096</span></code></span>
+<span class="codeline" id="line-141"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_ARGUMENT_ARRAY" class="ident">FORMAT_MESSAGE_ARGUMENT_ARRAY</a>  = <span class="lit-number">8192</span></code></span>
+<span class="codeline" id="line-142"><code>	<a href="../../pkg/syscall.html#name-FORMAT_MESSAGE_MAX_WIDTH_MASK" class="ident">FORMAT_MESSAGE_MAX_WIDTH_MASK</a>  = <span class="lit-number">255</span></code></span>
+<span class="codeline" id="line-143"><code></code></span>
+<span class="codeline" id="line-144"><code>	<a href="../../pkg/syscall.html#name-MAX_PATH" class="ident">MAX_PATH</a>      = <span class="lit-number">260</span></code></span>
+<span class="codeline" id="line-145"><code>	<a href="../../pkg/syscall.html#name-MAX_LONG_PATH" class="ident">MAX_LONG_PATH</a> = <span class="lit-number">32768</span></code></span>
+<span class="codeline" id="line-146"><code></code></span>
+<span class="codeline" id="line-147"><code>	<a href="../../pkg/syscall.html#name-MAX_COMPUTERNAME_LENGTH" class="ident">MAX_COMPUTERNAME_LENGTH</a> = <span class="lit-number">15</span></code></span>
+<span class="codeline" id="line-148"><code></code></span>
+<span class="codeline" id="line-149"><code>	<a href="../../pkg/syscall.html#name-TIME_ZONE_ID_UNKNOWN" class="ident">TIME_ZONE_ID_UNKNOWN</a>  = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-150"><code>	<a href="../../pkg/syscall.html#name-TIME_ZONE_ID_STANDARD" class="ident">TIME_ZONE_ID_STANDARD</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-151"><code></code></span>
+<span class="codeline" id="line-152"><code>	<a href="../../pkg/syscall.html#name-TIME_ZONE_ID_DAYLIGHT" class="ident">TIME_ZONE_ID_DAYLIGHT</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-153"><code>	<a href="../../pkg/syscall.html#name-IGNORE" class="ident">IGNORE</a>                = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-154"><code>	<a href="../../pkg/syscall.html#name-INFINITE" class="ident">INFINITE</a>              = <span class="lit-number">0xffffffff</span></code></span>
+<span class="codeline" id="line-155"><code></code></span>
+<span class="codeline" id="line-156"><code>	<a href="../../pkg/syscall.html#name-WAIT_TIMEOUT" class="ident">WAIT_TIMEOUT</a>   = <span class="lit-number">258</span></code></span>
+<span class="codeline" id="line-157"><code>	<a href="../../pkg/syscall.html#name-WAIT_ABANDONED" class="ident">WAIT_ABANDONED</a> = <span class="lit-number">0x00000080</span></code></span>
+<span class="codeline" id="line-158"><code>	<a href="../../pkg/syscall.html#name-WAIT_OBJECT_0" class="ident">WAIT_OBJECT_0</a>  = <span class="lit-number">0x00000000</span></code></span>
+<span class="codeline" id="line-159"><code>	<a href="../../pkg/syscall.html#name-WAIT_FAILED" class="ident">WAIT_FAILED</a>    = <span class="lit-number">0xFFFFFFFF</span></code></span>
+<span class="codeline" id="line-160"><code></code></span>
+<span class="codeline" id="line-161"><code>	<a href="../../pkg/syscall.html#name-CREATE_NEW_PROCESS_GROUP" class="ident">CREATE_NEW_PROCESS_GROUP</a>   = <span class="lit-number">0x00000200</span></code></span>
+<span class="codeline" id="line-162"><code>	<a href="../../pkg/syscall.html#name-CREATE_UNICODE_ENVIRONMENT" class="ident">CREATE_UNICODE_ENVIRONMENT</a> = <span class="lit-number">0x00000400</span></code></span>
+<span class="codeline" id="line-163"><code></code></span>
+<span class="codeline" id="line-164"><code>	<a href="../../pkg/syscall.html#name-PROCESS_TERMINATE" class="ident">PROCESS_TERMINATE</a>         = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-165"><code>	<a href="../../pkg/syscall.html#name-PROCESS_QUERY_INFORMATION" class="ident">PROCESS_QUERY_INFORMATION</a> = <span class="lit-number">0x00000400</span></code></span>
+<span class="codeline" id="line-166"><code>	<a href="../../pkg/syscall.html#name-SYNCHRONIZE" class="ident">SYNCHRONIZE</a>               = <span class="lit-number">0x00100000</span></code></span>
+<span class="codeline" id="line-167"><code></code></span>
+<span class="codeline" id="line-168"><code>	<a href="../../pkg/syscall.html#name-PAGE_READONLY" class="ident">PAGE_READONLY</a>          = <span class="lit-number">0x02</span></code></span>
+<span class="codeline" id="line-169"><code>	<a href="../../pkg/syscall.html#name-PAGE_READWRITE" class="ident">PAGE_READWRITE</a>         = <span class="lit-number">0x04</span></code></span>
+<span class="codeline" id="line-170"><code>	<a href="../../pkg/syscall.html#name-PAGE_WRITECOPY" class="ident">PAGE_WRITECOPY</a>         = <span class="lit-number">0x08</span></code></span>
+<span class="codeline" id="line-171"><code>	<a href="../../pkg/syscall.html#name-PAGE_EXECUTE_READ" class="ident">PAGE_EXECUTE_READ</a>      = <span class="lit-number">0x20</span></code></span>
+<span class="codeline" id="line-172"><code>	<a href="../../pkg/syscall.html#name-PAGE_EXECUTE_READWRITE" class="ident">PAGE_EXECUTE_READWRITE</a> = <span class="lit-number">0x40</span></code></span>
+<span class="codeline" id="line-173"><code>	<a href="../../pkg/syscall.html#name-PAGE_EXECUTE_WRITECOPY" class="ident">PAGE_EXECUTE_WRITECOPY</a> = <span class="lit-number">0x80</span></code></span>
+<span class="codeline" id="line-174"><code></code></span>
+<span class="codeline" id="line-175"><code>	<a href="../../pkg/syscall.html#name-FILE_MAP_COPY" class="ident">FILE_MAP_COPY</a>    = <span class="lit-number">0x01</span></code></span>
+<span class="codeline" id="line-176"><code>	<a href="../../pkg/syscall.html#name-FILE_MAP_WRITE" class="ident">FILE_MAP_WRITE</a>   = <span class="lit-number">0x02</span></code></span>
+<span class="codeline" id="line-177"><code>	<a href="../../pkg/syscall.html#name-FILE_MAP_READ" class="ident">FILE_MAP_READ</a>    = <span class="lit-number">0x04</span></code></span>
+<span class="codeline" id="line-178"><code>	<a href="../../pkg/syscall.html#name-FILE_MAP_EXECUTE" class="ident">FILE_MAP_EXECUTE</a> = <span class="lit-number">0x20</span></code></span>
+<span class="codeline" id="line-179"><code></code></span>
+<span class="codeline" id="line-180"><code>	<a href="../../pkg/syscall.html#name-CTRL_C_EVENT" class="ident">CTRL_C_EVENT</a>        = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-181"><code>	<a href="../../pkg/syscall.html#name-CTRL_BREAK_EVENT" class="ident">CTRL_BREAK_EVENT</a>    = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-182"><code>	<a href="../../pkg/syscall.html#name-CTRL_CLOSE_EVENT" class="ident">CTRL_CLOSE_EVENT</a>    = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-183"><code>	<a href="../../pkg/syscall.html#name-CTRL_LOGOFF_EVENT" class="ident">CTRL_LOGOFF_EVENT</a>   = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-184"><code>	<a href="../../pkg/syscall.html#name-CTRL_SHUTDOWN_EVENT" class="ident">CTRL_SHUTDOWN_EVENT</a> = <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-185"><code>)</code></span>
+<span class="codeline" id="line-186"><code></code></span>
+<span class="codeline" id="line-187"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-188"><code>	<span class="comment">// flags for CreateToolhelp32Snapshot</span></code></span>
+<span class="codeline" id="line-189"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPHEAPLIST" class="ident">TH32CS_SNAPHEAPLIST</a> = <span class="lit-number">0x01</span></code></span>
+<span class="codeline" id="line-190"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPPROCESS" class="ident">TH32CS_SNAPPROCESS</a>  = <span class="lit-number">0x02</span></code></span>
+<span class="codeline" id="line-191"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPTHREAD" class="ident">TH32CS_SNAPTHREAD</a>   = <span class="lit-number">0x04</span></code></span>
+<span class="codeline" id="line-192"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPMODULE" class="ident">TH32CS_SNAPMODULE</a>   = <span class="lit-number">0x08</span></code></span>
+<span class="codeline" id="line-193"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPMODULE32" class="ident">TH32CS_SNAPMODULE32</a> = <span class="lit-number">0x10</span></code></span>
+<span class="codeline" id="line-194"><code>	<a href="../../pkg/syscall.html#name-TH32CS_SNAPALL" class="ident">TH32CS_SNAPALL</a>      = <a href="#line-189" class="ident">TH32CS_SNAPHEAPLIST</a> | <a href="#line-192" class="ident">TH32CS_SNAPMODULE</a> | <a href="#line-190" class="ident">TH32CS_SNAPPROCESS</a> | <a href="#line-191" class="ident">TH32CS_SNAPTHREAD</a></code></span>
+<span class="codeline" id="line-195"><code>	<a href="../../pkg/syscall.html#name-TH32CS_INHERIT" class="ident">TH32CS_INHERIT</a>      = <span class="lit-number">0x80000000</span></code></span>
+<span class="codeline" id="line-196"><code>)</code></span>
+<span class="codeline" id="line-197"><code></code></span>
+<span class="codeline" id="line-198"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-199"><code>	<span class="comment">// do not reorder</span></code></span>
+<span class="codeline" id="line-200"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_FILE_NAME" class="ident">FILE_NOTIFY_CHANGE_FILE_NAME</a> = <span class="lit-number">1</span> &lt;&lt; <a href="../../pkg/builtin.html#name-iota" class="ident">iota</a></code></span>
+<span class="codeline" id="line-201"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_DIR_NAME" class="ident">FILE_NOTIFY_CHANGE_DIR_NAME</a></code></span>
+<span class="codeline" id="line-202"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_ATTRIBUTES" class="ident">FILE_NOTIFY_CHANGE_ATTRIBUTES</a></code></span>
+<span class="codeline" id="line-203"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_SIZE" class="ident">FILE_NOTIFY_CHANGE_SIZE</a></code></span>
+<span class="codeline" id="line-204"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_LAST_WRITE" class="ident">FILE_NOTIFY_CHANGE_LAST_WRITE</a></code></span>
+<span class="codeline" id="line-205"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_LAST_ACCESS" class="ident">FILE_NOTIFY_CHANGE_LAST_ACCESS</a></code></span>
+<span class="codeline" id="line-206"><code>	<a href="../../pkg/syscall.html#name-FILE_NOTIFY_CHANGE_CREATION" class="ident">FILE_NOTIFY_CHANGE_CREATION</a></code></span>
+<span class="codeline" id="line-207"><code>)</code></span>
+<span class="codeline" id="line-208"><code></code></span>
+<span class="codeline" id="line-209"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-210"><code>	<span class="comment">// do not reorder</span></code></span>
+<span class="codeline" id="line-211"><code>	<a href="../../pkg/syscall.html#name-FILE_ACTION_ADDED" class="ident">FILE_ACTION_ADDED</a> = <a href="../../pkg/builtin.html#name-iota" class="ident">iota</a> + <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-212"><code>	<a href="../../pkg/syscall.html#name-FILE_ACTION_REMOVED" class="ident">FILE_ACTION_REMOVED</a></code></span>
+<span class="codeline" id="line-213"><code>	<a href="../../pkg/syscall.html#name-FILE_ACTION_MODIFIED" class="ident">FILE_ACTION_MODIFIED</a></code></span>
+<span class="codeline" id="line-214"><code>	<a href="../../pkg/syscall.html#name-FILE_ACTION_RENAMED_OLD_NAME" class="ident">FILE_ACTION_RENAMED_OLD_NAME</a></code></span>
+<span class="codeline" id="line-215"><code>	<a href="../../pkg/syscall.html#name-FILE_ACTION_RENAMED_NEW_NAME" class="ident">FILE_ACTION_RENAMED_NEW_NAME</a></code></span>
+<span class="codeline" id="line-216"><code>)</code></span>
+<span class="codeline" id="line-217"><code></code></span>
+<span class="codeline" id="line-218"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-219"><code>	<span class="comment">// wincrypt.h</span></code></span>
+<span class="codeline" id="line-220"><code>	<a href="../../pkg/syscall.html#name-PROV_RSA_FULL" class="ident">PROV_RSA_FULL</a>                    = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-221"><code>	<a href="../../pkg/syscall.html#name-PROV_RSA_SIG" class="ident">PROV_RSA_SIG</a>                     = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-222"><code>	<a href="../../pkg/syscall.html#name-PROV_DSS" class="ident">PROV_DSS</a>                         = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-223"><code>	<a href="../../pkg/syscall.html#name-PROV_FORTEZZA" class="ident">PROV_FORTEZZA</a>                    = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-224"><code>	<a href="../../pkg/syscall.html#name-PROV_MS_EXCHANGE" class="ident">PROV_MS_EXCHANGE</a>                 = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-225"><code>	<a href="../../pkg/syscall.html#name-PROV_SSL" class="ident">PROV_SSL</a>                         = <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-226"><code>	<a href="../../pkg/syscall.html#name-PROV_RSA_SCHANNEL" class="ident">PROV_RSA_SCHANNEL</a>                = <span class="lit-number">12</span></code></span>
+<span class="codeline" id="line-227"><code>	<a href="../../pkg/syscall.html#name-PROV_DSS_DH" class="ident">PROV_DSS_DH</a>                      = <span class="lit-number">13</span></code></span>
+<span class="codeline" id="line-228"><code>	<a href="../../pkg/syscall.html#name-PROV_EC_ECDSA_SIG" class="ident">PROV_EC_ECDSA_SIG</a>                = <span class="lit-number">14</span></code></span>
+<span class="codeline" id="line-229"><code>	<a href="../../pkg/syscall.html#name-PROV_EC_ECNRA_SIG" class="ident">PROV_EC_ECNRA_SIG</a>                = <span class="lit-number">15</span></code></span>
+<span class="codeline" id="line-230"><code>	<a href="../../pkg/syscall.html#name-PROV_EC_ECDSA_FULL" class="ident">PROV_EC_ECDSA_FULL</a>               = <span class="lit-number">16</span></code></span>
+<span class="codeline" id="line-231"><code>	<a href="../../pkg/syscall.html#name-PROV_EC_ECNRA_FULL" class="ident">PROV_EC_ECNRA_FULL</a>               = <span class="lit-number">17</span></code></span>
+<span class="codeline" id="line-232"><code>	<a href="../../pkg/syscall.html#name-PROV_DH_SCHANNEL" class="ident">PROV_DH_SCHANNEL</a>                 = <span class="lit-number">18</span></code></span>
+<span class="codeline" id="line-233"><code>	<a href="../../pkg/syscall.html#name-PROV_SPYRUS_LYNKS" class="ident">PROV_SPYRUS_LYNKS</a>                = <span class="lit-number">20</span></code></span>
+<span class="codeline" id="line-234"><code>	<a href="../../pkg/syscall.html#name-PROV_RNG" class="ident">PROV_RNG</a>                         = <span class="lit-number">21</span></code></span>
+<span class="codeline" id="line-235"><code>	<a href="../../pkg/syscall.html#name-PROV_INTEL_SEC" class="ident">PROV_INTEL_SEC</a>                   = <span class="lit-number">22</span></code></span>
+<span class="codeline" id="line-236"><code>	<a href="../../pkg/syscall.html#name-PROV_REPLACE_OWF" class="ident">PROV_REPLACE_OWF</a>                 = <span class="lit-number">23</span></code></span>
+<span class="codeline" id="line-237"><code>	<a href="../../pkg/syscall.html#name-PROV_RSA_AES" class="ident">PROV_RSA_AES</a>                     = <span class="lit-number">24</span></code></span>
+<span class="codeline" id="line-238"><code>	<a href="../../pkg/syscall.html#name-CRYPT_VERIFYCONTEXT" class="ident">CRYPT_VERIFYCONTEXT</a>              = <span class="lit-number">0xF0000000</span></code></span>
+<span class="codeline" id="line-239"><code>	<a href="../../pkg/syscall.html#name-CRYPT_NEWKEYSET" class="ident">CRYPT_NEWKEYSET</a>                  = <span class="lit-number">0x00000008</span></code></span>
+<span class="codeline" id="line-240"><code>	<a href="../../pkg/syscall.html#name-CRYPT_DELETEKEYSET" class="ident">CRYPT_DELETEKEYSET</a>               = <span class="lit-number">0x00000010</span></code></span>
+<span class="codeline" id="line-241"><code>	<a href="../../pkg/syscall.html#name-CRYPT_MACHINE_KEYSET" class="ident">CRYPT_MACHINE_KEYSET</a>             = <span class="lit-number">0x00000020</span></code></span>
+<span class="codeline" id="line-242"><code>	<a href="../../pkg/syscall.html#name-CRYPT_SILENT" class="ident">CRYPT_SILENT</a>                     = <span class="lit-number">0x00000040</span></code></span>
+<span class="codeline" id="line-243"><code>	<a href="../../pkg/syscall.html#name-CRYPT_DEFAULT_CONTAINER_OPTIONAL" class="ident">CRYPT_DEFAULT_CONTAINER_OPTIONAL</a> = <span class="lit-number">0x00000080</span></code></span>
+<span class="codeline" id="line-244"><code></code></span>
+<span class="codeline" id="line-245"><code>	<a href="../../pkg/syscall.html#name-USAGE_MATCH_TYPE_AND" class="ident">USAGE_MATCH_TYPE_AND</a> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-246"><code>	<a href="../../pkg/syscall.html#name-USAGE_MATCH_TYPE_OR" class="ident">USAGE_MATCH_TYPE_OR</a>  = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-247"><code></code></span>
+<span class="codeline" id="line-248"><code>	<a href="../../pkg/syscall.html#name-X509_ASN_ENCODING" class="ident">X509_ASN_ENCODING</a>   = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-249"><code>	<a href="../../pkg/syscall.html#name-PKCS_7_ASN_ENCODING" class="ident">PKCS_7_ASN_ENCODING</a> = <span class="lit-number">0x00010000</span></code></span>
+<span class="codeline" id="line-250"><code></code></span>
+<span class="codeline" id="line-251"><code>	<a href="../../pkg/syscall.html#name-CERT_STORE_PROV_MEMORY" class="ident">CERT_STORE_PROV_MEMORY</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-252"><code></code></span>
+<span class="codeline" id="line-253"><code>	<a href="../../pkg/syscall.html#name-CERT_STORE_ADD_ALWAYS" class="ident">CERT_STORE_ADD_ALWAYS</a> = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-254"><code></code></span>
+<span class="codeline" id="line-255"><code>	<a href="../../pkg/syscall.html#name-CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG" class="ident">CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG</a> = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-256"><code></code></span>
+<span class="codeline" id="line-257"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_NO_ERROR" class="ident">CERT_TRUST_NO_ERROR</a>                          = <span class="lit-number">0x00000000</span></code></span>
+<span class="codeline" id="line-258"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_NOT_TIME_VALID" class="ident">CERT_TRUST_IS_NOT_TIME_VALID</a>                 = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-259"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_REVOKED" class="ident">CERT_TRUST_IS_REVOKED</a>                        = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-260"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_NOT_SIGNATURE_VALID" class="ident">CERT_TRUST_IS_NOT_SIGNATURE_VALID</a>            = <span class="lit-number">0x00000008</span></code></span>
+<span class="codeline" id="line-261"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_NOT_VALID_FOR_USAGE" class="ident">CERT_TRUST_IS_NOT_VALID_FOR_USAGE</a>            = <span class="lit-number">0x00000010</span></code></span>
+<span class="codeline" id="line-262"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_UNTRUSTED_ROOT" class="ident">CERT_TRUST_IS_UNTRUSTED_ROOT</a>                 = <span class="lit-number">0x00000020</span></code></span>
+<span class="codeline" id="line-263"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_REVOCATION_STATUS_UNKNOWN" class="ident">CERT_TRUST_REVOCATION_STATUS_UNKNOWN</a>         = <span class="lit-number">0x00000040</span></code></span>
+<span class="codeline" id="line-264"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_CYCLIC" class="ident">CERT_TRUST_IS_CYCLIC</a>                         = <span class="lit-number">0x00000080</span></code></span>
+<span class="codeline" id="line-265"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_INVALID_EXTENSION" class="ident">CERT_TRUST_INVALID_EXTENSION</a>                 = <span class="lit-number">0x00000100</span></code></span>
+<span class="codeline" id="line-266"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_INVALID_POLICY_CONSTRAINTS" class="ident">CERT_TRUST_INVALID_POLICY_CONSTRAINTS</a>        = <span class="lit-number">0x00000200</span></code></span>
+<span class="codeline" id="line-267"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_INVALID_BASIC_CONSTRAINTS" class="ident">CERT_TRUST_INVALID_BASIC_CONSTRAINTS</a>         = <span class="lit-number">0x00000400</span></code></span>
+<span class="codeline" id="line-268"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_INVALID_NAME_CONSTRAINTS" class="ident">CERT_TRUST_INVALID_NAME_CONSTRAINTS</a>          = <span class="lit-number">0x00000800</span></code></span>
+<span class="codeline" id="line-269"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_HAS_NOT_SUPPORTED_NAME_CONSTRAINT" class="ident">CERT_TRUST_HAS_NOT_SUPPORTED_NAME_CONSTRAINT</a> = <span class="lit-number">0x00001000</span></code></span>
+<span class="codeline" id="line-270"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_HAS_NOT_DEFINED_NAME_CONSTRAINT" class="ident">CERT_TRUST_HAS_NOT_DEFINED_NAME_CONSTRAINT</a>   = <span class="lit-number">0x00002000</span></code></span>
+<span class="codeline" id="line-271"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_HAS_NOT_PERMITTED_NAME_CONSTRAINT" class="ident">CERT_TRUST_HAS_NOT_PERMITTED_NAME_CONSTRAINT</a> = <span class="lit-number">0x00004000</span></code></span>
+<span class="codeline" id="line-272"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_HAS_EXCLUDED_NAME_CONSTRAINT" class="ident">CERT_TRUST_HAS_EXCLUDED_NAME_CONSTRAINT</a>      = <span class="lit-number">0x00008000</span></code></span>
+<span class="codeline" id="line-273"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_OFFLINE_REVOCATION" class="ident">CERT_TRUST_IS_OFFLINE_REVOCATION</a>             = <span class="lit-number">0x01000000</span></code></span>
+<span class="codeline" id="line-274"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_NO_ISSUANCE_CHAIN_POLICY" class="ident">CERT_TRUST_NO_ISSUANCE_CHAIN_POLICY</a>          = <span class="lit-number">0x02000000</span></code></span>
+<span class="codeline" id="line-275"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_IS_EXPLICIT_DISTRUST" class="ident">CERT_TRUST_IS_EXPLICIT_DISTRUST</a>              = <span class="lit-number">0x04000000</span></code></span>
+<span class="codeline" id="line-276"><code>	<a href="../../pkg/syscall.html#name-CERT_TRUST_HAS_NOT_SUPPORTED_CRITICAL_EXT" class="ident">CERT_TRUST_HAS_NOT_SUPPORTED_CRITICAL_EXT</a>    = <span class="lit-number">0x08000000</span></code></span>
+<span class="codeline" id="line-277"><code></code></span>
+<span class="codeline" id="line-278"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_BASE" class="ident">CERT_CHAIN_POLICY_BASE</a>              = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-279"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_AUTHENTICODE" class="ident">CERT_CHAIN_POLICY_AUTHENTICODE</a>      = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-280"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_AUTHENTICODE_TS" class="ident">CERT_CHAIN_POLICY_AUTHENTICODE_TS</a>   = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-281"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_SSL" class="ident">CERT_CHAIN_POLICY_SSL</a>               = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-282"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_BASIC_CONSTRAINTS" class="ident">CERT_CHAIN_POLICY_BASIC_CONSTRAINTS</a> = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-283"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_NT_AUTH" class="ident">CERT_CHAIN_POLICY_NT_AUTH</a>           = <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-284"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_MICROSOFT_ROOT" class="ident">CERT_CHAIN_POLICY_MICROSOFT_ROOT</a>    = <span class="lit-number">7</span></code></span>
+<span class="codeline" id="line-285"><code>	<a href="../../pkg/syscall.html#name-CERT_CHAIN_POLICY_EV" class="ident">CERT_CHAIN_POLICY_EV</a>                = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-286"><code></code></span>
+<span class="codeline" id="line-287"><code>	<a href="../../pkg/syscall.html#name-CERT_E_EXPIRED" class="ident">CERT_E_EXPIRED</a>       = <span class="lit-number">0x800B0101</span></code></span>
+<span class="codeline" id="line-288"><code>	<a href="../../pkg/syscall.html#name-CERT_E_ROLE" class="ident">CERT_E_ROLE</a>          = <span class="lit-number">0x800B0103</span></code></span>
+<span class="codeline" id="line-289"><code>	<a href="../../pkg/syscall.html#name-CERT_E_PURPOSE" class="ident">CERT_E_PURPOSE</a>       = <span class="lit-number">0x800B0106</span></code></span>
+<span class="codeline" id="line-290"><code>	<a href="../../pkg/syscall.html#name-CERT_E_UNTRUSTEDROOT" class="ident">CERT_E_UNTRUSTEDROOT</a> = <span class="lit-number">0x800B0109</span></code></span>
+<span class="codeline" id="line-291"><code>	<a href="../../pkg/syscall.html#name-CERT_E_CN_NO_MATCH" class="ident">CERT_E_CN_NO_MATCH</a>   = <span class="lit-number">0x800B010F</span></code></span>
+<span class="codeline" id="line-292"><code></code></span>
+<span class="codeline" id="line-293"><code>	<a href="../../pkg/syscall.html#name-AUTHTYPE_CLIENT" class="ident">AUTHTYPE_CLIENT</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-294"><code>	<a href="../../pkg/syscall.html#name-AUTHTYPE_SERVER" class="ident">AUTHTYPE_SERVER</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-295"><code>)</code></span>
+<span class="codeline" id="line-296"><code></code></span>
+<span class="codeline" id="line-297"><code><span class="keyword">var</span> (</code></span>
+<span class="codeline" id="line-298"><code>	<a href="../../pkg/syscall.html#name-OID_PKIX_KP_SERVER_AUTH" class="ident">OID_PKIX_KP_SERVER_AUTH</a> = []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>(<span class="lit-string">"1.3.6.1.5.5.7.3.1\x00"</span>)</code></span>
+<span class="codeline" id="line-299"><code>	<a href="../../pkg/syscall.html#name-OID_SERVER_GATED_CRYPTO" class="ident">OID_SERVER_GATED_CRYPTO</a> = []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>(<span class="lit-string">"1.3.6.1.4.1.311.10.3.3\x00"</span>)</code></span>
+<span class="codeline" id="line-300"><code>	<a href="../../pkg/syscall.html#name-OID_SGC_NETSCAPE" class="ident">OID_SGC_NETSCAPE</a>        = []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>(<span class="lit-string">"2.16.840.1.113730.4.1\x00"</span>)</code></span>
+<span class="codeline" id="line-301"><code>)</code></span>
+<span class="codeline" id="line-302"><code></code></span>
+<span class="codeline" id="line-303"><code><span class="comment">// Pointer represents a pointer to an arbitrary Windows type.</span></code></span>
+<span class="codeline" id="line-304"><code><span class="comment">//</span></code></span>
+<span class="codeline" id="line-305"><code><span class="comment">// Pointer-typed fields may point to one of many different types. It's</span></code></span>
+<span class="codeline" id="line-306"><code><span class="comment">// up to the caller to provide a pointer to the appropriate type, cast</span></code></span>
+<span class="codeline" id="line-307"><code><span class="comment">// to Pointer. The caller must obey the unsafe.Pointer rules while</span></code></span>
+<span class="codeline" id="line-308"><code><span class="comment">// doing so.</span></code></span>
+<span class="codeline" id="line-309"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Pointer" class="ident">Pointer</a> *<span class="keyword">struct</span>{}</code></span>
+<span class="codeline" id="line-310"><code></code></span>
+<span class="codeline" id="line-311"><code><span class="comment">// Invented values to support what package os expects.</span></code></span>
+<span class="codeline" id="line-312"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Timeval" class="ident">Timeval</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-313"><code>	Sec  <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-314"><code>	Usec <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-315"><code>}</code></span>
+<span class="codeline" id="line-316"><code></code></span>
+<span class="codeline" id="line-317"><code><span class="keyword">func</span> (<label for="r0" class="ident">tv</label> *<a href="#line-312" class="ident">Timeval</a>) <label for="r1" class="ident">Nanoseconds</label>() <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a> {</code></span>
+<span class="codeline" id="line-318"><code>	<span class="keyword">return</span> (<a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>(<label for="r0" class="ident">tv</label>.<a href="#line-313" class="ident">Sec</a>)*<span class="lit-number">1e6</span> + <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>(<label for="r0" class="ident">tv</label>.<a href="#line-314" class="ident">Usec</a>)) * <span class="lit-number">1e3</span></code></span>
+<span class="codeline" id="line-319"><code>}</code></span>
+<span class="codeline" id="line-320"><code></code></span>
+<span class="codeline" id="line-321"><code><span class="keyword">func</span> <label for="r2" class="ident"><a href="../../pkg/syscall.html#name-NsecToTimeval" class="ident">NsecToTimeval</a></label>(<label for="r3" class="ident">nsec</label> <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>) (<label for="r4" class="ident">tv</label> <a href="#line-312" class="ident">Timeval</a>) {</code></span>
+<span class="codeline" id="line-322"><code>	<label for="r4" class="ident">tv</label>.<a href="#line-313" class="ident">Sec</a> = <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a>(<label for="r3" class="ident">nsec</label> / <span class="lit-number">1e9</span>)</code></span>
+<span class="codeline" id="line-323"><code>	<label for="r4" class="ident">tv</label>.<a href="#line-314" class="ident">Usec</a> = <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a>(<label for="r3" class="ident">nsec</label> % <span class="lit-number">1e9</span> / <span class="lit-number">1e3</span>)</code></span>
+<span class="codeline" id="line-324"><code>	<span class="keyword">return</span></code></span>
+<span class="codeline" id="line-325"><code>}</code></span>
+<span class="codeline" id="line-326"><code></code></span>
+<span class="codeline" id="line-327"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-SecurityAttributes" class="ident">SecurityAttributes</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-328"><code>	Length             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-329"><code>	SecurityDescriptor <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-330"><code>	InheritHandle      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-331"><code>}</code></span>
+<span class="codeline" id="line-332"><code></code></span>
+<span class="codeline" id="line-333"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Overlapped" class="ident">Overlapped</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-334"><code>	Internal     <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-335"><code>	InternalHigh <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-336"><code>	Offset       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-337"><code>	OffsetHigh   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-338"><code>	HEvent       <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-339"><code>}</code></span>
+<span class="codeline" id="line-340"><code></code></span>
+<span class="codeline" id="line-341"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-FileNotifyInformation" class="ident">FileNotifyInformation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-342"><code>	NextEntryOffset <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-343"><code>	Action          <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-344"><code>	FileNameLength  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-345"><code>	FileName        <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-346"><code>}</code></span>
+<span class="codeline" id="line-347"><code></code></span>
+<span class="codeline" id="line-348"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Filetime" class="ident">Filetime</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-349"><code>	LowDateTime  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-350"><code>	HighDateTime <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-351"><code>}</code></span>
+<span class="codeline" id="line-352"><code></code></span>
+<span class="codeline" id="line-353"><code><span class="comment">// Nanoseconds returns Filetime ft in nanoseconds</span></code></span>
+<span class="codeline" id="line-354"><code><span class="comment">// since Epoch (00:00:00 UTC, January 1, 1970).</span></code></span>
+<span class="codeline" id="line-355"><code><span class="keyword">func</span> (<label for="r5" class="ident">ft</label> *<a href="#line-348" class="ident">Filetime</a>) <label for="r6" class="ident">Nanoseconds</label>() <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a> {</code></span>
+<span class="codeline" id="line-356"><code>	<span class="comment">// 100-nanosecond intervals since January 1, 1601</span></code></span>
+<span class="codeline" id="line-357"><code>	<label for="r7" class="ident">nsec</label> := <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>(<label for="r5" class="ident">ft</label>.<a href="#line-350" class="ident">HighDateTime</a>)&lt;&lt;<span class="lit-number">32</span> + <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>(<label for="r5" class="ident">ft</label>.<a href="#line-349" class="ident">LowDateTime</a>)</code></span>
+<span class="codeline" id="line-358"><code>	<span class="comment">// change starting time to the Epoch (00:00:00 UTC, January 1, 1970)</span></code></span>
+<span class="codeline" id="line-359"><code>	<label for="r7" class="ident">nsec</label> -= <span class="lit-number">116444736000000000</span></code></span>
+<span class="codeline" id="line-360"><code>	<span class="comment">// convert into nanoseconds</span></code></span>
+<span class="codeline" id="line-361"><code>	<label for="r7" class="ident">nsec</label> *= <span class="lit-number">100</span></code></span>
+<span class="codeline" id="line-362"><code>	<span class="keyword">return</span> <label for="r7" class="ident">nsec</label></code></span>
+<span class="codeline" id="line-363"><code>}</code></span>
+<span class="codeline" id="line-364"><code></code></span>
+<span class="codeline" id="line-365"><code><span class="keyword">func</span> <label for="r8" class="ident"><a href="../../pkg/syscall.html#name-NsecToFiletime" class="ident">NsecToFiletime</a></label>(<label for="r9" class="ident">nsec</label> <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>) (<label for="r10" class="ident">ft</label> <a href="#line-348" class="ident">Filetime</a>) {</code></span>
+<span class="codeline" id="line-366"><code>	<span class="comment">// convert into 100-nanosecond</span></code></span>
+<span class="codeline" id="line-367"><code>	<label for="r9" class="ident">nsec</label> /= <span class="lit-number">100</span></code></span>
+<span class="codeline" id="line-368"><code>	<span class="comment">// change starting time to January 1, 1601</span></code></span>
+<span class="codeline" id="line-369"><code>	<label for="r9" class="ident">nsec</label> += <span class="lit-number">116444736000000000</span></code></span>
+<span class="codeline" id="line-370"><code>	<span class="comment">// split into high / low</span></code></span>
+<span class="codeline" id="line-371"><code>	<label for="r10" class="ident">ft</label>.<a href="#line-349" class="ident">LowDateTime</a> = <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<label for="r9" class="ident">nsec</label> &amp; <span class="lit-number">0xffffffff</span>)</code></span>
+<span class="codeline" id="line-372"><code>	<label for="r10" class="ident">ft</label>.<a href="#line-350" class="ident">HighDateTime</a> = <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<label for="r9" class="ident">nsec</label> &gt;&gt; <span class="lit-number">32</span> &amp; <span class="lit-number">0xffffffff</span>)</code></span>
+<span class="codeline" id="line-373"><code>	<span class="keyword">return</span> <label for="r10" class="ident">ft</label></code></span>
+<span class="codeline" id="line-374"><code>}</code></span>
+<span class="codeline" id="line-375"><code></code></span>
+<span class="codeline" id="line-376"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Win32finddata" class="ident">Win32finddata</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-377"><code>	FileAttributes    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-378"><code>	CreationTime      <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-379"><code>	LastAccessTime    <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-380"><code>	LastWriteTime     <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-381"><code>	FileSizeHigh      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-382"><code>	FileSizeLow       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-383"><code>	Reserved0         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-384"><code>	Reserved1         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-385"><code>	FileName          [<a href="#line-144" class="ident">MAX_PATH</a> - <span class="lit-number">1</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-386"><code>	AlternateFileName [<span class="lit-number">13</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-387"><code>}</code></span>
+<span class="codeline" id="line-388"><code></code></span>
+<span class="codeline" id="line-389"><code><span class="comment">// This is the actual system call structure.</span></code></span>
+<span class="codeline" id="line-390"><code><span class="comment">// Win32finddata is what we committed to in Go 1.</span></code></span>
+<span class="codeline" id="line-391"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-win32finddata1" class="ident">win32finddata1</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-392"><code>	FileAttributes    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-393"><code>	CreationTime      <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-394"><code>	LastAccessTime    <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-395"><code>	LastWriteTime     <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-396"><code>	FileSizeHigh      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-397"><code>	FileSizeLow       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-398"><code>	Reserved0         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-399"><code>	Reserved1         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-400"><code>	FileName          [<a href="#line-144" class="ident">MAX_PATH</a>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-401"><code>	AlternateFileName [<span class="lit-number">14</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-402"><code></code></span>
+<span class="codeline" id="line-403"><code>	<span class="comment">// The Microsoft documentation for this struct¹ describes three additional</span></code></span>
+<span class="codeline" id="line-404"><code><span class="comment">	// fields: dwFileType, dwCreatorType, and wFinderFlags. However, those fields</span></code></span>
+<span class="codeline" id="line-405"><code><span class="comment">	// are empirically only present in the macOS port of the Win32 API,² and thus</span></code></span>
+<span class="codeline" id="line-406"><code><span class="comment">	// not needed for binaries built for Windows.</span></code></span>
+<span class="codeline" id="line-407"><code><span class="comment">	//</span></code></span>
+<span class="codeline" id="line-408"><code><span class="comment">	// ¹ https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw</span></code></span>
+<span class="codeline" id="line-409"><code><span class="comment">	// ² https://golang.org/issue/42637#issuecomment-760715755</span></code></span>
+<span class="codeline" id="line-410"><code>}</code></span>
+<span class="codeline" id="line-411"><code></code></span>
+<span class="codeline" id="line-412"><code><span class="keyword">func</span> <label for="r11" class="ident"><a href="../../pkg/syscall.html#name-copyFindData" class="ident">copyFindData</a></label>(<label for="r12" class="ident">dst</label> *<a href="#line-376" class="ident">Win32finddata</a>, <label for="r13" class="ident">src</label> *<a href="#line-391" class="ident">win32finddata1</a>) {</code></span>
+<span class="codeline" id="line-413"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-377" class="ident">FileAttributes</a> = <label for="r13" class="ident">src</label>.<a href="#line-392" class="ident">FileAttributes</a></code></span>
+<span class="codeline" id="line-414"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-378" class="ident">CreationTime</a> = <label for="r13" class="ident">src</label>.<a href="#line-393" class="ident">CreationTime</a></code></span>
+<span class="codeline" id="line-415"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-379" class="ident">LastAccessTime</a> = <label for="r13" class="ident">src</label>.<a href="#line-394" class="ident">LastAccessTime</a></code></span>
+<span class="codeline" id="line-416"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-380" class="ident">LastWriteTime</a> = <label for="r13" class="ident">src</label>.<a href="#line-395" class="ident">LastWriteTime</a></code></span>
+<span class="codeline" id="line-417"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-381" class="ident">FileSizeHigh</a> = <label for="r13" class="ident">src</label>.<a href="#line-396" class="ident">FileSizeHigh</a></code></span>
+<span class="codeline" id="line-418"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-382" class="ident">FileSizeLow</a> = <label for="r13" class="ident">src</label>.<a href="#line-397" class="ident">FileSizeLow</a></code></span>
+<span class="codeline" id="line-419"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-383" class="ident">Reserved0</a> = <label for="r13" class="ident">src</label>.<a href="#line-398" class="ident">Reserved0</a></code></span>
+<span class="codeline" id="line-420"><code>	<label for="r12" class="ident">dst</label>.<a href="#line-384" class="ident">Reserved1</a> = <label for="r13" class="ident">src</label>.<a href="#line-399" class="ident">Reserved1</a></code></span>
+<span class="codeline" id="line-421"><code></code></span>
+<span class="codeline" id="line-422"><code>	<span class="comment">// The src is 1 element bigger than dst, but it must be NUL.</span></code></span>
+<span class="codeline" id="line-423"><code>	<a href="../../pkg/builtin.html#name-copy" class="ident">copy</a>(<label for="r12" class="ident">dst</label>.<a href="#line-385" class="ident">FileName</a>[:], <label for="r13" class="ident">src</label>.<a href="#line-400" class="ident">FileName</a>[:])</code></span>
+<span class="codeline" id="line-424"><code>	<a href="../../pkg/builtin.html#name-copy" class="ident">copy</a>(<label for="r12" class="ident">dst</label>.<a href="#line-386" class="ident">AlternateFileName</a>[:], <label for="r13" class="ident">src</label>.<a href="#line-401" class="ident">AlternateFileName</a>[:])</code></span>
+<span class="codeline" id="line-425"><code>}</code></span>
+<span class="codeline" id="line-426"><code></code></span>
+<span class="codeline" id="line-427"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-ByHandleFileInformation" class="ident">ByHandleFileInformation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-428"><code>	FileAttributes     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-429"><code>	CreationTime       <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-430"><code>	LastAccessTime     <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-431"><code>	LastWriteTime      <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-432"><code>	VolumeSerialNumber <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-433"><code>	FileSizeHigh       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-434"><code>	FileSizeLow        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-435"><code>	NumberOfLinks      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-436"><code>	FileIndexHigh      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-437"><code>	FileIndexLow       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-438"><code>}</code></span>
+<span class="codeline" id="line-439"><code></code></span>
+<span class="codeline" id="line-440"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-441"><code>	<a href="../../pkg/syscall.html#name-GetFileExInfoStandard" class="ident">GetFileExInfoStandard</a> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-442"><code>	<a href="../../pkg/syscall.html#name-GetFileExMaxInfoLevel" class="ident">GetFileExMaxInfoLevel</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-443"><code>)</code></span>
+<span class="codeline" id="line-444"><code></code></span>
+<span class="codeline" id="line-445"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Win32FileAttributeData" class="ident">Win32FileAttributeData</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-446"><code>	FileAttributes <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-447"><code>	CreationTime   <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-448"><code>	LastAccessTime <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-449"><code>	LastWriteTime  <a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-450"><code>	FileSizeHigh   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-451"><code>	FileSizeLow    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-452"><code>}</code></span>
+<span class="codeline" id="line-453"><code></code></span>
+<span class="codeline" id="line-454"><code><span class="comment">// ShowWindow constants</span></code></span>
+<span class="codeline" id="line-455"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-456"><code>	<span class="comment">// winuser.h</span></code></span>
+<span class="codeline" id="line-457"><code>	<a href="../../pkg/syscall.html#name-SW_HIDE" class="ident">SW_HIDE</a>            = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-458"><code>	<a href="../../pkg/syscall.html#name-SW_NORMAL" class="ident">SW_NORMAL</a>          = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-459"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWNORMAL" class="ident">SW_SHOWNORMAL</a>      = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-460"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWMINIMIZED" class="ident">SW_SHOWMINIMIZED</a>   = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-461"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWMAXIMIZED" class="ident">SW_SHOWMAXIMIZED</a>   = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-462"><code>	<a href="../../pkg/syscall.html#name-SW_MAXIMIZE" class="ident">SW_MAXIMIZE</a>        = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-463"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWNOACTIVATE" class="ident">SW_SHOWNOACTIVATE</a>  = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-464"><code>	<a href="../../pkg/syscall.html#name-SW_SHOW" class="ident">SW_SHOW</a>            = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-465"><code>	<a href="../../pkg/syscall.html#name-SW_MINIMIZE" class="ident">SW_MINIMIZE</a>        = <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-466"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWMINNOACTIVE" class="ident">SW_SHOWMINNOACTIVE</a> = <span class="lit-number">7</span></code></span>
+<span class="codeline" id="line-467"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWNA" class="ident">SW_SHOWNA</a>          = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-468"><code>	<a href="../../pkg/syscall.html#name-SW_RESTORE" class="ident">SW_RESTORE</a>         = <span class="lit-number">9</span></code></span>
+<span class="codeline" id="line-469"><code>	<a href="../../pkg/syscall.html#name-SW_SHOWDEFAULT" class="ident">SW_SHOWDEFAULT</a>     = <span class="lit-number">10</span></code></span>
+<span class="codeline" id="line-470"><code>	<a href="../../pkg/syscall.html#name-SW_FORCEMINIMIZE" class="ident">SW_FORCEMINIMIZE</a>   = <span class="lit-number">11</span></code></span>
+<span class="codeline" id="line-471"><code>)</code></span>
+<span class="codeline" id="line-472"><code></code></span>
+<span class="codeline" id="line-473"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-StartupInfo" class="ident">StartupInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-474"><code>	Cb            <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-475"><code>	_             *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-476"><code>	Desktop       *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-477"><code>	Title         *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-478"><code>	X             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-479"><code>	Y             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-480"><code>	XSize         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-481"><code>	YSize         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-482"><code>	XCountChars   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-483"><code>	YCountChars   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-484"><code>	FillAttribute <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-485"><code>	Flags         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-486"><code>	ShowWindow    <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-487"><code>	_             <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-488"><code>	_             *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-489"><code>	StdInput      <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-490"><code>	StdOutput     <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-491"><code>	StdErr        <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-492"><code>}</code></span>
+<span class="codeline" id="line-493"><code></code></span>
+<span class="codeline" id="line-494"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-_PROC_THREAD_ATTRIBUTE_LIST" class="ident">_PROC_THREAD_ATTRIBUTE_LIST</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-495"><code>	_ [<span class="lit-number">1</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-496"><code>}</code></span>
+<span class="codeline" id="line-497"><code></code></span>
+<span class="codeline" id="line-498"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-499"><code>	<a href="../../pkg/syscall.html#name-_PROC_THREAD_ATTRIBUTE_PARENT_PROCESS" class="ident">_PROC_THREAD_ATTRIBUTE_PARENT_PROCESS</a> = <span class="lit-number">0x00020000</span></code></span>
+<span class="codeline" id="line-500"><code>	<a href="../../pkg/syscall.html#name-_PROC_THREAD_ATTRIBUTE_HANDLE_LIST" class="ident">_PROC_THREAD_ATTRIBUTE_HANDLE_LIST</a>    = <span class="lit-number">0x00020002</span></code></span>
+<span class="codeline" id="line-501"><code>)</code></span>
+<span class="codeline" id="line-502"><code></code></span>
+<span class="codeline" id="line-503"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-_STARTUPINFOEXW" class="ident">_STARTUPINFOEXW</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-504"><code>	<a href="#line-473" class="ident">StartupInfo</a></code></span>
+<span class="codeline" id="line-505"><code>	ProcThreadAttributeList *<a href="#line-494" class="ident">_PROC_THREAD_ATTRIBUTE_LIST</a></code></span>
+<span class="codeline" id="line-506"><code>}</code></span>
+<span class="codeline" id="line-507"><code></code></span>
+<span class="codeline" id="line-508"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-_EXTENDED_STARTUPINFO_PRESENT" class="ident">_EXTENDED_STARTUPINFO_PRESENT</a> = <span class="lit-number">0x00080000</span></code></span>
+<span class="codeline" id="line-509"><code></code></span>
+<span class="codeline" id="line-510"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-ProcessInformation" class="ident">ProcessInformation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-511"><code>	Process   <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-512"><code>	Thread    <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-513"><code>	ProcessId <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-514"><code>	ThreadId  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-515"><code>}</code></span>
+<span class="codeline" id="line-516"><code></code></span>
+<span class="codeline" id="line-517"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-ProcessEntry32" class="ident">ProcessEntry32</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-518"><code>	Size            <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-519"><code>	Usage           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-520"><code>	ProcessID       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-521"><code>	DefaultHeapID   <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-522"><code>	ModuleID        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-523"><code>	Threads         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-524"><code>	ParentProcessID <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-525"><code>	PriClassBase    <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-526"><code>	Flags           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-527"><code>	ExeFile         [<a href="#line-144" class="ident">MAX_PATH</a>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-528"><code>}</code></span>
+<span class="codeline" id="line-529"><code></code></span>
+<span class="codeline" id="line-530"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Systemtime" class="ident">Systemtime</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-531"><code>	Year         <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-532"><code>	Month        <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-533"><code>	DayOfWeek    <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-534"><code>	Day          <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-535"><code>	Hour         <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-536"><code>	Minute       <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-537"><code>	Second       <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-538"><code>	Milliseconds <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-539"><code>}</code></span>
+<span class="codeline" id="line-540"><code></code></span>
+<span class="codeline" id="line-541"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Timezoneinformation" class="ident">Timezoneinformation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-542"><code>	Bias         <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-543"><code>	StandardName [<span class="lit-number">32</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-544"><code>	StandardDate <a href="#line-530" class="ident">Systemtime</a></code></span>
+<span class="codeline" id="line-545"><code>	StandardBias <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-546"><code>	DaylightName [<span class="lit-number">32</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-547"><code>	DaylightDate <a href="#line-530" class="ident">Systemtime</a></code></span>
+<span class="codeline" id="line-548"><code>	DaylightBias <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-549"><code>}</code></span>
+<span class="codeline" id="line-550"><code></code></span>
+<span class="codeline" id="line-551"><code><span class="comment">// Socket related.</span></code></span>
+<span class="codeline" id="line-552"><code></code></span>
+<span class="codeline" id="line-553"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-554"><code>	<a href="../../pkg/syscall.html#name-AF_UNSPEC" class="ident">AF_UNSPEC</a>  = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-555"><code>	<a href="../../pkg/syscall.html#name-AF_UNIX" class="ident">AF_UNIX</a>    = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-556"><code>	<a href="../../pkg/syscall.html#name-AF_INET" class="ident">AF_INET</a>    = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-557"><code>	<a href="../../pkg/syscall.html#name-AF_INET6" class="ident">AF_INET6</a>   = <span class="lit-number">23</span></code></span>
+<span class="codeline" id="line-558"><code>	<a href="../../pkg/syscall.html#name-AF_NETBIOS" class="ident">AF_NETBIOS</a> = <span class="lit-number">17</span></code></span>
+<span class="codeline" id="line-559"><code></code></span>
+<span class="codeline" id="line-560"><code>	<a href="../../pkg/syscall.html#name-SOCK_STREAM" class="ident">SOCK_STREAM</a>    = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-561"><code>	<a href="../../pkg/syscall.html#name-SOCK_DGRAM" class="ident">SOCK_DGRAM</a>     = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-562"><code>	<a href="../../pkg/syscall.html#name-SOCK_RAW" class="ident">SOCK_RAW</a>       = <span class="lit-number">3</span></code></span>
+<span class="codeline" id="line-563"><code>	<a href="../../pkg/syscall.html#name-SOCK_SEQPACKET" class="ident">SOCK_SEQPACKET</a> = <span class="lit-number">5</span></code></span>
+<span class="codeline" id="line-564"><code></code></span>
+<span class="codeline" id="line-565"><code>	<a href="../../pkg/syscall.html#name-IPPROTO_IP" class="ident">IPPROTO_IP</a>   = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-566"><code>	<a href="../../pkg/syscall.html#name-IPPROTO_IPV6" class="ident">IPPROTO_IPV6</a> = <span class="lit-number">0x29</span></code></span>
+<span class="codeline" id="line-567"><code>	<a href="../../pkg/syscall.html#name-IPPROTO_TCP" class="ident">IPPROTO_TCP</a>  = <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-568"><code>	<a href="../../pkg/syscall.html#name-IPPROTO_UDP" class="ident">IPPROTO_UDP</a>  = <span class="lit-number">17</span></code></span>
+<span class="codeline" id="line-569"><code></code></span>
+<span class="codeline" id="line-570"><code>	<a href="../../pkg/syscall.html#name-SOL_SOCKET" class="ident">SOL_SOCKET</a>                = <span class="lit-number">0xffff</span></code></span>
+<span class="codeline" id="line-571"><code>	<a href="../../pkg/syscall.html#name-SO_REUSEADDR" class="ident">SO_REUSEADDR</a>              = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-572"><code>	<a href="../../pkg/syscall.html#name-SO_KEEPALIVE" class="ident">SO_KEEPALIVE</a>              = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-573"><code>	<a href="../../pkg/syscall.html#name-SO_DONTROUTE" class="ident">SO_DONTROUTE</a>              = <span class="lit-number">16</span></code></span>
+<span class="codeline" id="line-574"><code>	<a href="../../pkg/syscall.html#name-SO_BROADCAST" class="ident">SO_BROADCAST</a>              = <span class="lit-number">32</span></code></span>
+<span class="codeline" id="line-575"><code>	<a href="../../pkg/syscall.html#name-SO_LINGER" class="ident">SO_LINGER</a>                 = <span class="lit-number">128</span></code></span>
+<span class="codeline" id="line-576"><code>	<a href="../../pkg/syscall.html#name-SO_RCVBUF" class="ident">SO_RCVBUF</a>                 = <span class="lit-number">0x1002</span></code></span>
+<span class="codeline" id="line-577"><code>	<a href="../../pkg/syscall.html#name-SO_SNDBUF" class="ident">SO_SNDBUF</a>                 = <span class="lit-number">0x1001</span></code></span>
+<span class="codeline" id="line-578"><code>	<a href="../../pkg/syscall.html#name-SO_UPDATE_ACCEPT_CONTEXT" class="ident">SO_UPDATE_ACCEPT_CONTEXT</a>  = <span class="lit-number">0x700b</span></code></span>
+<span class="codeline" id="line-579"><code>	<a href="../../pkg/syscall.html#name-SO_UPDATE_CONNECT_CONTEXT" class="ident">SO_UPDATE_CONNECT_CONTEXT</a> = <span class="lit-number">0x7010</span></code></span>
+<span class="codeline" id="line-580"><code></code></span>
+<span class="codeline" id="line-581"><code>	<a href="../../pkg/syscall.html#name-IOC_OUT" class="ident">IOC_OUT</a>                            = <span class="lit-number">0x40000000</span></code></span>
+<span class="codeline" id="line-582"><code>	<a href="../../pkg/syscall.html#name-IOC_IN" class="ident">IOC_IN</a>                             = <span class="lit-number">0x80000000</span></code></span>
+<span class="codeline" id="line-583"><code>	<a href="../../pkg/syscall.html#name-IOC_VENDOR" class="ident">IOC_VENDOR</a>                         = <span class="lit-number">0x18000000</span></code></span>
+<span class="codeline" id="line-584"><code>	<a href="../../pkg/syscall.html#name-IOC_INOUT" class="ident">IOC_INOUT</a>                          = <a href="#line-582" class="ident">IOC_IN</a> | <a href="#line-581" class="ident">IOC_OUT</a></code></span>
+<span class="codeline" id="line-585"><code>	<a href="../../pkg/syscall.html#name-IOC_WS2" class="ident">IOC_WS2</a>                            = <span class="lit-number">0x08000000</span></code></span>
+<span class="codeline" id="line-586"><code>	<a href="../../pkg/syscall.html#name-SIO_GET_EXTENSION_FUNCTION_POINTER" class="ident">SIO_GET_EXTENSION_FUNCTION_POINTER</a> = <a href="#line-584" class="ident">IOC_INOUT</a> | <a href="#line-585" class="ident">IOC_WS2</a> | <span class="lit-number">6</span></code></span>
+<span class="codeline" id="line-587"><code>	<a href="../../pkg/syscall.html#name-SIO_KEEPALIVE_VALS" class="ident">SIO_KEEPALIVE_VALS</a>                 = <a href="#line-582" class="ident">IOC_IN</a> | <a href="#line-583" class="ident">IOC_VENDOR</a> | <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-588"><code>	<a href="../../pkg/syscall.html#name-SIO_UDP_CONNRESET" class="ident">SIO_UDP_CONNRESET</a>                  = <a href="#line-582" class="ident">IOC_IN</a> | <a href="#line-583" class="ident">IOC_VENDOR</a> | <span class="lit-number">12</span></code></span>
+<span class="codeline" id="line-589"><code></code></span>
+<span class="codeline" id="line-590"><code>	<span class="comment">// cf. https://learn.microsoft.com/en-US/troubleshoot/windows/win32/header-library-requirement-socket-ipproto-ip</span></code></span>
+<span class="codeline" id="line-591"><code></code></span>
+<span class="codeline" id="line-592"><code>	<a href="../../pkg/syscall.html#name-IP_TOS" class="ident">IP_TOS</a>             = <span class="lit-number">0x3</span></code></span>
+<span class="codeline" id="line-593"><code>	<a href="../../pkg/syscall.html#name-IP_TTL" class="ident">IP_TTL</a>             = <span class="lit-number">0x4</span></code></span>
+<span class="codeline" id="line-594"><code>	<a href="../../pkg/syscall.html#name-IP_MULTICAST_IF" class="ident">IP_MULTICAST_IF</a>    = <span class="lit-number">0x9</span></code></span>
+<span class="codeline" id="line-595"><code>	<a href="../../pkg/syscall.html#name-IP_MULTICAST_TTL" class="ident">IP_MULTICAST_TTL</a>   = <span class="lit-number">0xa</span></code></span>
+<span class="codeline" id="line-596"><code>	<a href="../../pkg/syscall.html#name-IP_MULTICAST_LOOP" class="ident">IP_MULTICAST_LOOP</a>  = <span class="lit-number">0xb</span></code></span>
+<span class="codeline" id="line-597"><code>	<a href="../../pkg/syscall.html#name-IP_ADD_MEMBERSHIP" class="ident">IP_ADD_MEMBERSHIP</a>  = <span class="lit-number">0xc</span></code></span>
+<span class="codeline" id="line-598"><code>	<a href="../../pkg/syscall.html#name-IP_DROP_MEMBERSHIP" class="ident">IP_DROP_MEMBERSHIP</a> = <span class="lit-number">0xd</span></code></span>
+<span class="codeline" id="line-599"><code></code></span>
+<span class="codeline" id="line-600"><code>	<a href="../../pkg/syscall.html#name-IPV6_V6ONLY" class="ident">IPV6_V6ONLY</a>         = <span class="lit-number">0x1b</span></code></span>
+<span class="codeline" id="line-601"><code>	<a href="../../pkg/syscall.html#name-IPV6_UNICAST_HOPS" class="ident">IPV6_UNICAST_HOPS</a>   = <span class="lit-number">0x4</span></code></span>
+<span class="codeline" id="line-602"><code>	<a href="../../pkg/syscall.html#name-IPV6_MULTICAST_IF" class="ident">IPV6_MULTICAST_IF</a>   = <span class="lit-number">0x9</span></code></span>
+<span class="codeline" id="line-603"><code>	<a href="../../pkg/syscall.html#name-IPV6_MULTICAST_HOPS" class="ident">IPV6_MULTICAST_HOPS</a> = <span class="lit-number">0xa</span></code></span>
+<span class="codeline" id="line-604"><code>	<a href="../../pkg/syscall.html#name-IPV6_MULTICAST_LOOP" class="ident">IPV6_MULTICAST_LOOP</a> = <span class="lit-number">0xb</span></code></span>
+<span class="codeline" id="line-605"><code>	<a href="../../pkg/syscall.html#name-IPV6_JOIN_GROUP" class="ident">IPV6_JOIN_GROUP</a>     = <span class="lit-number">0xc</span></code></span>
+<span class="codeline" id="line-606"><code>	<a href="../../pkg/syscall.html#name-IPV6_LEAVE_GROUP" class="ident">IPV6_LEAVE_GROUP</a>    = <span class="lit-number">0xd</span></code></span>
+<span class="codeline" id="line-607"><code></code></span>
+<span class="codeline" id="line-608"><code>	<a href="../../pkg/syscall.html#name-SOMAXCONN" class="ident">SOMAXCONN</a> = <span class="lit-number">0x7fffffff</span></code></span>
+<span class="codeline" id="line-609"><code></code></span>
+<span class="codeline" id="line-610"><code>	<a href="../../pkg/syscall.html#name-TCP_NODELAY" class="ident">TCP_NODELAY</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-611"><code></code></span>
+<span class="codeline" id="line-612"><code>	<a href="../../pkg/syscall.html#name-SHUT_RD" class="ident">SHUT_RD</a>   = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-613"><code>	<a href="../../pkg/syscall.html#name-SHUT_WR" class="ident">SHUT_WR</a>   = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-614"><code>	<a href="../../pkg/syscall.html#name-SHUT_RDWR" class="ident">SHUT_RDWR</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-615"><code></code></span>
+<span class="codeline" id="line-616"><code>	<a href="../../pkg/syscall.html#name-WSADESCRIPTION_LEN" class="ident">WSADESCRIPTION_LEN</a> = <span class="lit-number">256</span></code></span>
+<span class="codeline" id="line-617"><code>	<a href="../../pkg/syscall.html#name-WSASYS_STATUS_LEN" class="ident">WSASYS_STATUS_LEN</a>  = <span class="lit-number">128</span></code></span>
+<span class="codeline" id="line-618"><code>)</code></span>
+<span class="codeline" id="line-619"><code></code></span>
+<span class="codeline" id="line-620"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-WSABuf" class="ident">WSABuf</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-621"><code>	Len <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-622"><code>	Buf *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-623"><code>}</code></span>
+<span class="codeline" id="line-624"><code></code></span>
+<span class="codeline" id="line-625"><code><span class="comment">// Invented values to support what package os expects.</span></code></span>
+<span class="codeline" id="line-626"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-627"><code>	<a href="../../pkg/syscall.html#name-S_IFMT" class="ident">S_IFMT</a>   = <span class="lit-number">0x1f000</span></code></span>
+<span class="codeline" id="line-628"><code>	<a href="../../pkg/syscall.html#name-S_IFIFO" class="ident">S_IFIFO</a>  = <span class="lit-number">0x1000</span></code></span>
+<span class="codeline" id="line-629"><code>	<a href="../../pkg/syscall.html#name-S_IFCHR" class="ident">S_IFCHR</a>  = <span class="lit-number">0x2000</span></code></span>
+<span class="codeline" id="line-630"><code>	<a href="../../pkg/syscall.html#name-S_IFDIR" class="ident">S_IFDIR</a>  = <span class="lit-number">0x4000</span></code></span>
+<span class="codeline" id="line-631"><code>	<a href="../../pkg/syscall.html#name-S_IFBLK" class="ident">S_IFBLK</a>  = <span class="lit-number">0x6000</span></code></span>
+<span class="codeline" id="line-632"><code>	<a href="../../pkg/syscall.html#name-S_IFREG" class="ident">S_IFREG</a>  = <span class="lit-number">0x8000</span></code></span>
+<span class="codeline" id="line-633"><code>	<a href="../../pkg/syscall.html#name-S_IFLNK" class="ident">S_IFLNK</a>  = <span class="lit-number">0xa000</span></code></span>
+<span class="codeline" id="line-634"><code>	<a href="../../pkg/syscall.html#name-S_IFSOCK" class="ident">S_IFSOCK</a> = <span class="lit-number">0xc000</span></code></span>
+<span class="codeline" id="line-635"><code>	<a href="../../pkg/syscall.html#name-S_ISUID" class="ident">S_ISUID</a>  = <span class="lit-number">0x800</span></code></span>
+<span class="codeline" id="line-636"><code>	<a href="../../pkg/syscall.html#name-S_ISGID" class="ident">S_ISGID</a>  = <span class="lit-number">0x400</span></code></span>
+<span class="codeline" id="line-637"><code>	<a href="../../pkg/syscall.html#name-S_ISVTX" class="ident">S_ISVTX</a>  = <span class="lit-number">0x200</span></code></span>
+<span class="codeline" id="line-638"><code>	<a href="../../pkg/syscall.html#name-S_IRUSR" class="ident">S_IRUSR</a>  = <span class="lit-number">0x100</span></code></span>
+<span class="codeline" id="line-639"><code>	<a href="../../pkg/syscall.html#name-S_IWRITE" class="ident">S_IWRITE</a> = <span class="lit-number">0x80</span></code></span>
+<span class="codeline" id="line-640"><code>	<a href="../../pkg/syscall.html#name-S_IWUSR" class="ident">S_IWUSR</a>  = <span class="lit-number">0x80</span></code></span>
+<span class="codeline" id="line-641"><code>	<a href="../../pkg/syscall.html#name-S_IXUSR" class="ident">S_IXUSR</a>  = <span class="lit-number">0x40</span></code></span>
+<span class="codeline" id="line-642"><code>)</code></span>
+<span class="codeline" id="line-643"><code></code></span>
+<span class="codeline" id="line-644"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-645"><code>	<a href="../../pkg/syscall.html#name-FILE_TYPE_CHAR" class="ident">FILE_TYPE_CHAR</a>    = <span class="lit-number">0x0002</span></code></span>
+<span class="codeline" id="line-646"><code>	<a href="../../pkg/syscall.html#name-FILE_TYPE_DISK" class="ident">FILE_TYPE_DISK</a>    = <span class="lit-number">0x0001</span></code></span>
+<span class="codeline" id="line-647"><code>	<a href="../../pkg/syscall.html#name-FILE_TYPE_PIPE" class="ident">FILE_TYPE_PIPE</a>    = <span class="lit-number">0x0003</span></code></span>
+<span class="codeline" id="line-648"><code>	<a href="../../pkg/syscall.html#name-FILE_TYPE_REMOTE" class="ident">FILE_TYPE_REMOTE</a>  = <span class="lit-number">0x8000</span></code></span>
+<span class="codeline" id="line-649"><code>	<a href="../../pkg/syscall.html#name-FILE_TYPE_UNKNOWN" class="ident">FILE_TYPE_UNKNOWN</a> = <span class="lit-number">0x0000</span></code></span>
+<span class="codeline" id="line-650"><code>)</code></span>
+<span class="codeline" id="line-651"><code></code></span>
+<span class="codeline" id="line-652"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Hostent" class="ident">Hostent</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-653"><code>	Name     *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-654"><code>	Aliases  **<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-655"><code>	AddrType <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-656"><code>	Length   <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-657"><code>	AddrList **<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-658"><code>}</code></span>
+<span class="codeline" id="line-659"><code></code></span>
+<span class="codeline" id="line-660"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-Protoent" class="ident">Protoent</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-661"><code>	Name    *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-662"><code>	Aliases **<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-663"><code>	Proto   <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-664"><code>}</code></span>
+<span class="codeline" id="line-665"><code></code></span>
+<span class="codeline" id="line-666"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-667"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_A" class="ident">DNS_TYPE_A</a>       = <span class="lit-number">0x0001</span></code></span>
+<span class="codeline" id="line-668"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NS" class="ident">DNS_TYPE_NS</a>      = <span class="lit-number">0x0002</span></code></span>
+<span class="codeline" id="line-669"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MD" class="ident">DNS_TYPE_MD</a>      = <span class="lit-number">0x0003</span></code></span>
+<span class="codeline" id="line-670"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MF" class="ident">DNS_TYPE_MF</a>      = <span class="lit-number">0x0004</span></code></span>
+<span class="codeline" id="line-671"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_CNAME" class="ident">DNS_TYPE_CNAME</a>   = <span class="lit-number">0x0005</span></code></span>
+<span class="codeline" id="line-672"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_SOA" class="ident">DNS_TYPE_SOA</a>     = <span class="lit-number">0x0006</span></code></span>
+<span class="codeline" id="line-673"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MB" class="ident">DNS_TYPE_MB</a>      = <span class="lit-number">0x0007</span></code></span>
+<span class="codeline" id="line-674"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MG" class="ident">DNS_TYPE_MG</a>      = <span class="lit-number">0x0008</span></code></span>
+<span class="codeline" id="line-675"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MR" class="ident">DNS_TYPE_MR</a>      = <span class="lit-number">0x0009</span></code></span>
+<span class="codeline" id="line-676"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NULL" class="ident">DNS_TYPE_NULL</a>    = <span class="lit-number">0x000a</span></code></span>
+<span class="codeline" id="line-677"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_WKS" class="ident">DNS_TYPE_WKS</a>     = <span class="lit-number">0x000b</span></code></span>
+<span class="codeline" id="line-678"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_PTR" class="ident">DNS_TYPE_PTR</a>     = <span class="lit-number">0x000c</span></code></span>
+<span class="codeline" id="line-679"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_HINFO" class="ident">DNS_TYPE_HINFO</a>   = <span class="lit-number">0x000d</span></code></span>
+<span class="codeline" id="line-680"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MINFO" class="ident">DNS_TYPE_MINFO</a>   = <span class="lit-number">0x000e</span></code></span>
+<span class="codeline" id="line-681"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MX" class="ident">DNS_TYPE_MX</a>      = <span class="lit-number">0x000f</span></code></span>
+<span class="codeline" id="line-682"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_TEXT" class="ident">DNS_TYPE_TEXT</a>    = <span class="lit-number">0x0010</span></code></span>
+<span class="codeline" id="line-683"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_RP" class="ident">DNS_TYPE_RP</a>      = <span class="lit-number">0x0011</span></code></span>
+<span class="codeline" id="line-684"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_AFSDB" class="ident">DNS_TYPE_AFSDB</a>   = <span class="lit-number">0x0012</span></code></span>
+<span class="codeline" id="line-685"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_X25" class="ident">DNS_TYPE_X25</a>     = <span class="lit-number">0x0013</span></code></span>
+<span class="codeline" id="line-686"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_ISDN" class="ident">DNS_TYPE_ISDN</a>    = <span class="lit-number">0x0014</span></code></span>
+<span class="codeline" id="line-687"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_RT" class="ident">DNS_TYPE_RT</a>      = <span class="lit-number">0x0015</span></code></span>
+<span class="codeline" id="line-688"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NSAP" class="ident">DNS_TYPE_NSAP</a>    = <span class="lit-number">0x0016</span></code></span>
+<span class="codeline" id="line-689"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NSAPPTR" class="ident">DNS_TYPE_NSAPPTR</a> = <span class="lit-number">0x0017</span></code></span>
+<span class="codeline" id="line-690"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_SIG" class="ident">DNS_TYPE_SIG</a>     = <span class="lit-number">0x0018</span></code></span>
+<span class="codeline" id="line-691"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_KEY" class="ident">DNS_TYPE_KEY</a>     = <span class="lit-number">0x0019</span></code></span>
+<span class="codeline" id="line-692"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_PX" class="ident">DNS_TYPE_PX</a>      = <span class="lit-number">0x001a</span></code></span>
+<span class="codeline" id="line-693"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_GPOS" class="ident">DNS_TYPE_GPOS</a>    = <span class="lit-number">0x001b</span></code></span>
+<span class="codeline" id="line-694"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_AAAA" class="ident">DNS_TYPE_AAAA</a>    = <span class="lit-number">0x001c</span></code></span>
+<span class="codeline" id="line-695"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_LOC" class="ident">DNS_TYPE_LOC</a>     = <span class="lit-number">0x001d</span></code></span>
+<span class="codeline" id="line-696"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NXT" class="ident">DNS_TYPE_NXT</a>     = <span class="lit-number">0x001e</span></code></span>
+<span class="codeline" id="line-697"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_EID" class="ident">DNS_TYPE_EID</a>     = <span class="lit-number">0x001f</span></code></span>
+<span class="codeline" id="line-698"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NIMLOC" class="ident">DNS_TYPE_NIMLOC</a>  = <span class="lit-number">0x0020</span></code></span>
+<span class="codeline" id="line-699"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_SRV" class="ident">DNS_TYPE_SRV</a>     = <span class="lit-number">0x0021</span></code></span>
+<span class="codeline" id="line-700"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_ATMA" class="ident">DNS_TYPE_ATMA</a>    = <span class="lit-number">0x0022</span></code></span>
+<span class="codeline" id="line-701"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NAPTR" class="ident">DNS_TYPE_NAPTR</a>   = <span class="lit-number">0x0023</span></code></span>
+<span class="codeline" id="line-702"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_KX" class="ident">DNS_TYPE_KX</a>      = <span class="lit-number">0x0024</span></code></span>
+<span class="codeline" id="line-703"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_CERT" class="ident">DNS_TYPE_CERT</a>    = <span class="lit-number">0x0025</span></code></span>
+<span class="codeline" id="line-704"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_A6" class="ident">DNS_TYPE_A6</a>      = <span class="lit-number">0x0026</span></code></span>
+<span class="codeline" id="line-705"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_DNAME" class="ident">DNS_TYPE_DNAME</a>   = <span class="lit-number">0x0027</span></code></span>
+<span class="codeline" id="line-706"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_SINK" class="ident">DNS_TYPE_SINK</a>    = <span class="lit-number">0x0028</span></code></span>
+<span class="codeline" id="line-707"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_OPT" class="ident">DNS_TYPE_OPT</a>     = <span class="lit-number">0x0029</span></code></span>
+<span class="codeline" id="line-708"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_DS" class="ident">DNS_TYPE_DS</a>      = <span class="lit-number">0x002B</span></code></span>
+<span class="codeline" id="line-709"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_RRSIG" class="ident">DNS_TYPE_RRSIG</a>   = <span class="lit-number">0x002E</span></code></span>
+<span class="codeline" id="line-710"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NSEC" class="ident">DNS_TYPE_NSEC</a>    = <span class="lit-number">0x002F</span></code></span>
+<span class="codeline" id="line-711"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_DNSKEY" class="ident">DNS_TYPE_DNSKEY</a>  = <span class="lit-number">0x0030</span></code></span>
+<span class="codeline" id="line-712"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_DHCID" class="ident">DNS_TYPE_DHCID</a>   = <span class="lit-number">0x0031</span></code></span>
+<span class="codeline" id="line-713"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_UINFO" class="ident">DNS_TYPE_UINFO</a>   = <span class="lit-number">0x0064</span></code></span>
+<span class="codeline" id="line-714"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_UID" class="ident">DNS_TYPE_UID</a>     = <span class="lit-number">0x0065</span></code></span>
+<span class="codeline" id="line-715"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_GID" class="ident">DNS_TYPE_GID</a>     = <span class="lit-number">0x0066</span></code></span>
+<span class="codeline" id="line-716"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_UNSPEC" class="ident">DNS_TYPE_UNSPEC</a>  = <span class="lit-number">0x0067</span></code></span>
+<span class="codeline" id="line-717"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_ADDRS" class="ident">DNS_TYPE_ADDRS</a>   = <span class="lit-number">0x00f8</span></code></span>
+<span class="codeline" id="line-718"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_TKEY" class="ident">DNS_TYPE_TKEY</a>    = <span class="lit-number">0x00f9</span></code></span>
+<span class="codeline" id="line-719"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_TSIG" class="ident">DNS_TYPE_TSIG</a>    = <span class="lit-number">0x00fa</span></code></span>
+<span class="codeline" id="line-720"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_IXFR" class="ident">DNS_TYPE_IXFR</a>    = <span class="lit-number">0x00fb</span></code></span>
+<span class="codeline" id="line-721"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_AXFR" class="ident">DNS_TYPE_AXFR</a>    = <span class="lit-number">0x00fc</span></code></span>
+<span class="codeline" id="line-722"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MAILB" class="ident">DNS_TYPE_MAILB</a>   = <span class="lit-number">0x00fd</span></code></span>
+<span class="codeline" id="line-723"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_MAILA" class="ident">DNS_TYPE_MAILA</a>   = <span class="lit-number">0x00fe</span></code></span>
+<span class="codeline" id="line-724"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_ALL" class="ident">DNS_TYPE_ALL</a>     = <span class="lit-number">0x00ff</span></code></span>
+<span class="codeline" id="line-725"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_ANY" class="ident">DNS_TYPE_ANY</a>     = <span class="lit-number">0x00ff</span></code></span>
+<span class="codeline" id="line-726"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_WINS" class="ident">DNS_TYPE_WINS</a>    = <span class="lit-number">0xff01</span></code></span>
+<span class="codeline" id="line-727"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_WINSR" class="ident">DNS_TYPE_WINSR</a>   = <span class="lit-number">0xff02</span></code></span>
+<span class="codeline" id="line-728"><code>	<a href="../../pkg/syscall.html#name-DNS_TYPE_NBSTAT" class="ident">DNS_TYPE_NBSTAT</a>  = <span class="lit-number">0xff01</span></code></span>
+<span class="codeline" id="line-729"><code>)</code></span>
+<span class="codeline" id="line-730"><code></code></span>
+<span class="codeline" id="line-731"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-732"><code>	<a href="../../pkg/syscall.html#name-DNS_INFO_NO_RECORDS" class="ident">DNS_INFO_NO_RECORDS</a> = <span class="lit-number">0x251D</span></code></span>
+<span class="codeline" id="line-733"><code>)</code></span>
+<span class="codeline" id="line-734"><code></code></span>
+<span class="codeline" id="line-735"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-736"><code>	<span class="comment">// flags inside DNSRecord.Dw</span></code></span>
+<span class="codeline" id="line-737"><code>	<a href="../../pkg/syscall.html#name-DnsSectionQuestion" class="ident">DnsSectionQuestion</a>   = <span class="lit-number">0x0000</span></code></span>
+<span class="codeline" id="line-738"><code>	<a href="../../pkg/syscall.html#name-DnsSectionAnswer" class="ident">DnsSectionAnswer</a>     = <span class="lit-number">0x0001</span></code></span>
+<span class="codeline" id="line-739"><code>	<a href="../../pkg/syscall.html#name-DnsSectionAuthority" class="ident">DnsSectionAuthority</a>  = <span class="lit-number">0x0002</span></code></span>
+<span class="codeline" id="line-740"><code>	<a href="../../pkg/syscall.html#name-DnsSectionAdditional" class="ident">DnsSectionAdditional</a> = <span class="lit-number">0x0003</span></code></span>
+<span class="codeline" id="line-741"><code>)</code></span>
+<span class="codeline" id="line-742"><code></code></span>
+<span class="codeline" id="line-743"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-DNSSRVData" class="ident">DNSSRVData</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-744"><code>	Target   *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-745"><code>	Priority <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-746"><code>	Weight   <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-747"><code>	Port     <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-748"><code>	Pad      <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-749"><code>}</code></span>
+<span class="codeline" id="line-750"><code></code></span>
+<span class="codeline" id="line-751"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-DNSPTRData" class="ident">DNSPTRData</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-752"><code>	Host *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-753"><code>}</code></span>
+<span class="codeline" id="line-754"><code></code></span>
+<span class="codeline" id="line-755"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-DNSMXData" class="ident">DNSMXData</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-756"><code>	NameExchange *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-757"><code>	Preference   <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-758"><code>	Pad          <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-759"><code>}</code></span>
+<span class="codeline" id="line-760"><code></code></span>
+<span class="codeline" id="line-761"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-DNSTXTData" class="ident">DNSTXTData</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-762"><code>	StringCount <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-763"><code>	StringArray [<span class="lit-number">1</span>]*<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-764"><code>}</code></span>
+<span class="codeline" id="line-765"><code></code></span>
+<span class="codeline" id="line-766"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-DNSRecord" class="ident">DNSRecord</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-767"><code>	Next     *<a href="#line-766" class="ident">DNSRecord</a></code></span>
+<span class="codeline" id="line-768"><code>	Name     *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-769"><code>	Type     <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-770"><code>	Length   <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-771"><code>	Dw       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-772"><code>	Ttl      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-773"><code>	Reserved <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-774"><code>	Data     [<span class="lit-number">40</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-775"><code>}</code></span>
+<span class="codeline" id="line-776"><code></code></span>
+<span class="codeline" id="line-777"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-778"><code>	<a href="../../pkg/syscall.html#name-TF_DISCONNECT" class="ident">TF_DISCONNECT</a>         = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-779"><code>	<a href="../../pkg/syscall.html#name-TF_REUSE_SOCKET" class="ident">TF_REUSE_SOCKET</a>       = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-780"><code>	<a href="../../pkg/syscall.html#name-TF_WRITE_BEHIND" class="ident">TF_WRITE_BEHIND</a>       = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-781"><code>	<a href="../../pkg/syscall.html#name-TF_USE_DEFAULT_WORKER" class="ident">TF_USE_DEFAULT_WORKER</a> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-782"><code>	<a href="../../pkg/syscall.html#name-TF_USE_SYSTEM_THREAD" class="ident">TF_USE_SYSTEM_THREAD</a>  = <span class="lit-number">16</span></code></span>
+<span class="codeline" id="line-783"><code>	<a href="../../pkg/syscall.html#name-TF_USE_KERNEL_APC" class="ident">TF_USE_KERNEL_APC</a>     = <span class="lit-number">32</span></code></span>
+<span class="codeline" id="line-784"><code>)</code></span>
+<span class="codeline" id="line-785"><code></code></span>
+<span class="codeline" id="line-786"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-TransmitFileBuffers" class="ident">TransmitFileBuffers</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-787"><code>	Head       <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-788"><code>	HeadLength <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-789"><code>	Tail       <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-790"><code>	TailLength <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-791"><code>}</code></span>
+<span class="codeline" id="line-792"><code></code></span>
+<span class="codeline" id="line-793"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-794"><code>	<a href="../../pkg/syscall.html#name-IFF_UP" class="ident">IFF_UP</a>           = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-795"><code>	<a href="../../pkg/syscall.html#name-IFF_BROADCAST" class="ident">IFF_BROADCAST</a>    = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-796"><code>	<a href="../../pkg/syscall.html#name-IFF_LOOPBACK" class="ident">IFF_LOOPBACK</a>     = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-797"><code>	<a href="../../pkg/syscall.html#name-IFF_POINTTOPOINT" class="ident">IFF_POINTTOPOINT</a> = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-798"><code>	<a href="../../pkg/syscall.html#name-IFF_MULTICAST" class="ident">IFF_MULTICAST</a>    = <span class="lit-number">16</span></code></span>
+<span class="codeline" id="line-799"><code>)</code></span>
+<span class="codeline" id="line-800"><code></code></span>
+<span class="codeline" id="line-801"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-SIO_GET_INTERFACE_LIST" class="ident">SIO_GET_INTERFACE_LIST</a> = <span class="lit-number">0x4004747F</span></code></span>
+<span class="codeline" id="line-802"><code></code></span>
+<span class="codeline" id="line-803"><code><span class="comment">// TODO(mattn): SockaddrGen is union of sockaddr/sockaddr_in/sockaddr_in6_old.</span></code></span>
+<span class="codeline" id="line-804"><code><span class="comment">// will be fixed to change variable type as suitable.</span></code></span>
+<span class="codeline" id="line-805"><code></code></span>
+<span class="codeline" id="line-806"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-SockaddrGen" class="ident">SockaddrGen</a> [<span class="lit-number">24</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-807"><code></code></span>
+<span class="codeline" id="line-808"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-InterfaceInfo" class="ident">InterfaceInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-809"><code>	Flags            <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-810"><code>	Address          <a href="#line-806" class="ident">SockaddrGen</a></code></span>
+<span class="codeline" id="line-811"><code>	BroadcastAddress <a href="#line-806" class="ident">SockaddrGen</a></code></span>
+<span class="codeline" id="line-812"><code>	Netmask          <a href="#line-806" class="ident">SockaddrGen</a></code></span>
+<span class="codeline" id="line-813"><code>}</code></span>
+<span class="codeline" id="line-814"><code></code></span>
+<span class="codeline" id="line-815"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-IpAddressString" class="ident">IpAddressString</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-816"><code>	String [<span class="lit-number">16</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-817"><code>}</code></span>
+<span class="codeline" id="line-818"><code></code></span>
+<span class="codeline" id="line-819"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-IpMaskString" class="ident">IpMaskString</a> <a href="#line-815" class="ident">IpAddressString</a></code></span>
+<span class="codeline" id="line-820"><code></code></span>
+<span class="codeline" id="line-821"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-IpAddrString" class="ident">IpAddrString</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-822"><code>	Next      *<a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-823"><code>	IpAddress <a href="#line-815" class="ident">IpAddressString</a></code></span>
+<span class="codeline" id="line-824"><code>	IpMask    <a href="#line-819" class="ident">IpMaskString</a></code></span>
+<span class="codeline" id="line-825"><code>	Context   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-826"><code>}</code></span>
+<span class="codeline" id="line-827"><code></code></span>
+<span class="codeline" id="line-828"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAX_ADAPTER_NAME_LENGTH" class="ident">MAX_ADAPTER_NAME_LENGTH</a> = <span class="lit-number">256</span></code></span>
+<span class="codeline" id="line-829"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAX_ADAPTER_DESCRIPTION_LENGTH" class="ident">MAX_ADAPTER_DESCRIPTION_LENGTH</a> = <span class="lit-number">128</span></code></span>
+<span class="codeline" id="line-830"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAX_ADAPTER_ADDRESS_LENGTH" class="ident">MAX_ADAPTER_ADDRESS_LENGTH</a> = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-831"><code></code></span>
+<span class="codeline" id="line-832"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-IpAdapterInfo" class="ident">IpAdapterInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-833"><code>	Next                *<a href="#line-832" class="ident">IpAdapterInfo</a></code></span>
+<span class="codeline" id="line-834"><code>	ComboIndex          <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-835"><code>	AdapterName         [<a href="#line-828" class="ident">MAX_ADAPTER_NAME_LENGTH</a> + <span class="lit-number">4</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-836"><code>	Description         [<a href="#line-829" class="ident">MAX_ADAPTER_DESCRIPTION_LENGTH</a> + <span class="lit-number">4</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-837"><code>	AddressLength       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-838"><code>	Address             [<a href="#line-830" class="ident">MAX_ADAPTER_ADDRESS_LENGTH</a>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-839"><code>	Index               <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-840"><code>	Type                <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-841"><code>	DhcpEnabled         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-842"><code>	CurrentIpAddress    *<a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-843"><code>	IpAddressList       <a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-844"><code>	GatewayList         <a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-845"><code>	DhcpServer          <a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-846"><code>	HaveWins            <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a></code></span>
+<span class="codeline" id="line-847"><code>	PrimaryWinsServer   <a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-848"><code>	SecondaryWinsServer <a href="#line-821" class="ident">IpAddrString</a></code></span>
+<span class="codeline" id="line-849"><code>	LeaseObtained       <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a></code></span>
+<span class="codeline" id="line-850"><code>	LeaseExpires        <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a></code></span>
+<span class="codeline" id="line-851"><code>}</code></span>
+<span class="codeline" id="line-852"><code></code></span>
+<span class="codeline" id="line-853"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAXLEN_PHYSADDR" class="ident">MAXLEN_PHYSADDR</a> = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-854"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAX_INTERFACE_NAME_LEN" class="ident">MAX_INTERFACE_NAME_LEN</a> = <span class="lit-number">256</span></code></span>
+<span class="codeline" id="line-855"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-MAXLEN_IFDESCR" class="ident">MAXLEN_IFDESCR</a> = <span class="lit-number">256</span></code></span>
+<span class="codeline" id="line-856"><code></code></span>
+<span class="codeline" id="line-857"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-MibIfRow" class="ident">MibIfRow</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-858"><code>	Name            [<a href="#line-854" class="ident">MAX_INTERFACE_NAME_LEN</a>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-859"><code>	Index           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-860"><code>	Type            <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-861"><code>	Mtu             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-862"><code>	Speed           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-863"><code>	PhysAddrLen     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-864"><code>	PhysAddr        [<a href="#line-853" class="ident">MAXLEN_PHYSADDR</a>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-865"><code>	AdminStatus     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-866"><code>	OperStatus      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-867"><code>	LastChange      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-868"><code>	InOctets        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-869"><code>	InUcastPkts     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-870"><code>	InNUcastPkts    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-871"><code>	InDiscards      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-872"><code>	InErrors        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-873"><code>	InUnknownProtos <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-874"><code>	OutOctets       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-875"><code>	OutUcastPkts    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-876"><code>	OutNUcastPkts   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-877"><code>	OutDiscards     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-878"><code>	OutErrors       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-879"><code>	OutQLen         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-880"><code>	DescrLen        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-881"><code>	Descr           [<a href="#line-855" class="ident">MAXLEN_IFDESCR</a>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-882"><code>}</code></span>
+<span class="codeline" id="line-883"><code></code></span>
+<span class="codeline" id="line-884"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertInfo" class="ident">CertInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-885"><code>	<span class="comment">// Not implemented</span></code></span>
+<span class="codeline" id="line-886"><code>}</code></span>
+<span class="codeline" id="line-887"><code></code></span>
+<span class="codeline" id="line-888"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertContext" class="ident">CertContext</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-889"><code>	EncodingType <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-890"><code>	EncodedCert  *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-891"><code>	Length       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-892"><code>	CertInfo     *<a href="#line-884" class="ident">CertInfo</a></code></span>
+<span class="codeline" id="line-893"><code>	Store        <a href="syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-894"><code>}</code></span>
+<span class="codeline" id="line-895"><code></code></span>
+<span class="codeline" id="line-896"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertChainContext" class="ident">CertChainContext</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-897"><code>	Size                       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-898"><code>	TrustStatus                <a href="#line-945" class="ident">CertTrustStatus</a></code></span>
+<span class="codeline" id="line-899"><code>	ChainCount                 <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-900"><code>	Chains                     **<a href="#line-911" class="ident">CertSimpleChain</a></code></span>
+<span class="codeline" id="line-901"><code>	LowerQualityChainCount     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-902"><code>	LowerQualityChains         **<a href="#line-896" class="ident">CertChainContext</a></code></span>
+<span class="codeline" id="line-903"><code>	HasRevocationFreshnessTime <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-904"><code>	RevocationFreshnessTime    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-905"><code>}</code></span>
+<span class="codeline" id="line-906"><code></code></span>
+<span class="codeline" id="line-907"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertTrustListInfo" class="ident">CertTrustListInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-908"><code>	<span class="comment">// Not implemented</span></code></span>
+<span class="codeline" id="line-909"><code>}</code></span>
+<span class="codeline" id="line-910"><code></code></span>
+<span class="codeline" id="line-911"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertSimpleChain" class="ident">CertSimpleChain</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-912"><code>	Size                       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-913"><code>	TrustStatus                <a href="#line-945" class="ident">CertTrustStatus</a></code></span>
+<span class="codeline" id="line-914"><code>	NumElements                <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-915"><code>	Elements                   **<a href="#line-921" class="ident">CertChainElement</a></code></span>
+<span class="codeline" id="line-916"><code>	TrustListInfo              *<a href="#line-907" class="ident">CertTrustListInfo</a></code></span>
+<span class="codeline" id="line-917"><code>	HasRevocationFreshnessTime <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-918"><code>	RevocationFreshnessTime    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-919"><code>}</code></span>
+<span class="codeline" id="line-920"><code></code></span>
+<span class="codeline" id="line-921"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertChainElement" class="ident">CertChainElement</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-922"><code>	Size              <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-923"><code>	CertContext       *<a href="#line-888" class="ident">CertContext</a></code></span>
+<span class="codeline" id="line-924"><code>	TrustStatus       <a href="#line-945" class="ident">CertTrustStatus</a></code></span>
+<span class="codeline" id="line-925"><code>	RevocationInfo    *<a href="#line-935" class="ident">CertRevocationInfo</a></code></span>
+<span class="codeline" id="line-926"><code>	IssuanceUsage     *<a href="#line-955" class="ident">CertEnhKeyUsage</a></code></span>
+<span class="codeline" id="line-927"><code>	ApplicationUsage  *<a href="#line-955" class="ident">CertEnhKeyUsage</a></code></span>
+<span class="codeline" id="line-928"><code>	ExtendedErrorInfo *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-929"><code>}</code></span>
+<span class="codeline" id="line-930"><code></code></span>
+<span class="codeline" id="line-931"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertRevocationCrlInfo" class="ident">CertRevocationCrlInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-932"><code>	<span class="comment">// Not implemented</span></code></span>
+<span class="codeline" id="line-933"><code>}</code></span>
+<span class="codeline" id="line-934"><code></code></span>
+<span class="codeline" id="line-935"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertRevocationInfo" class="ident">CertRevocationInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-936"><code>	Size             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-937"><code>	RevocationResult <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-938"><code>	RevocationOid    *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-939"><code>	OidSpecificInfo  <a href="#line-309" class="ident">Pointer</a></code></span>
+<span class="codeline" id="line-940"><code>	HasFreshnessTime <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-941"><code>	FreshnessTime    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-942"><code>	CrlInfo          *<a href="#line-931" class="ident">CertRevocationCrlInfo</a></code></span>
+<span class="codeline" id="line-943"><code>}</code></span>
+<span class="codeline" id="line-944"><code></code></span>
+<span class="codeline" id="line-945"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertTrustStatus" class="ident">CertTrustStatus</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-946"><code>	ErrorStatus <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-947"><code>	InfoStatus  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-948"><code>}</code></span>
+<span class="codeline" id="line-949"><code></code></span>
+<span class="codeline" id="line-950"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertUsageMatch" class="ident">CertUsageMatch</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-951"><code>	Type  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-952"><code>	Usage <a href="#line-955" class="ident">CertEnhKeyUsage</a></code></span>
+<span class="codeline" id="line-953"><code>}</code></span>
+<span class="codeline" id="line-954"><code></code></span>
+<span class="codeline" id="line-955"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertEnhKeyUsage" class="ident">CertEnhKeyUsage</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-956"><code>	Length           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-957"><code>	UsageIdentifiers **<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-958"><code>}</code></span>
+<span class="codeline" id="line-959"><code></code></span>
+<span class="codeline" id="line-960"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertChainPara" class="ident">CertChainPara</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-961"><code>	Size                         <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-962"><code>	RequestedUsage               <a href="#line-950" class="ident">CertUsageMatch</a></code></span>
+<span class="codeline" id="line-963"><code>	RequstedIssuancePolicy       <a href="#line-950" class="ident">CertUsageMatch</a></code></span>
+<span class="codeline" id="line-964"><code>	URLRetrievalTimeout          <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-965"><code>	CheckRevocationFreshnessTime <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-966"><code>	RevocationFreshnessTime      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-967"><code>	CacheResync                  *<a href="#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-968"><code>}</code></span>
+<span class="codeline" id="line-969"><code></code></span>
+<span class="codeline" id="line-970"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertChainPolicyPara" class="ident">CertChainPolicyPara</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-971"><code>	Size            <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-972"><code>	Flags           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-973"><code>	ExtraPolicyPara <a href="#line-309" class="ident">Pointer</a></code></span>
+<span class="codeline" id="line-974"><code>}</code></span>
+<span class="codeline" id="line-975"><code></code></span>
+<span class="codeline" id="line-976"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-SSLExtraCertChainPolicyPara" class="ident">SSLExtraCertChainPolicyPara</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-977"><code>	Size       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-978"><code>	AuthType   <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-979"><code>	Checks     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-980"><code>	ServerName *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-981"><code>}</code></span>
+<span class="codeline" id="line-982"><code></code></span>
+<span class="codeline" id="line-983"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-CertChainPolicyStatus" class="ident">CertChainPolicyStatus</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-984"><code>	Size              <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-985"><code>	Error             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-986"><code>	ChainIndex        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-987"><code>	ElementIndex      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-988"><code>	ExtraPolicyStatus <a href="#line-309" class="ident">Pointer</a></code></span>
+<span class="codeline" id="line-989"><code>}</code></span>
+<span class="codeline" id="line-990"><code></code></span>
+<span class="codeline" id="line-991"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-992"><code>	<span class="comment">// do not reorder</span></code></span>
+<span class="codeline" id="line-993"><code>	<a href="../../pkg/syscall.html#name-HKEY_CLASSES_ROOT" class="ident">HKEY_CLASSES_ROOT</a> = <span class="lit-number">0x80000000</span> + <a href="../../pkg/builtin.html#name-iota" class="ident">iota</a></code></span>
+<span class="codeline" id="line-994"><code>	<a href="../../pkg/syscall.html#name-HKEY_CURRENT_USER" class="ident">HKEY_CURRENT_USER</a></code></span>
+<span class="codeline" id="line-995"><code>	<a href="../../pkg/syscall.html#name-HKEY_LOCAL_MACHINE" class="ident">HKEY_LOCAL_MACHINE</a></code></span>
+<span class="codeline" id="line-996"><code>	<a href="../../pkg/syscall.html#name-HKEY_USERS" class="ident">HKEY_USERS</a></code></span>
+<span class="codeline" id="line-997"><code>	<a href="../../pkg/syscall.html#name-HKEY_PERFORMANCE_DATA" class="ident">HKEY_PERFORMANCE_DATA</a></code></span>
+<span class="codeline" id="line-998"><code>	<a href="../../pkg/syscall.html#name-HKEY_CURRENT_CONFIG" class="ident">HKEY_CURRENT_CONFIG</a></code></span>
+<span class="codeline" id="line-999"><code>	<a href="../../pkg/syscall.html#name-HKEY_DYN_DATA" class="ident">HKEY_DYN_DATA</a></code></span>
+<span class="codeline" id="line-1000"><code></code></span>
+<span class="codeline" id="line-1001"><code>	<a href="../../pkg/syscall.html#name-KEY_QUERY_VALUE" class="ident">KEY_QUERY_VALUE</a>        = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-1002"><code>	<a href="../../pkg/syscall.html#name-KEY_SET_VALUE" class="ident">KEY_SET_VALUE</a>          = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-1003"><code>	<a href="../../pkg/syscall.html#name-KEY_CREATE_SUB_KEY" class="ident">KEY_CREATE_SUB_KEY</a>     = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-1004"><code>	<a href="../../pkg/syscall.html#name-KEY_ENUMERATE_SUB_KEYS" class="ident">KEY_ENUMERATE_SUB_KEYS</a> = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-1005"><code>	<a href="../../pkg/syscall.html#name-KEY_NOTIFY" class="ident">KEY_NOTIFY</a>             = <span class="lit-number">16</span></code></span>
+<span class="codeline" id="line-1006"><code>	<a href="../../pkg/syscall.html#name-KEY_CREATE_LINK" class="ident">KEY_CREATE_LINK</a>        = <span class="lit-number">32</span></code></span>
+<span class="codeline" id="line-1007"><code>	<a href="../../pkg/syscall.html#name-KEY_WRITE" class="ident">KEY_WRITE</a>              = <span class="lit-number">0x20006</span></code></span>
+<span class="codeline" id="line-1008"><code>	<a href="../../pkg/syscall.html#name-KEY_EXECUTE" class="ident">KEY_EXECUTE</a>            = <span class="lit-number">0x20019</span></code></span>
+<span class="codeline" id="line-1009"><code>	<a href="../../pkg/syscall.html#name-KEY_READ" class="ident">KEY_READ</a>               = <span class="lit-number">0x20019</span></code></span>
+<span class="codeline" id="line-1010"><code>	<a href="../../pkg/syscall.html#name-KEY_WOW64_64KEY" class="ident">KEY_WOW64_64KEY</a>        = <span class="lit-number">0x0100</span></code></span>
+<span class="codeline" id="line-1011"><code>	<a href="../../pkg/syscall.html#name-KEY_WOW64_32KEY" class="ident">KEY_WOW64_32KEY</a>        = <span class="lit-number">0x0200</span></code></span>
+<span class="codeline" id="line-1012"><code>	<a href="../../pkg/syscall.html#name-KEY_ALL_ACCESS" class="ident">KEY_ALL_ACCESS</a>         = <span class="lit-number">0xf003f</span></code></span>
+<span class="codeline" id="line-1013"><code>)</code></span>
+<span class="codeline" id="line-1014"><code></code></span>
+<span class="codeline" id="line-1015"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-1016"><code>	<span class="comment">// do not reorder</span></code></span>
+<span class="codeline" id="line-1017"><code>	<a href="../../pkg/syscall.html#name-REG_NONE" class="ident">REG_NONE</a> = <a href="../../pkg/builtin.html#name-iota" class="ident">iota</a></code></span>
+<span class="codeline" id="line-1018"><code>	<a href="../../pkg/syscall.html#name-REG_SZ" class="ident">REG_SZ</a></code></span>
+<span class="codeline" id="line-1019"><code>	<a href="../../pkg/syscall.html#name-REG_EXPAND_SZ" class="ident">REG_EXPAND_SZ</a></code></span>
+<span class="codeline" id="line-1020"><code>	<a href="../../pkg/syscall.html#name-REG_BINARY" class="ident">REG_BINARY</a></code></span>
+<span class="codeline" id="line-1021"><code>	<a href="../../pkg/syscall.html#name-REG_DWORD_LITTLE_ENDIAN" class="ident">REG_DWORD_LITTLE_ENDIAN</a></code></span>
+<span class="codeline" id="line-1022"><code>	<a href="../../pkg/syscall.html#name-REG_DWORD_BIG_ENDIAN" class="ident">REG_DWORD_BIG_ENDIAN</a></code></span>
+<span class="codeline" id="line-1023"><code>	<a href="../../pkg/syscall.html#name-REG_LINK" class="ident">REG_LINK</a></code></span>
+<span class="codeline" id="line-1024"><code>	<a href="../../pkg/syscall.html#name-REG_MULTI_SZ" class="ident">REG_MULTI_SZ</a></code></span>
+<span class="codeline" id="line-1025"><code>	<a href="../../pkg/syscall.html#name-REG_RESOURCE_LIST" class="ident">REG_RESOURCE_LIST</a></code></span>
+<span class="codeline" id="line-1026"><code>	<a href="../../pkg/syscall.html#name-REG_FULL_RESOURCE_DESCRIPTOR" class="ident">REG_FULL_RESOURCE_DESCRIPTOR</a></code></span>
+<span class="codeline" id="line-1027"><code>	<a href="../../pkg/syscall.html#name-REG_RESOURCE_REQUIREMENTS_LIST" class="ident">REG_RESOURCE_REQUIREMENTS_LIST</a></code></span>
+<span class="codeline" id="line-1028"><code>	<a href="../../pkg/syscall.html#name-REG_QWORD_LITTLE_ENDIAN" class="ident">REG_QWORD_LITTLE_ENDIAN</a></code></span>
+<span class="codeline" id="line-1029"><code>	<a href="../../pkg/syscall.html#name-REG_DWORD" class="ident">REG_DWORD</a> = <a href="#line-1021" class="ident">REG_DWORD_LITTLE_ENDIAN</a></code></span>
+<span class="codeline" id="line-1030"><code>	<a href="../../pkg/syscall.html#name-REG_QWORD" class="ident">REG_QWORD</a> = <a href="#line-1028" class="ident">REG_QWORD_LITTLE_ENDIAN</a></code></span>
+<span class="codeline" id="line-1031"><code>)</code></span>
+<span class="codeline" id="line-1032"><code></code></span>
+<span class="codeline" id="line-1033"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-AddrinfoW" class="ident">AddrinfoW</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1034"><code>	Flags     <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1035"><code>	Family    <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1036"><code>	Socktype  <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1037"><code>	Protocol  <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1038"><code>	Addrlen   <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-1039"><code>	Canonname *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1040"><code>	Addr      <a href="#line-309" class="ident">Pointer</a></code></span>
+<span class="codeline" id="line-1041"><code>	Next      *<a href="#line-1033" class="ident">AddrinfoW</a></code></span>
+<span class="codeline" id="line-1042"><code>}</code></span>
+<span class="codeline" id="line-1043"><code></code></span>
+<span class="codeline" id="line-1044"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-1045"><code>	<a href="../../pkg/syscall.html#name-AI_PASSIVE" class="ident">AI_PASSIVE</a>     = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-1046"><code>	<a href="../../pkg/syscall.html#name-AI_CANONNAME" class="ident">AI_CANONNAME</a>   = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-1047"><code>	<a href="../../pkg/syscall.html#name-AI_NUMERICHOST" class="ident">AI_NUMERICHOST</a> = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-1048"><code>)</code></span>
+<span class="codeline" id="line-1049"><code></code></span>
+<span class="codeline" id="line-1050"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-GUID" class="ident">GUID</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1051"><code>	Data1 <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1052"><code>	Data2 <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1053"><code>	Data3 <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1054"><code>	Data4 [<span class="lit-number">8</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-1055"><code>}</code></span>
+<span class="codeline" id="line-1056"><code></code></span>
+<span class="codeline" id="line-1057"><code><span class="keyword">var</span> <a href="../../pkg/syscall.html#name-WSAID_CONNECTEX" class="ident">WSAID_CONNECTEX</a> = <a href="#line-1050" class="ident">GUID</a>{</code></span>
+<span class="codeline" id="line-1058"><code>	<span class="lit-number">0x25a207b9</span>,</code></span>
+<span class="codeline" id="line-1059"><code>	<span class="lit-number">0xddf3</span>,</code></span>
+<span class="codeline" id="line-1060"><code>	<span class="lit-number">0x4660</span>,</code></span>
+<span class="codeline" id="line-1061"><code>	[<span class="lit-number">8</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>{<span class="lit-number">0x8e</span>, <span class="lit-number">0xe9</span>, <span class="lit-number">0x76</span>, <span class="lit-number">0xe5</span>, <span class="lit-number">0x8c</span>, <span class="lit-number">0x74</span>, <span class="lit-number">0x06</span>, <span class="lit-number">0x3e</span>},</code></span>
+<span class="codeline" id="line-1062"><code>}</code></span>
+<span class="codeline" id="line-1063"><code></code></span>
+<span class="codeline" id="line-1064"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-1065"><code>	<a href="../../pkg/syscall.html#name-FILE_SKIP_COMPLETION_PORT_ON_SUCCESS" class="ident">FILE_SKIP_COMPLETION_PORT_ON_SUCCESS</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-1066"><code>	<a href="../../pkg/syscall.html#name-FILE_SKIP_SET_EVENT_ON_HANDLE" class="ident">FILE_SKIP_SET_EVENT_ON_HANDLE</a>        = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-1067"><code>)</code></span>
+<span class="codeline" id="line-1068"><code></code></span>
+<span class="codeline" id="line-1069"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-1070"><code>	<a href="../../pkg/syscall.html#name-WSAPROTOCOL_LEN" class="ident">WSAPROTOCOL_LEN</a>    = <span class="lit-number">255</span></code></span>
+<span class="codeline" id="line-1071"><code>	<a href="../../pkg/syscall.html#name-MAX_PROTOCOL_CHAIN" class="ident">MAX_PROTOCOL_CHAIN</a> = <span class="lit-number">7</span></code></span>
+<span class="codeline" id="line-1072"><code>	<a href="../../pkg/syscall.html#name-BASE_PROTOCOL" class="ident">BASE_PROTOCOL</a>      = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-1073"><code>	<a href="../../pkg/syscall.html#name-LAYERED_PROTOCOL" class="ident">LAYERED_PROTOCOL</a>   = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-1074"><code></code></span>
+<span class="codeline" id="line-1075"><code>	<a href="../../pkg/syscall.html#name-XP1_CONNECTIONLESS" class="ident">XP1_CONNECTIONLESS</a>           = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-1076"><code>	<a href="../../pkg/syscall.html#name-XP1_GUARANTEED_DELIVERY" class="ident">XP1_GUARANTEED_DELIVERY</a>      = <span class="lit-number">0x00000002</span></code></span>
+<span class="codeline" id="line-1077"><code>	<a href="../../pkg/syscall.html#name-XP1_GUARANTEED_ORDER" class="ident">XP1_GUARANTEED_ORDER</a>         = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-1078"><code>	<a href="../../pkg/syscall.html#name-XP1_MESSAGE_ORIENTED" class="ident">XP1_MESSAGE_ORIENTED</a>         = <span class="lit-number">0x00000008</span></code></span>
+<span class="codeline" id="line-1079"><code>	<a href="../../pkg/syscall.html#name-XP1_PSEUDO_STREAM" class="ident">XP1_PSEUDO_STREAM</a>            = <span class="lit-number">0x00000010</span></code></span>
+<span class="codeline" id="line-1080"><code>	<a href="../../pkg/syscall.html#name-XP1_GRACEFUL_CLOSE" class="ident">XP1_GRACEFUL_CLOSE</a>           = <span class="lit-number">0x00000020</span></code></span>
+<span class="codeline" id="line-1081"><code>	<a href="../../pkg/syscall.html#name-XP1_EXPEDITED_DATA" class="ident">XP1_EXPEDITED_DATA</a>           = <span class="lit-number">0x00000040</span></code></span>
+<span class="codeline" id="line-1082"><code>	<a href="../../pkg/syscall.html#name-XP1_CONNECT_DATA" class="ident">XP1_CONNECT_DATA</a>             = <span class="lit-number">0x00000080</span></code></span>
+<span class="codeline" id="line-1083"><code>	<a href="../../pkg/syscall.html#name-XP1_DISCONNECT_DATA" class="ident">XP1_DISCONNECT_DATA</a>          = <span class="lit-number">0x00000100</span></code></span>
+<span class="codeline" id="line-1084"><code>	<a href="../../pkg/syscall.html#name-XP1_SUPPORT_BROADCAST" class="ident">XP1_SUPPORT_BROADCAST</a>        = <span class="lit-number">0x00000200</span></code></span>
+<span class="codeline" id="line-1085"><code>	<a href="../../pkg/syscall.html#name-XP1_SUPPORT_MULTIPOINT" class="ident">XP1_SUPPORT_MULTIPOINT</a>       = <span class="lit-number">0x00000400</span></code></span>
+<span class="codeline" id="line-1086"><code>	<a href="../../pkg/syscall.html#name-XP1_MULTIPOINT_CONTROL_PLANE" class="ident">XP1_MULTIPOINT_CONTROL_PLANE</a> = <span class="lit-number">0x00000800</span></code></span>
+<span class="codeline" id="line-1087"><code>	<a href="../../pkg/syscall.html#name-XP1_MULTIPOINT_DATA_PLANE" class="ident">XP1_MULTIPOINT_DATA_PLANE</a>    = <span class="lit-number">0x00001000</span></code></span>
+<span class="codeline" id="line-1088"><code>	<a href="../../pkg/syscall.html#name-XP1_QOS_SUPPORTED" class="ident">XP1_QOS_SUPPORTED</a>            = <span class="lit-number">0x00002000</span></code></span>
+<span class="codeline" id="line-1089"><code>	<a href="../../pkg/syscall.html#name-XP1_UNI_SEND" class="ident">XP1_UNI_SEND</a>                 = <span class="lit-number">0x00008000</span></code></span>
+<span class="codeline" id="line-1090"><code>	<a href="../../pkg/syscall.html#name-XP1_UNI_RECV" class="ident">XP1_UNI_RECV</a>                 = <span class="lit-number">0x00010000</span></code></span>
+<span class="codeline" id="line-1091"><code>	<a href="../../pkg/syscall.html#name-XP1_IFS_HANDLES" class="ident">XP1_IFS_HANDLES</a>              = <span class="lit-number">0x00020000</span></code></span>
+<span class="codeline" id="line-1092"><code>	<a href="../../pkg/syscall.html#name-XP1_PARTIAL_MESSAGE" class="ident">XP1_PARTIAL_MESSAGE</a>          = <span class="lit-number">0x00040000</span></code></span>
+<span class="codeline" id="line-1093"><code>	<a href="../../pkg/syscall.html#name-XP1_SAN_SUPPORT_SDP" class="ident">XP1_SAN_SUPPORT_SDP</a>          = <span class="lit-number">0x00080000</span></code></span>
+<span class="codeline" id="line-1094"><code></code></span>
+<span class="codeline" id="line-1095"><code>	<a href="../../pkg/syscall.html#name-PFL_MULTIPLE_PROTO_ENTRIES" class="ident">PFL_MULTIPLE_PROTO_ENTRIES</a>  = <span class="lit-number">0x00000001</span></code></span>
+<span class="codeline" id="line-1096"><code>	<a href="../../pkg/syscall.html#name-PFL_RECOMMENDED_PROTO_ENTRY" class="ident">PFL_RECOMMENDED_PROTO_ENTRY</a> = <span class="lit-number">0x00000002</span></code></span>
+<span class="codeline" id="line-1097"><code>	<a href="../../pkg/syscall.html#name-PFL_HIDDEN" class="ident">PFL_HIDDEN</a>                  = <span class="lit-number">0x00000004</span></code></span>
+<span class="codeline" id="line-1098"><code>	<a href="../../pkg/syscall.html#name-PFL_MATCHES_PROTOCOL_ZERO" class="ident">PFL_MATCHES_PROTOCOL_ZERO</a>   = <span class="lit-number">0x00000008</span></code></span>
+<span class="codeline" id="line-1099"><code>	<a href="../../pkg/syscall.html#name-PFL_NETWORKDIRECT_PROVIDER" class="ident">PFL_NETWORKDIRECT_PROVIDER</a>  = <span class="lit-number">0x00000010</span></code></span>
+<span class="codeline" id="line-1100"><code>)</code></span>
+<span class="codeline" id="line-1101"><code></code></span>
+<span class="codeline" id="line-1102"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-WSAProtocolInfo" class="ident">WSAProtocolInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1103"><code>	ServiceFlags1     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1104"><code>	ServiceFlags2     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1105"><code>	ServiceFlags3     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1106"><code>	ServiceFlags4     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1107"><code>	ProviderFlags     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1108"><code>	ProviderId        <a href="#line-1050" class="ident">GUID</a></code></span>
+<span class="codeline" id="line-1109"><code>	CatalogEntryId    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1110"><code>	ProtocolChain     <a href="#line-1125" class="ident">WSAProtocolChain</a></code></span>
+<span class="codeline" id="line-1111"><code>	Version           <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1112"><code>	AddressFamily     <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1113"><code>	MaxSockAddr       <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1114"><code>	MinSockAddr       <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1115"><code>	SocketType        <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1116"><code>	Protocol          <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1117"><code>	ProtocolMaxOffset <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1118"><code>	NetworkByteOrder  <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1119"><code>	SecurityScheme    <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1120"><code>	MessageSize       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1121"><code>	ProviderReserved  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1122"><code>	ProtocolName      [<a href="#line-1070" class="ident">WSAPROTOCOL_LEN</a> + <span class="lit-number">1</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1123"><code>}</code></span>
+<span class="codeline" id="line-1124"><code></code></span>
+<span class="codeline" id="line-1125"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-WSAProtocolChain" class="ident">WSAProtocolChain</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1126"><code>	ChainLen     <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-1127"><code>	ChainEntries [<a href="#line-1071" class="ident">MAX_PROTOCOL_CHAIN</a>]<a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1128"><code>}</code></span>
+<span class="codeline" id="line-1129"><code></code></span>
+<span class="codeline" id="line-1130"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-TCPKeepalive" class="ident">TCPKeepalive</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1131"><code>	OnOff    <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1132"><code>	Time     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1133"><code>	Interval <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1134"><code>}</code></span>
+<span class="codeline" id="line-1135"><code></code></span>
+<span class="codeline" id="line-1136"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-symbolicLinkReparseBuffer" class="ident">symbolicLinkReparseBuffer</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1137"><code>	SubstituteNameOffset <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1138"><code>	SubstituteNameLength <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1139"><code>	PrintNameOffset      <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1140"><code>	PrintNameLength      <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1141"><code>	Flags                <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1142"><code>	PathBuffer           [<span class="lit-number">1</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1143"><code>}</code></span>
+<span class="codeline" id="line-1144"><code></code></span>
+<span class="codeline" id="line-1145"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-mountPointReparseBuffer" class="ident">mountPointReparseBuffer</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1146"><code>	SubstituteNameOffset <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1147"><code>	SubstituteNameLength <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1148"><code>	PrintNameOffset      <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1149"><code>	PrintNameLength      <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1150"><code>	PathBuffer           [<span class="lit-number">1</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1151"><code>}</code></span>
+<span class="codeline" id="line-1152"><code></code></span>
+<span class="codeline" id="line-1153"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-reparseDataBuffer" class="ident">reparseDataBuffer</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-1154"><code>	ReparseTag        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-1155"><code>	ReparseDataLength <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1156"><code>	Reserved          <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-1157"><code></code></span>
+<span class="codeline" id="line-1158"><code>	<span class="comment">// GenericReparseBuffer</span></code></span>
+<span class="codeline" id="line-1159"><code>	reparseBuffer <a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-1160"><code>}</code></span>
+<span class="codeline" id="line-1161"><code></code></span>
+<span class="codeline" id="line-1162"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-1163"><code>	<a href="../../pkg/syscall.html#name-FSCTL_GET_REPARSE_POINT" class="ident">FSCTL_GET_REPARSE_POINT</a>          = <span class="lit-number">0x900A8</span></code></span>
+<span class="codeline" id="line-1164"><code>	<a href="../../pkg/syscall.html#name-MAXIMUM_REPARSE_DATA_BUFFER_SIZE" class="ident">MAXIMUM_REPARSE_DATA_BUFFER_SIZE</a> = <span class="lit-number">16</span> * <span class="lit-number">1024</span></code></span>
+<span class="codeline" id="line-1165"><code>	<a href="../../pkg/syscall.html#name-_IO_REPARSE_TAG_MOUNT_POINT" class="ident">_IO_REPARSE_TAG_MOUNT_POINT</a>      = <span class="lit-number">0xA0000003</span></code></span>
+<span class="codeline" id="line-1166"><code>	<a href="../../pkg/syscall.html#name-IO_REPARSE_TAG_SYMLINK" class="ident">IO_REPARSE_TAG_SYMLINK</a>           = <span class="lit-number">0xA000000C</span></code></span>
+<span class="codeline" id="line-1167"><code>	<a href="../../pkg/syscall.html#name-SYMBOLIC_LINK_FLAG_DIRECTORY" class="ident">SYMBOLIC_LINK_FLAG_DIRECTORY</a>     = <span class="lit-number">0x1</span></code></span>
+<span class="codeline" id="line-1168"><code>	<a href="../../pkg/syscall.html#name-_SYMLINK_FLAG_RELATIVE" class="ident">_SYMLINK_FLAG_RELATIVE</a>           = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-1169"><code>)</code></span>
+<span class="codeline" id="line-1170"><code></code></span>
+<span class="codeline" id="line-1171"><code><span class="keyword">const</span> <a href="../../pkg/syscall.html#name-UNIX_PATH_MAX" class="ident">UNIX_PATH_MAX</a> = <span class="lit-number">108</span> <span class="comment">// defined in afunix.h</span></code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

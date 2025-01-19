@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: inverse-battleships-server/server</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>server</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../index.html#pkg-inverse-battleships-server/server">inverse-battleships-server/server</a><i> (on <a href="https://pkg.go.dev/inverse-battleships-server/server" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports <a href="../../dep/inverse-battleships-server/server.html">14 packages</a>, and imported by <a href="../../dep/inverse-battleships-server/server.html#imported-by">one package</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<span class="nodocs">    <a href="../../src/inverse-battleships-server/server/client_manager.go.html">client_manager.go</a></span>
+	<span class="nodocs">    <a href="../../src/inverse-battleships-server/server/connection_manager.go.html">connection_manager.go</a></span></div>
+<div id="exported-types"><span class="title">Package-Level Type Names<span class="title-stat"><i> (total 4, all are exported)</i></span></span>
+
+<div id="exported-types-buttons" class="js-on">	/* sort exporteds by: <label id="sort-types-by-alphabet" class="button">alphabet</label> | <label id="sort-types-by-popularity" class="button">popularity</label> */</div><div class="anchor type-res" id="name-Client" data-popularity="1025">	<input type='checkbox' class="fold" id="Client-fold-content"><label for="Client-fold-content"> type <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-21">Client</a> <i>(struct)</i></label><span id='Client-fold-content-docs' class="fold-docs">
+<span class="md-text">		Client represents a TCP client.</span>
+
+		<input type='checkbox' class="fold" id="Client-fold-fields"><label for="Client-fold-fields">Fields (<i>total 7, none are exported</i>)</label><span id='Client-fold-fields-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Client-showhide-fields"><i><label for="Client-showhide-fields" class="show-inline">/* 7 unexporteds ... */</label><label for="Client-showhide-fields" class="hide-inline">/* 7 unexporteds: */</label></i><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-22">conn</a> <i><a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-25">isAuth</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-24">lastTime</a> <i><a href="../time.html">time</a>.<a href="../time.html#name-Time">Time</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-26">msgBuff</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-23">nickname</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-28">recvMu</a> <i><a href="../sync.html">sync</a>.<a href="../sync.html#name-Mutex">Mutex</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-27">sendMu</a> <i><a href="../sync.html">sync</a>.<a href="../sync.html#name-Mutex">Mutex</a></i></span></i></span></span>
+		<input type='checkbox' class="fold" id="Client-fold-results"><label for="Client-fold-results">As Outputs Of (<i>at least 2, neither is exported</i>)</label><span id='Client-fold-results-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Client-showhide-inputofs"><i><label for="Client-showhide-inputofs" class="show-inline">/* 2+ unexporteds ... */</label><label for="Client-showhide-inputofs" class="hide-inline">/* 2+ unexporteds: */</label></i><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-500">addClient</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>) (*<b>Client</b>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-636">getClient</a>(nickname <a href="../builtin.html#name-string">string</a>) (*<b>Client</b>, <a href="../builtin.html#name-error">error</a>)</i></span></span>
+		<input type='checkbox' class="fold" id="Client-fold-params"><label for="Client-fold-params">As Inputs Of (<i>at least 25, none are exported</i>)</label><span id='Client-fold-params-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Client-showhide-outputofs"><i><label for="Client-showhide-outputofs" class="show-inline">/* 25+ unexporteds ... */</label><label for="Client-showhide-outputofs" class="hide-inline">/* 25+ unexporteds: */</label></i><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-523">authenticateClient</a>(pClient *<b>Client</b>, nickname <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1365">checkAlive</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1279">handleActionCmd</a>(pClient *<b>Client</b>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-455">handleClientError</a>(pClient *<b>Client</b>, err <a href="../builtin.html#name-error">error</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-bool">bool</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1251">handleClientReadyCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2195">handleCommand</a>(pClient *<b>Client</b>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1134">handleCreateLobbyCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1183">handleJoinLobbyCmd</a>(pClient *<b>Client</b>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1072">handleLeaveCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1099">handleLobbiesCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1055">handlePingCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1341">handleWaitingCmd</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-397">readCompleteMessage</a>(pClient *<b>Client</b>) (*<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>, <a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-961">sendBoard</a>(pClient *<b>Client</b>, board <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1032">sendContinueMsg</a>(pClient *<b>Client</b>, lobbyID <a href="../builtin.html#name-string">string</a>, opponent <a href="../builtin.html#name-string">string</a>, playerOnTurn <a href="../builtin.html#name-string">string</a>, board <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-983">sendGameEndMsg</a>(pClient *<b>Client</b>, isWinner <a href="../builtin.html#name-bool">bool</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-839">sendHandshakeReply</a>(pClient *<b>Client</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-892">sendLobbies</a>(pClient *<b>Client</b>, lobbies []<a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-908">sendLobbyAck</a>(pClient *<b>Client</b>, lobbyID <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-946">sendPairedMsg</a>(pClient *<b>Client</b>, opponent <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-862">sendPing</a>(pClient *<b>Client</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-877">sendTKO</a>(pClient *<b>Client</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-924">sendTurnMsg</a>(pClient *<b>Client</b>, playerOnTurn <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1010">sendWaitMsg</a>(pClient *<b>Client</b>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1419">validateConnection</a>(pClient *<b>Client</b>) (<a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-error">error</a>)</i></span></span>
+
+</span></div><div class="anchor type-res" id="name-ClientManager" data-popularity="3075">	<input type='checkbox' class="fold" id="ClientManager-fold-content"><label for="ClientManager-fold-content"> type <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-48">ClientManager</a> <i>(struct)</i></label><span id='ClientManager-fold-content-docs' class="fold-docs">
+<span class="md-text">		Server represents a TCP server.</span>
+
+		<input type='checkbox' class="fold" id="ClientManager-fold-fields"><label for="ClientManager-fold-fields">Fields (<i>total 6, none are exported</i>)</label><span id='ClientManager-fold-fields-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="ClientManager-showhide-fields"><i><label for="ClientManager-showhide-fields" class="show-inline">/* 6 unexporteds ... */</label><label for="ClientManager-showhide-fields" class="hide-inline">/* 6 unexporteds: */</label></i><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-authClients"><label for="ClientManager-fold-field-authClients"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-51">authClients</a> <i>map[<a href="../builtin.html#name-string">string</a>]*<a href="#name-Client">Client</a></i></label><span id='ClientManager-fold-field-authClients-docs' class="fold-docs">
+<span class="md-text">				// map of authenticated clients with their nicknames as keys</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-lobbies"><label for="ClientManager-fold-field-lobbies"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-52">lobbies</a> <i>map[<a href="../builtin.html#name-string">string</a>]*<a href="#name-Lobby">Lobby</a></i></label><span id='ClientManager-fold-field-lobbies-docs' class="fold-docs">
+<span class="md-text">				// manage lobbies</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-pServer"><label for="ClientManager-fold-field-pServer"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-49">pServer</a> <i>*<a href="#name-Server">Server</a></i></label><span id='ClientManager-fold-field-pServer-docs' class="fold-docs">
+<span class="md-text">				// server pointer</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-pendClients"><label for="ClientManager-fold-field-pendClients"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-50">pendClients</a> <i>map[<a href="../builtin.html#name-string">string</a>]*<a href="#name-Client">Client</a></i></label><span id='ClientManager-fold-field-pendClients-docs' class="fold-docs">
+<span class="md-text">				// map of pending clients with their addresses as keys</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-playerToLobby"><label for="ClientManager-fold-field-playerToLobby"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-53">playerToLobby</a> <i>map[<a href="../builtin.html#name-string">string</a>]*<a href="#name-Lobby">Lobby</a></i></label><span id='ClientManager-fold-field-playerToLobby-docs' class="fold-docs">
+<span class="md-text">				// map of players to their lobbies</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-field-rwMutex"><label for="ClientManager-fold-field-rwMutex"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-54">rwMutex</a> <i><a href="../sync.html">sync</a>.<a href="../sync.html#name-RWMutex">RWMutex</a></i></label><span id='ClientManager-fold-field-rwMutex-docs' class="fold-docs">
+<span class="md-text">				// mutex to lock the client manager</span>
+</span></i></span></span>
+		<input type='checkbox' class="fold" id="ClientManager-fold-methods"><label for="ClientManager-fold-methods">Methods (<i>total 60, in which 1 is exported</i>)</label><span id='ClientManager-fold-methods-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-ManageServer"><label for="ClientManager-fold-method-ManageServer">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2409">ManageServer</a>(ctx <a href="../context.html">context</a>.<a href="../context.html#name-Context">Context</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-ManageServer-docs' class="fold-docs">
+<span class="md-text">				HandleServer manages the whole server. It starts the server and accepts connections.
+				It handles each connection in a separate goroutine.
+				It requires a client manager as a parameter.</span>
+</span></span>
+			<input type='checkbox' class="showhide" id="ClientManager-showhide-methods"><i><label for="ClientManager-showhide-methods" class="show-inline">/* 59 unexporteds ... */</label><label for="ClientManager-showhide-methods" class="hide-inline">/* 59 unexporteds: */</label></i><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-addClient"><label for="ClientManager-fold-method-addClient">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-500">addClient</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>) (*<a href="#name-Client">Client</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-addClient-docs' class="fold-docs">
+<span class="md-text">				addClient adds a new unauthenticated client to the client manager.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-addPlayerToLobby"><label for="ClientManager-fold-method-addPlayerToLobby">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-567">addPlayerToLobby</a>(nickname <a href="../builtin.html#name-string">string</a>, lobbyID <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-addPlayerToLobby-docs' class="fold-docs">
+<span class="md-text">				addPlayerToLobby adds a player to a lobby.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-advanceGame"><label for="ClientManager-fold-method-advanceGame">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1622">advanceGame</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-advanceGame-docs' class="fold-docs">
+<span class="md-text">				advanceGame advances a game in a lobby.
+				
+				WARNING: It reads a shared resource, so it should be called with a rlock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-attemptMove"><label for="ClientManager-fold-method-attemptMove">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-730">attemptMove</a>(lobby *<a href="#name-Lobby">Lobby</a>, nickname <a href="../builtin.html#name-string">string</a>, position []<a href="../builtin.html#name-int">int</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-attemptMove-docs' class="fold-docs">
+<span class="md-text">				attemptMove attempts to make a move in a lobby.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-authenticateClient"><label for="ClientManager-fold-method-authenticateClient">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-523">authenticateClient</a>(pClient *<a href="#name-Client">Client</a>, nickname <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-authenticateClient-docs' class="fold-docs">
+<span class="md-text">				authenticateClient adds a new authenticated client to the client manager.
+				It returns the nickname of the client upon successful authentication.
+				It returns an error if the nickname is already taken.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-checkAlive"><label for="ClientManager-fold-method-checkAlive">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1365">checkAlive</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-checkAlive-docs' class="fold-docs">
+<span class="md-text">				checkAlive checks if the client is alive by sending a ping message and waiting for a pong message.
+				Returns true if the client is alive, false otherwise. Returns an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-checkForPendingReconnect"><label for="ClientManager-fold-method-checkForPendingReconnect">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-655">checkForPendingReconnect</a>(nickname <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-bool">bool</a></label><span id='ClientManager-fold-method-checkForPendingReconnect-docs' class="fold-docs">
+<span class="md-text">				checkForPendingReconnect checks if a new connection is in a lobby pending reconnect state.
+				
+				WARNING: It reads a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-getClient"><label for="ClientManager-fold-method-getClient">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-636">getClient</a>(nickname <a href="../builtin.html#name-string">string</a>) (*<a href="#name-Client">Client</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-getClient-docs' class="fold-docs">
+<span class="md-text">				getClient returns a client from the client manager.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-getLobbyStates"><label for="ClientManager-fold-method-getLobbyStates">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1912">getLobbyStates</a>(lobbiesToDelete *[]<a href="../builtin.html#name-string">string</a>, lobbiesToPrepare *[]<a href="../builtin.html#name-string">string</a>, lobbiesToStart *[]<a href="../builtin.html#name-string">string</a>, lobbiesToFeedbackPlayers *[]<a href="../builtin.html#name-string">string</a>, lobbiesToAdvance *[]<a href="../builtin.html#name-string">string</a>, lobbiesToInterrupt *[]<a href="../builtin.html#name-string">string</a>, lobbiesInterrupted *[]<a href="../builtin.html#name-string">string</a>, lobbiesWithPlayerReconnect *[]<a href="../builtin.html#name-string">string</a>, lobbiesToContinue *[]<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-getLobbyStates-docs' class="fold-docs">
+<span class="md-text">				getLobbyStates gets the states of the lobbies and appends the lobby IDs to the corresponding slices.
+				
+				WARNING: It reads a shared resource, so it should be called with a rlock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-getMissingPlayerNickname"><label for="ClientManager-fold-method-getMissingPlayerNickname">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1480">getMissingPlayerNickname</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-string">string</a></label><span id='ClientManager-fold-method-getMissingPlayerNickname-docs' class="fold-docs">
+<span class="md-text">				getMissingPlayerNickname returns the nickname of the missing player in a lobby.
+				Expects the lobby to be valid.
+				
+				WARNING: It reads a shared resource, so it should be called with a rlock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleActionCmd"><label for="ClientManager-fold-method-handleActionCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1279">handleActionCmd</a>(pClient *<a href="#name-Client">Client</a>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleActionCmd-docs' class="fold-docs">
+<span class="md-text">				handleActionCmd handles an action message.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleClientError"><label for="ClientManager-fold-method-handleClientError">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-455">handleClientError</a>(pClient *<a href="#name-Client">Client</a>, err <a href="../builtin.html#name-error">error</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-bool">bool</a>)</label><span id='ClientManager-fold-method-handleClientError-docs' class="fold-docs">
+<span class="md-text">				handleClientError handles client errors.
+				It returns two booleans: one indicating if the error was caused by a timeout,
+				and the other indicating if the error means the client should be disconnected.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleClientReadyCmd"><label for="ClientManager-fold-method-handleClientReadyCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1251">handleClientReadyCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleClientReadyCmd-docs' class="fold-docs">
+<span class="md-text">				handleClientReadyCmd handles a client ready message.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleCommand"><label for="ClientManager-fold-method-handleCommand">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2195">handleCommand</a>(pClient *<a href="#name-Client">Client</a>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleCommand-docs' class="fold-docs">
+<span class="md-text">				handleCommand handles a command from the client. It returns a boolean indicating if the client should stay connected.
+				If error is not nil, the stayConnected boolean returned is not defined.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleConnection"><label for="ClientManager-fold-method-handleConnection">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2286">handleConnection</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>)</label><span id='ClientManager-fold-method-handleConnection-docs' class="fold-docs">
+<span class="md-text">				handleCommand handles a command from the client.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleCreateLobbyCmd"><label for="ClientManager-fold-method-handleCreateLobbyCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1134">handleCreateLobbyCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleCreateLobbyCmd-docs' class="fold-docs">
+<span class="md-text">				handleCreateLobbyCmd creates a new lobby and sends the lobby ID to the client.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleDeleteLobby"><label for="ClientManager-fold-method-handleDeleteLobby">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-677">handleDeleteLobby</a>(lobbyID <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-handleDeleteLobby-docs' class="fold-docs">
+<span class="md-text">				handleDeleteLobby deletes a lobby from the client manager.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleJoinLobbyCmd"><label for="ClientManager-fold-method-handleJoinLobbyCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1183">handleJoinLobbyCmd</a>(pClient *<a href="#name-Client">Client</a>, pCommand *<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleJoinLobbyCmd-docs' class="fold-docs">
+<span class="md-text">				handleJoinLobbyCmd attempts to connect the client to a lobby.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleLeaveCmd"><label for="ClientManager-fold-method-handleLeaveCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1072">handleLeaveCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleLeaveCmd-docs' class="fold-docs">
+<span class="md-text">				handleLeaveCmd sends a leave acknowledgment message to the client.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleLobbiesCmd"><label for="ClientManager-fold-method-handleLobbiesCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1099">handleLobbiesCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleLobbiesCmd-docs' class="fold-docs">
+<span class="md-text">				handleLobbiesCmd sends a list of lobbies to the client.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleLobbyContinue"><label for="ClientManager-fold-method-handleLobbyContinue">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1836">handleLobbyContinue</a>(pLobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-handleLobbyContinue-docs' class="fold-docs">
+<span class="md-text">				handleLobbyContinue handles a lobby in the waiting state.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleLobbyInterrupted"><label for="ClientManager-fold-method-handleLobbyInterrupted">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1748">handleLobbyInterrupted</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-handleLobbyInterrupted-docs' class="fold-docs">
+<span class="md-text">				handleLobbyInterrupted handles a lobby in the waiting state.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleLobbyPlayerReconnect"><label for="ClientManager-fold-method-handleLobbyPlayerReconnect">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1781">handleLobbyPlayerReconnect</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-handleLobbyPlayerReconnect-docs' class="fold-docs">
+<span class="md-text">				handleLobbyPlayerReconnect handles a lobby in the waiting state.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handlePingCmd"><label for="ClientManager-fold-method-handlePingCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1055">handlePingCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handlePingCmd-docs' class="fold-docs">
+<span class="md-text">				handlePingCmd sends a pong message to the client.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-handleWaitingCmd"><label for="ClientManager-fold-method-handleWaitingCmd">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1341">handleWaitingCmd</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-handleWaitingCmd-docs' class="fold-docs">
+<span class="md-text">				handleWaitingCmd handles a waiting message.
+				Expects the client to be valid.
+				Returns if the connection should continue and an error if any.</span>
+</span></i></span><span class="hidden"><i>
+			<span class="nodocs">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1575">informMoves</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-interruptLobby"><label for="ClientManager-fold-method-interruptLobby">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1699">interruptLobby</a>(pLobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-interruptLobby-docs' class="fold-docs">
+<span class="md-text">				interruptLobby pauses a lobby and sends wait messages to the players.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-kickPlayerFromLobby"><label for="ClientManager-fold-method-kickPlayerFromLobby">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-592">kickPlayerFromLobby</a>(nickname <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-kickPlayerFromLobby-docs' class="fold-docs">
+<span class="md-text">				kickPlayerFromLobby kicks a player from a lobby.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbies"><label for="ClientManager-fold-method-manageLobbies">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2158">manageLobbies</a>()</label><span id='ClientManager-fold-method-manageLobbies-docs' class="fold-docs">
+<span class="md-text">				manageLobbies handles the games.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesInterrupted"><label for="ClientManager-fold-method-manageLobbiesInterrupted">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2087">manageLobbiesInterrupted</a>(lobbiesReconnecting []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesInterrupted-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesInterrupted handles the interrupted lobbies.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToAdvance"><label for="ClientManager-fold-method-manageLobbiesToAdvance">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2041">manageLobbiesToAdvance</a>(lobbiesToAdvance []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToAdvance-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToAdvance handles the lobbies to advance.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToContinue"><label for="ClientManager-fold-method-manageLobbiesToContinue">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2134">manageLobbiesToContinue</a>(lobbiesToContinue []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToContinue-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToContinue handles the lobbies that need to continue.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToDelete"><label for="ClientManager-fold-method-manageLobbiesToDelete">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1961">manageLobbiesToDelete</a>(lobbiesToDelete []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToDelete-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToDelete handles the lobbies that need to be deleted.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToFeedback"><label for="ClientManager-fold-method-manageLobbiesToFeedback">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2018">manageLobbiesToFeedback</a>(lobbiesToFeedbackPlayers []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToFeedback-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToFeedback handles the lobbies that need to inform the players about the moves.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToInterrupt"><label for="ClientManager-fold-method-manageLobbiesToInterrupt">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2064">manageLobbiesToInterrupt</a>(lobbiesToInterrupt []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToInterrupt-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToInterrupt handles the lobbies to interrupt.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToPrepare"><label for="ClientManager-fold-method-manageLobbiesToPrepare">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1973">manageLobbiesToPrepare</a>(lobbiesToPrepare []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToPrepare-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToPrepare handles the lobbies that need to be prepared.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesToStart"><label for="ClientManager-fold-method-manageLobbiesToStart">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1995">manageLobbiesToStart</a>(lobbiesToStart []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesToStart-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesToStart handles the lobbies that need to be started.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-manageLobbiesWithPlayerReconnect"><label for="ClientManager-fold-method-manageLobbiesWithPlayerReconnect">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2111">manageLobbiesWithPlayerReconnect</a>(lobbiesWithPlayerReconnect []<a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-manageLobbiesWithPlayerReconnect-docs' class="fold-docs">
+<span class="md-text">				manageLobbiesWithPlayerReconnect handles the lobbies with player reconnected.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-prepareGame"><label for="ClientManager-fold-method-prepareGame">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1501">prepareGame</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-prepareGame-docs' class="fold-docs">
+<span class="md-text">				prepareGame prepares a game in a lobby.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-readCompleteMessage"><label for="ClientManager-fold-method-readCompleteMessage">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-397">readCompleteMessage</a>(pClient *<a href="#name-Client">Client</a>) (*<a href="util/cmd_validator.html">cmd_validator</a>.<a href="util/cmd_validator.html#name-IncomingMessage">IncomingMessage</a>, <a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-readCompleteMessage-docs' class="fold-docs">
+<span class="md-text">				readCompleteMessage reads a message from the client.
+				It returns the parsed message, the raw string message, and an error.
+				It involves socket I/O operations so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-reconnectPlayer"><label for="ClientManager-fold-method-reconnectPlayer">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-2248">reconnectPlayer</a>(nickname <a href="../builtin.html#name-string">string</a>)</label><span id='ClientManager-fold-method-reconnectPlayer-docs' class="fold-docs">
+<span class="md-text">				reconnectPlayer reconnects a player to a lobby.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-removeClient"><label for="ClientManager-fold-method-removeClient">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-548">removeClient</a>(nickname <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-removeClient-docs' class="fold-docs">
+<span class="md-text">				removeClient removes a client from the client manager.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-removePendingClient"><label for="ClientManager-fold-method-removePendingClient">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-620">removePendingClient</a>(addr <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-removePendingClient-docs' class="fold-docs">
+<span class="md-text">				removePendingClient removes a pending client from the client manager.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendBoard"><label for="ClientManager-fold-method-sendBoard">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-961">sendBoard</a>(pClient *<a href="#name-Client">Client</a>, board <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendBoard-docs' class="fold-docs">
+<span class="md-text">				sendBoard sends a board to the client.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendContinueMsg"><label for="ClientManager-fold-method-sendContinueMsg">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1032">sendContinueMsg</a>(pClient *<a href="#name-Client">Client</a>, lobbyID <a href="../builtin.html#name-string">string</a>, opponent <a href="../builtin.html#name-string">string</a>, playerOnTurn <a href="../builtin.html#name-string">string</a>, board <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendContinueMsg-docs' class="fold-docs">
+<span class="md-text">				sendContinueMsg sends a continue message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendGameEndMsg"><label for="ClientManager-fold-method-sendGameEndMsg">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-983">sendGameEndMsg</a>(pClient *<a href="#name-Client">Client</a>, isWinner <a href="../builtin.html#name-bool">bool</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendGameEndMsg-docs' class="fold-docs">
+<span class="md-text">				sendGameEndMsg sends a game end message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendHandshakeReply"><label for="ClientManager-fold-method-sendHandshakeReply">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-839">sendHandshakeReply</a>(pClient *<a href="#name-Client">Client</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendHandshakeReply-docs' class="fold-docs">
+<span class="md-text">				sendHandshakeReply sends a handshake reply to the client.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendLobbies"><label for="ClientManager-fold-method-sendLobbies">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-892">sendLobbies</a>(pClient *<a href="#name-Client">Client</a>, lobbies []<a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendLobbies-docs' class="fold-docs">
+<span class="md-text">				sendLobbies sends a list of lobbies to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendLobbyAck"><label for="ClientManager-fold-method-sendLobbyAck">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-908">sendLobbyAck</a>(pClient *<a href="#name-Client">Client</a>, lobbyID <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendLobbyAck-docs' class="fold-docs">
+<span class="md-text">				sendLobbyAck sends a create lobby acknowledgment message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendMessage"><label for="ClientManager-fold-method-sendMessage">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-816">sendMessage</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>, parts []<a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendMessage-docs' class="fold-docs">
+<span class="md-text">				sendMessage sends a message to the client.
+				It involves socket I/O operations so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendPairedMsg"><label for="ClientManager-fold-method-sendPairedMsg">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-946">sendPairedMsg</a>(pClient *<a href="#name-Client">Client</a>, opponent <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendPairedMsg-docs' class="fold-docs">
+<span class="md-text">				sendPairedMsg sends a paired message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendPing"><label for="ClientManager-fold-method-sendPing">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-862">sendPing</a>(pClient *<a href="#name-Client">Client</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendPing-docs' class="fold-docs">
+<span class="md-text">				sendPing sends a ping message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendTKO"><label for="ClientManager-fold-method-sendTKO">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-877">sendTKO</a>(pClient *<a href="#name-Client">Client</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendTKO-docs' class="fold-docs">
+<span class="md-text">				sendTKO sends a TKO message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendTurnMsg"><label for="ClientManager-fold-method-sendTurnMsg">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-924">sendTurnMsg</a>(pClient *<a href="#name-Client">Client</a>, playerOnTurn <a href="../builtin.html#name-string">string</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendTurnMsg-docs' class="fold-docs">
+<span class="md-text">				sendTurnMsg sends a turn message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-sendWaitMsg"><label for="ClientManager-fold-method-sendWaitMsg">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1010">sendWaitMsg</a>(pClient *<a href="#name-Client">Client</a>, errChan chan <a href="../builtin.html#name-error">error</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-sendWaitMsg-docs' class="fold-docs">
+<span class="md-text">				sendWaitMsg sends a wait message to the client.
+				Expects the client to be valid.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-startGame"><label for="ClientManager-fold-method-startGame">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1541">startGame</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-startGame-docs' class="fold-docs">
+<span class="md-text">				startGame starts a game in a lobby.
+				
+				WARNING: It manipulates a shared resource, so it should be called with a lock.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-startServer"><label for="ClientManager-fold-method-startServer">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-474">startServer</a>() <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-startServer-docs' class="fold-docs">
+<span class="md-text">				startServer starts the TCP server.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-stopServer"><label for="ClientManager-fold-method-stopServer">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-487">stopServer</a>() <a href="../builtin.html#name-error">error</a></label><span id='ClientManager-fold-method-stopServer-docs' class="fold-docs">
+<span class="md-text">				stopServer stops the TCP server.</span>
+</span></i></span><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="ClientManager-fold-method-validateConnection"><label for="ClientManager-fold-method-validateConnection">(*ClientManager) <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1419">validateConnection</a>(pClient *<a href="#name-Client">Client</a>) (<a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='ClientManager-fold-method-validateConnection-docs' class="fold-docs">
+<span class="md-text">				validateConnection validates a new connection.
+				Returns the nickname of the client upon successful validation.</span>
+</span></i></span></span>
+		<input type='checkbox' class="fold" id="ClientManager-fold-results"><label for="ClientManager-fold-results">As Outputs Of (<i>at least one exported</i>)</label><span id='ClientManager-fold-results-items' class="fold-items"><span>
+			func <a href="#name-NewClientManager">NewClientManager</a>(server *<a href="#name-Server">Server</a>) *<b>ClientManager</b></span></span>
+
+</span></div><div class="anchor type-res" id="name-Lobby" data-popularity="420">	<input type='checkbox' class="fold" id="Lobby-fold-content"><label for="Lobby-fold-content"> type <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-32">Lobby</a> <i>(struct)</i></label><span id='Lobby-fold-content-docs' class="fold-docs">
+<span class="md-text">		Lobby represents a game lobby.</span>
+
+		<input type='checkbox' class="fold" id="Lobby-fold-fields"><label for="Lobby-fold-fields">Fields (<i>total 12, none are exported</i>)</label><span id='Lobby-fold-fields-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Lobby-showhide-fields"><i><label for="Lobby-showhide-fields" class="show-inline">/* 12 unexporteds ... */</label><label for="Lobby-showhide-fields" class="hide-inline">/* 12 unexporteds: */</label></i><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-43">board</a> <i>[9][9]<a href="../builtin.html#name-int8">int8</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-33">id</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-37">interruptTime</a> <i><a href="../time.html">time</a>.<a href="../time.html#name-Time">Time</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-34">player01</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-38">player01Missing</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-39">player01Reconnected</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-35">player02</a> <i><a href="../builtin.html#name-string">string</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-40">player02Missing</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-41">player02Reconnected</a> <i><a href="../builtin.html#name-bool">bool</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-44">priorInterruptState</a> <i><a href="../builtin.html#name-uint8">uint8</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-42">readyCount</a> <i><a href="../builtin.html#name-uint8">uint8</a></i></span></i></span><span class="hidden"><i>
+			<span class="nodocs"><a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-36">state</a> <i><a href="../builtin.html#name-uint8">uint8</a></i></span></i></span></span>
+		<input type='checkbox' class="fold" id="Lobby-fold-params"><label for="Lobby-fold-params">As Inputs Of (<i>at least 12, none are exported</i>)</label><span id='Lobby-fold-params-items' class="fold-items">
+			<input type='checkbox' class="showhide" id="Lobby-showhide-outputofs"><i><label for="Lobby-showhide-outputofs" class="show-inline">/* 12+ unexporteds ... */</label><label for="Lobby-showhide-outputofs" class="hide-inline">/* 12+ unexporteds: */</label></i><span class="hidden"><i>
+			func <a href="#name-areAllPlayersConnected">areAllPlayersConnected</a>(pLobby *<b>Lobby</b>) <a href="../builtin.html#name-bool">bool</a></i></span><span class="hidden"><i>
+			func <a href="#name-shouldLobbyWait">shouldLobbyWait</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-bool">bool</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1622">advanceGame</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-730">attemptMove</a>(lobby *<b>Lobby</b>, nickname <a href="../builtin.html#name-string">string</a>, position []<a href="../builtin.html#name-int">int</a>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1480">getMissingPlayerNickname</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-string">string</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1836">handleLobbyContinue</a>(pLobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1748">handleLobbyInterrupted</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1781">handleLobbyPlayerReconnect</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1575">informMoves</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1699">interruptLobby</a>(pLobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1501">prepareGame</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span><span class="hidden"><i>
+			func (*<a href="#name-ClientManager">ClientManager</a>).<a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-1541">startGame</a>(lobby *<b>Lobby</b>) <a href="../builtin.html#name-error">error</a></i></span></span>
+
+</span></div><div class="anchor type-res" id="name-Server" data-popularity="410">	<input type='checkbox' class="fold" id="Server-fold-content"><label for="Server-fold-content"> type <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-25">Server</a> <i>(struct)</i></label><span id='Server-fold-content-docs' class="fold-docs">
+<span class="md-text">		Server is the main structure that holds the TCP server's state.</span>
+
+		<input type='checkbox' class="fold" id="Server-fold-fields"><label for="Server-fold-fields">Fields (<i>total 2, in which 1 is exported</i>)</label><span id='Server-fold-fields-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="Server-fold-field-Address"><label for="Server-fold-field-Address"><a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-26">Address</a> <i><a href="../builtin.html#name-string">string</a></i></label><span id='Server-fold-field-Address-docs' class="fold-docs">
+<span class="md-text">				// address the server listens on (e.g., "127.0.0.1:8080")</span>
+</span></span>
+			<input type='checkbox' class="showhide" id="Server-showhide-fields"><i><label for="Server-showhide-fields" class="show-inline">/* one unexported ... */</label><label for="Server-showhide-fields" class="hide-inline">/* one unexported: */</label></i><span class="hidden"><i>
+			<input type='checkbox' class="fold" id="Server-fold-field-p_listener"><label for="Server-fold-field-p_listener"><a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-27">p_listener</a> <i>*<a href="../net.html">net</a>.<a href="../net.html#name-Listener">Listener</a></i></label><span id='Server-fold-field-p_listener-docs' class="fold-docs">
+<span class="md-text">				// TCP listener</span>
+</span></i></span></span>
+		<input type='checkbox' class="fold" id="Server-fold-methods"><label for="Server-fold-methods">Methods (<i>total 6, all are exported</i>)</label><span id='Server-fold-methods-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-AcceptConnection"><label for="Server-fold-method-AcceptConnection">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-88">AcceptConnection</a>() (<a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='Server-fold-method-AcceptConnection-docs' class="fold-docs">
+<span class="md-text">				AcceptConnection accepts a new connection from a client.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-CloseConnection"><label for="Server-fold-method-CloseConnection">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-113">CloseConnection</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>) <a href="../builtin.html#name-error">error</a></label><span id='Server-fold-method-CloseConnection-docs' class="fold-docs">
+<span class="md-text">				CloseConnection closes the connection with the client.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-ReadMessage"><label for="Server-fold-method-ReadMessage">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-128">ReadMessage</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>) (<a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='Server-fold-method-ReadMessage-docs' class="fold-docs">
+<span class="md-text">				ReadMessage reads a message from the client.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-SendMessage"><label for="Server-fold-method-SendMessage">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-156">SendMessage</a>(conn <a href="../net.html">net</a>.<a href="../net.html#name-Conn">Conn</a>, message <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-error">error</a></label><span id='Server-fold-method-SendMessage-docs' class="fold-docs">
+<span class="md-text">				SendMessage sends a message to the client.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-Start"><label for="Server-fold-method-Start">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-55">Start</a>() <a href="../builtin.html#name-error">error</a></label><span id='Server-fold-method-Start-docs' class="fold-docs">
+<span class="md-text">				Start launches the TCP server and begins listening for incoming connections.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Server-fold-method-Stop"><label for="Server-fold-method-Stop">(*Server) <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-70">Stop</a>() <a href="../builtin.html#name-error">error</a></label><span id='Server-fold-method-Stop-docs' class="fold-docs">
+<span class="md-text">				Stop stops the TCP server and closes the listener.</span>
+</span></span></span>
+		<input type='checkbox' class="fold" id="Server-fold-results"><label for="Server-fold-results">As Outputs Of (<i>at least one exported</i>)</label><span id='Server-fold-results-items' class="fold-items"><span>
+			func <a href="#name-NewServer">NewServer</a>(address <a href="../builtin.html#name-string">string</a>) *<b>Server</b></span></span>
+		<input type='checkbox' class="fold" id="Server-fold-params"><label for="Server-fold-params">As Inputs Of (<i>at least one exported</i>)</label><span id='Server-fold-params-items' class="fold-items"><span>
+			func <a href="#name-NewClientManager">NewClientManager</a>(server *<b>Server</b>) *<a href="#name-ClientManager">ClientManager</a></span></span>
+
+</span></div></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (total 11, in which 2 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-NewClientManager">	<input type='checkbox' class="fold" id="NewClientManager-fold-content"><label for="NewClientManager-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-59">NewClientManager</a>(server *<a href="#name-Server">Server</a>) *<a href="#name-ClientManager">ClientManager</a></label><span id='NewClientManager-fold-content-docs' class="fold-docs">
+<span class="md-text">		NewClientManager creates a new ClientManager.
+		It requires a server pointer as a parameter.</span>
+
+</span></div><div class="anchor value-res" id="name-NewServer">	<input type='checkbox' class="fold" id="NewServer-fold-content"><label for="NewServer-fold-content"> func <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-47">NewServer</a>(address <a href="../builtin.html#name-string">string</a>) *<a href="#name-Server">Server</a></label><span id='NewServer-fold-content-docs' class="fold-docs">
+<span class="md-text">		NewServer initializes and returns a new Server instance.</span>
+
+</span></div>	<input type='checkbox' class="showhide" id="unexported-functions-showhide"><i><label for="unexported-functions-showhide" class="show-inline">/* 9 unexporteds ... */</label><label for="unexported-functions-showhide" class="hide-inline">/* 9 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-areAllPlayersConnected"><i>	<input type='checkbox' class="fold" id="areAllPlayersConnected-fold-content"><label for="areAllPlayersConnected-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-390">areAllPlayersConnected</a>(pLobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-bool">bool</a></label><span id='areAllPlayersConnected-fold-content-docs' class="fold-docs">
+<span class="md-text">		areAllPlayersConnected checks if all players are connected in a lobby.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-boardToString"><i>	<input type='checkbox' class="fold" id="boardToString-fold-content"><label for="boardToString-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-93">boardToString</a>(board [9][9]<a href="../builtin.html#name-int8">int8</a>) <a href="../builtin.html#name-string">string</a></label><span id='boardToString-fold-content-docs' class="fold-docs">
+<span class="md-text">		boardToString converts a board to a string.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-boardToStringPlayer"><i>	<input type='checkbox' class="fold" id="boardToStringPlayer-fold-content"><label for="boardToStringPlayer-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-113">boardToStringPlayer</a>(board [9][9]<a href="../builtin.html#name-int8">int8</a>, isPlayer01 <a href="../builtin.html#name-bool">bool</a>) <a href="../builtin.html#name-string">string</a></label><span id='boardToStringPlayer-fold-content-docs' class="fold-docs">
+<span class="md-text">		boardToStringPlayer converts a board to a string for a player.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-escapeSpecialSymbols"><i>	<input type='checkbox' class="fold" id="escapeSpecialSymbols-fold-content"><label for="escapeSpecialSymbols-fold-content"> func <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-31">escapeSpecialSymbols</a>(input <a href="../builtin.html#name-string">string</a>) <a href="../builtin.html#name-string">string</a></label><span id='escapeSpecialSymbols-fold-content-docs' class="fold-docs">
+<span class="md-text">		escapeSpecialSymbols escapes special symbols in a string.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-getCompleteMsg"><i>	<input type='checkbox' class="fold" id="getCompleteMsg-fold-content"><label for="getCompleteMsg-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-72">getCompleteMsg</a>(msg <a href="../builtin.html#name-string">string</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-string">string</a>, <a href="../builtin.html#name-string">string</a>)</label><span id='getCompleteMsg-fold-content-docs' class="fold-docs">
+<span class="md-text">		getCompleteMsg checks if the message is complete.
+		It returns a boolean indicating if the message is complete,
+		the whole message, and additional parts of queued messages.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-getGameStats"><i>	<input type='checkbox' class="fold" id="getGameStats-fold-content"><label for="getGameStats-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-315">getGameStats</a>(board [9][9]<a href="../builtin.html#name-int8">int8</a>) (<a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-bool">bool</a>, <a href="../builtin.html#name-error">error</a>)</label><span id='getGameStats-fold-content-docs' class="fold-docs">
+<span class="md-text">		getGameStats gets the game statistics.
+		It returns if the game has finished; if player01 has won; and an error if any.
+		If error is returned the other two values are not defined.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-getInitialBoard"><i>	<input type='checkbox' class="fold" id="getInitialBoard-fold-content"><label for="getInitialBoard-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-188">getInitialBoard</a>() [9][9]<a href="../builtin.html#name-int8">int8</a></label><span id='getInitialBoard-fold-content-docs' class="fold-docs">
+<span class="md-text">		getInitialBoard generates a random board.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-getNighboursCount"><i>	<input type='checkbox' class="fold" id="getNighboursCount-fold-content"><label for="getNighboursCount-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-169">getNighboursCount</a>(board [9][9]<a href="../builtin.html#name-int8">int8</a>, row, col <a href="../builtin.html#name-int">int</a>) <a href="../builtin.html#name-int">int</a></label><span id='getNighboursCount-fold-content-docs' class="fold-docs">
+<span class="md-text">		getNighboursCount gets the count of neighbours of a cell.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-shouldLobbyWait"><i>	<input type='checkbox' class="fold" id="shouldLobbyWait-fold-content"><label for="shouldLobbyWait-fold-content"> func <a href="../../src/inverse-battleships-server/server/client_manager.go.html#line-362">shouldLobbyWait</a>(lobby *<a href="#name-Lobby">Lobby</a>) <a href="../builtin.html#name-bool">bool</a></label><span id='shouldLobbyWait-fold-content-docs' class="fold-docs">
+<span class="md-text">		shouldLobbyWait checks if the lobby can be switched to reconnecting state.</span>
+
+</span></i></div></div>
+<div id="exported-constants"><span class="title">Package-Level Constants<span class="title-stat"><i> (total 4, none are exported)</i></span></span>
+
+	<input type='checkbox' class="showhide" id="unexported-constants-showhide"><i><label for="unexported-constants-showhide" class="show-inline">/* 4 unexporteds ... */</label><label for="unexported-constants-showhide" class="hide-inline">/* 4 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-bufferSize"><i>	<input type='checkbox' class="fold" id="bufferSize-fold-content"><label for="bufferSize-fold-content">const <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-16">bufferSize</a> = 1024 // <span class="md-text">1024 bytes == 1024 characters == 1KiB</span></label><span id='bufferSize-fold-content-docs' class="fold-docs">
+<span class="md-text">		bufferSize represents the size of the buffer used to read messages</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-connectionTimeout"><i>	<input type='checkbox' class="fold" id="connectionTimeout-fold-content"><label for="connectionTimeout-fold-content">const <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-22">connectionTimeout</a> <a href="../time.html">time</a>.<a href="../time.html#name-Duration">Duration</a> = 100000000</label><span id='connectionTimeout-fold-content-docs' class="fold-docs">
+<span class="md-text">		connectionTimeout represents the time to wait for a connection</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-connectionType"><i>	<input type='checkbox' class="fold" id="connectionType-fold-content"><label for="connectionType-fold-content">const <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-13">connectionType</a> = "tcp"</label><span id='connectionType-fold-content-docs' class="fold-docs">
+<span class="md-text">		connectionType represents the type of connection (e.g., "tcp")</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-timeout"><i>	<input type='checkbox' class="fold" id="timeout-fold-content"><label for="timeout-fold-content">const <a href="../../src/inverse-battleships-server/server/connection_manager.go.html#line-19">timeout</a> <a href="../time.html">time</a>.<a href="../time.html#name-Duration">Duration</a> = 1000000000</label><span id='timeout-fold-content-docs' class="fold-docs">
+<span class="md-text">		timeout represents the time for reading a message</span>
+
+</span></i></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

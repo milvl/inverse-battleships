@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: time_windows.h in package runtime</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	time_windows.h
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/runtime.html">runtime</a>
+</code></pre>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code>// Copyright 2021 The Go Authors. All rights reserved.</code></span>
+<span class="codeline" id="line-2"><code>// Use of this source code is governed by a BSD-style</code></span>
+<span class="codeline" id="line-3"><code>// license that can be found in the LICENSE file.</code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code>// Constants for fetching time values on Windows for use in asm code.</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code>// See https://wrkhpi.wordpress.com/2007/08/09/getting-os-information-the-kuser_shared_data-structure/</code></span>
+<span class="codeline" id="line-8"><code>// Archived copy at:</code></span>
+<span class="codeline" id="line-9"><code>// http://web.archive.org/web/20210411000829/https://wrkhpi.wordpress.com/2007/08/09/getting-os-information-the-kuser_shared_data-structure/</code></span>
+<span class="codeline" id="line-10"><code></code></span>
+<span class="codeline" id="line-11"><code>// Must read hi1, then lo, then hi2. The snapshot is valid if hi1 == hi2.</code></span>
+<span class="codeline" id="line-12"><code>// Or, on 64-bit, just read lo:hi1 all at once atomically.</code></span>
+<span class="codeline" id="line-13"><code>#define _INTERRUPT_TIME 0x7ffe0008</code></span>
+<span class="codeline" id="line-14"><code>#define _SYSTEM_TIME 0x7ffe0014</code></span>
+<span class="codeline" id="line-15"><code>#define time_lo 0</code></span>
+<span class="codeline" id="line-16"><code>#define time_hi1 4</code></span>
+<span class="codeline" id="line-17"><code>#define time_hi2 8</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: internal/syscall/windows/registry</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>registry</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../../../index.html#pkg-internal/syscall/windows/registry">internal/syscall/windows/registry</a><i> (on <a href="https://pkg.go.dev/internal/syscall/windows/registry" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports <a href="../../../../dep/internal/syscall/windows/registry.html">6 packages</a>, and imported by <a href="../../../../dep/internal/syscall/windows/registry.html#imported-by">one package</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<input type='checkbox' checked class="fold" id="file-0-fold-content"><label for="file-0-fold-content">  <a href="../../../../src/internal/syscall/windows/registry/key.go.html#doc">d</a> <a href="../../../../src/internal/syscall/windows/registry/key.go.html">key.go</a></label><span id='file-0-fold-content-items' class="fold-items">
+<span class="md-text">		Package registry provides access to the Windows registry.
+		
+		Here is a simple example, opening a registry key and reading a string value from it.
+		
+			k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer k.Close()
+		
+			s, _, err := k.GetStringValue("SystemRoot")
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("Windows system root is %q\n", s)
+		
+		NOTE: This package is a copy of golang.org/x/sys/windows/registry
+		with KeyInfo.ModTime removed to prevent dependency cycles.</span>
+</span>
+	<span class="nodocs">    <a href="../../../../src/internal/syscall/windows/registry/syscall.go.html">syscall.go</a></span>
+	<span class="nodocs">    <a href="../../../../src/internal/syscall/windows/registry/value.go.html">value.go</a></span>
+	<span class="nodocs">    <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html">zsyscall_windows.go</a></span></div>
+<div id="exported-types"><span class="title">Package-Level Type Names<span class="title-stat"><i> (total 2, both are exported)</i></span></span>
+
+<div id="exported-types-buttons" class="js-on">	/* sort exporteds by: <label id="sort-types-by-alphabet" class="button">alphabet</label> | <label id="sort-types-by-popularity" class="button">popularity</label> */</div><div class="anchor type-res" id="name-Key" data-popularity="1355">	<input type='checkbox' class="fold" id="Key-fold-content"><label for="Key-fold-content"> type <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-54">Key</a> <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a> <i>(basic type)</i></label><span id='Key-fold-content-docs' class="fold-docs">
+<span class="md-text">		Key is a handle to an open Windows registry key.
+		Keys can be obtained by calling OpenKey; there are
+		also some predefined root keys such as CURRENT_USER.
+		Keys can be used directly in the Windows API.</span>
+
+		<input type='checkbox' class="fold" id="Key-fold-methods"><label for="Key-fold-methods">Methods (<i>total 20, in which 17 are exported</i>)</label><span id='Key-fold-methods-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-Close"><label for="Key-fold-method-Close">( Key) <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-69">Close</a>() <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-Close-docs' class="fold-docs">
+<span class="md-text">				Close closes open key k.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-DeleteValue"><label for="Key-fold-method-DeleteValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-335">DeleteValue</a>(name <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-DeleteValue-docs' class="fold-docs">
+<span class="md-text">				DeleteValue removes a named value from the key k.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetBinaryValue"><label for="Key-fold-method-GetBinaryValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-255">GetBinaryValue</a>(name <a href="../../../builtin.html#name-string">string</a>) (val []<a href="../../../builtin.html#name-byte">byte</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetBinaryValue-docs' class="fold-docs">
+<span class="md-text">				GetBinaryValue retrieves the binary value for the specified
+				value name associated with an open key k. It also returns the value's type.
+				If value does not exist, GetBinaryValue returns ErrNotExist.
+				If value is not BINARY, it will return the correct value
+				type and ErrUnexpectedType.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetIntegerValue"><label for="Key-fold-method-GetIntegerValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-229">GetIntegerValue</a>(name <a href="../../../builtin.html#name-string">string</a>) (val <a href="../../../builtin.html#name-uint64">uint64</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetIntegerValue-docs' class="fold-docs">
+<span class="md-text">				GetIntegerValue retrieves the integer value for the specified
+				value name associated with an open key k. It also returns the value's type.
+				If value does not exist, GetIntegerValue returns ErrNotExist.
+				If value is not DWORD or QWORD, it will return the correct value
+				type and ErrUnexpectedType.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetMUIStringValue"><label for="Key-fold-method-GetMUIStringValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-118">GetMUIStringValue</a>(name <a href="../../../builtin.html#name-string">string</a>) (<a href="../../../builtin.html#name-string">string</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetMUIStringValue-docs' class="fold-docs">
+<span class="md-text">				GetMUIStringValue retrieves the localized string value for
+				the specified value name associated with an open key k.
+				If the value name doesn't exist or the localized string value
+				can't be resolved, GetMUIStringValue returns ErrNotExist.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetStringValue"><label for="Key-fold-method-GetStringValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-97">GetStringValue</a>(name <a href="../../../builtin.html#name-string">string</a>) (val <a href="../../../builtin.html#name-string">string</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetStringValue-docs' class="fold-docs">
+<span class="md-text">				GetStringValue retrieves the string value for the specified
+				value name associated with an open key k. It also returns the value's type.
+				If value does not exist, GetStringValue returns ErrNotExist.
+				If value is not SZ or EXPAND_SZ, it will return the correct value
+				type and ErrUnexpectedType.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetStringsValue"><label for="Key-fold-method-GetStringsValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-195">GetStringsValue</a>(name <a href="../../../builtin.html#name-string">string</a>) (val []<a href="../../../builtin.html#name-string">string</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetStringsValue-docs' class="fold-docs">
+<span class="md-text">				GetStringsValue retrieves the []string value for the specified
+				value name associated with an open key k. It also returns the value's type.
+				If value does not exist, GetStringsValue returns ErrNotExist.
+				If value is not MULTI_SZ, it will return the correct value
+				type and ErrUnexpectedType.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-GetValue"><label for="Key-fold-method-GetValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-53">GetValue</a>(name <a href="../../../builtin.html#name-string">string</a>, buf []<a href="../../../builtin.html#name-byte">byte</a>) (n <a href="../../../builtin.html#name-int">int</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-GetValue-docs' class="fold-docs">
+<span class="md-text">				GetValue retrieves the type and data for the specified value associated
+				with an open key k. It fills up buffer buf and returns the retrieved
+				byte count n. If buf is too small to fit the stored value it returns
+				ErrShortBuffer error along with the required buffer size n.
+				If no buffer is provided, it returns true and actual buffer size n.
+				If no buffer is provided, GetValue returns the value's type only.
+				If the value does not exist, the error returned is ErrNotExist.
+				
+				GetValue is a low level function. If value's type is known, use the appropriate
+				Get*Value function instead.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-ReadSubKeyNames"><label for="Key-fold-method-ReadSubKeyNames">( Key) <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-92">ReadSubKeyNames</a>() ([]<a href="../../../builtin.html#name-string">string</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-ReadSubKeyNames-docs' class="fold-docs">
+<span class="md-text">				ReadSubKeyNames returns the names of subkeys of key k.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-ReadValueNames"><label for="Key-fold-method-ReadValueNames">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-340">ReadValueNames</a>() ([]<a href="../../../builtin.html#name-string">string</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-ReadValueNames-docs' class="fold-docs">
+<span class="md-text">				ReadValueNames returns the value names of key k.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetBinaryValue"><label for="Key-fold-method-SetBinaryValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-330">SetBinaryValue</a>(name <a href="../../../builtin.html#name-string">string</a>, value []<a href="../../../builtin.html#name-byte">byte</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetBinaryValue-docs' class="fold-docs">
+<span class="md-text">				SetBinaryValue sets the data and type of a name value
+				under key k to value and BINARY.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetDWordValue"><label for="Key-fold-method-SetDWordValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-279">SetDWordValue</a>(name <a href="../../../builtin.html#name-string">string</a>, value <a href="../../../builtin.html#name-uint32">uint32</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetDWordValue-docs' class="fold-docs">
+<span class="md-text">				SetDWordValue sets the data and type of a name value
+				under key k to value and DWORD.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetExpandStringValue"><label for="Key-fold-method-SetExpandStringValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-306">SetExpandStringValue</a>(name, value <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetExpandStringValue-docs' class="fold-docs">
+<span class="md-text">				SetExpandStringValue sets the data and type of a name value
+				under key k to value and EXPAND_SZ. The value must not contain a zero byte.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetQWordValue"><label for="Key-fold-method-SetQWordValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-285">SetQWordValue</a>(name <a href="../../../builtin.html#name-string">string</a>, value <a href="../../../builtin.html#name-uint64">uint64</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetQWordValue-docs' class="fold-docs">
+<span class="md-text">				SetQWordValue sets the data and type of a name value
+				under key k to value and QWORD.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetStringValue"><label for="Key-fold-method-SetStringValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-300">SetStringValue</a>(name, value <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetStringValue-docs' class="fold-docs">
+<span class="md-text">				SetStringValue sets the data and type of a name value
+				under key k to value and SZ. The value must not contain a zero byte.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-SetStringsValue"><label for="Key-fold-method-SetStringsValue">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-313">SetStringsValue</a>(name <a href="../../../builtin.html#name-string">string</a>, value []<a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='Key-fold-method-SetStringsValue-docs' class="fold-docs">
+<span class="md-text">				SetStringsValue sets the data and type of a name value
+				under key k to value and MULTI_SZ. The value strings
+				must not contain a zero byte.</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="Key-fold-method-Stat"><label for="Key-fold-method-Stat">( Key) <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-159">Stat</a>() (*<a href="#name-KeyInfo">KeyInfo</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='Key-fold-method-Stat-docs' class="fold-docs">
+<span class="md-text">				Stat retrieves information about the open key k.</span>
+</span></span>
+			<input type='checkbox' class="showhide" id="Key-showhide-methods"><i><label for="Key-showhide-methods" class="show-inline">/* 3 unexporteds ... */</label><label for="Key-showhide-methods" class="hide-inline">/* 3 unexporteds: */</label></i><span class="hidden"><i>
+			<span class="nodocs">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-70">getValue</a>(name <a href="../../../builtin.html#name-string">string</a>, buf []<a href="../../../builtin.html#name-byte">byte</a>) (date []<a href="../../../builtin.html#name-byte">byte</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</span></i></span><span class="hidden"><i>
+			<span class="nodocs">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-289">setStringValue</a>(name <a href="../../../builtin.html#name-string">string</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, value <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></span></i></span><span class="hidden"><i>
+			<span class="nodocs">( Key) <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-266">setValue</a>(name <a href="../../../builtin.html#name-string">string</a>, valtype <a href="../../../builtin.html#name-uint32">uint32</a>, data []<a href="../../../builtin.html#name-byte">byte</a>) <a href="../../../builtin.html#name-error">error</a></span></i></span></span>
+		<input type='checkbox' class="fold" id="Key-fold-impls"><label for="Key-fold-impls">Implements (<i>at least one exported</i>)</label><span id='Key-fold-impls-items' class="fold-items"><span>
+			 Key : io.<a href="../../../io.html#name-Closer">Closer</a></span></span>
+		<input type='checkbox' class="fold" id="Key-fold-results"><label for="Key-fold-results">As Outputs Of (<i>at least 2, both are exported</i>)</label><span id='Key-fold-results-items' class="fold-items"><span>
+			func <a href="#name-CreateKey">CreateKey</a>(k <b>Key</b>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (newk <b>Key</b>, openedExisting <a href="../../../builtin.html#name-bool">bool</a>, err <a href="../../../builtin.html#name-error">error</a>)</span><span>
+			func <a href="#name-OpenKey">OpenKey</a>(k <b>Key</b>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (<b>Key</b>, <a href="../../../builtin.html#name-error">error</a>)</span></span>
+		<input type='checkbox' class="fold" id="Key-fold-params"><label for="Key-fold-params">As Inputs Of (<i>at least 4, in which 3 are exported</i>)</label><span id='Key-fold-params-items' class="fold-items"><span>
+			func <a href="#name-CreateKey">CreateKey</a>(k <b>Key</b>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (newk <b>Key</b>, openedExisting <a href="../../../builtin.html#name-bool">bool</a>, err <a href="../../../builtin.html#name-error">error</a>)</span><span>
+			func <a href="#name-DeleteKey">DeleteKey</a>(k <b>Key</b>, path <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></span><span>
+			func <a href="#name-OpenKey">OpenKey</a>(k <b>Key</b>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (<b>Key</b>, <a href="../../../builtin.html#name-error">error</a>)</span>
+			<input type='checkbox' class="showhide" id="Key-showhide-outputofs"><i><label for="Key-showhide-outputofs" class="show-inline">/* at least one unexported ... */</label><label for="Key-showhide-outputofs" class="hide-inline">/* at least one unexported: */</label></i><span class="hidden"><i>
+			func time.<a href="../../../time.html#name-matchZoneKey">matchZoneKey</a>(zones <b>Key</b>, kname <a href="../../../builtin.html#name-string">string</a>, stdname, dstname <a href="../../../builtin.html#name-string">string</a>) (matched <a href="../../../builtin.html#name-bool">bool</a>, err2 <a href="../../../builtin.html#name-error">error</a>)</i></span></span>
+		<input type='checkbox' class="fold" id="Key-fold-values"><label for="Key-fold-values">As Types Of (<i>total 5, all are exported</i>)</label><span id='Key-fold-values-items' class="fold-items"><span>
+			const <a href="#name-CLASSES_ROOT">CLASSES_ROOT</a></span><span>
+			const <a href="#name-CURRENT_CONFIG">CURRENT_CONFIG</a></span><span>
+			const <a href="#name-CURRENT_USER">CURRENT_USER</a></span><span>
+			const <a href="#name-LOCAL_MACHINE">LOCAL_MACHINE</a></span><span>
+			const <a href="#name-USERS">USERS</a></span></span>
+
+</span></div><div class="anchor type-res" id="name-KeyInfo" data-popularity="75">	<input type='checkbox' class="fold" id="KeyInfo-fold-content"><label for="KeyInfo-fold-content"> type <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-149">KeyInfo</a> <i>(struct)</i></label><span id='KeyInfo-fold-content-docs' class="fold-docs">
+<span class="md-text">		A KeyInfo describes the statistics of a key. It is returned by Stat.</span>
+
+		<input type='checkbox' class="fold" id="KeyInfo-fold-fields"><label for="KeyInfo-fold-fields">Fields (<i>total 6, in which 5 are exported</i>)</label><span id='KeyInfo-fold-fields-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="KeyInfo-fold-field-MaxSubKeyLen"><label for="KeyInfo-fold-field-MaxSubKeyLen"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-151">MaxSubKeyLen</a> <i><a href="../../../builtin.html#name-uint32">uint32</a></i></label><span id='KeyInfo-fold-field-MaxSubKeyLen-docs' class="fold-docs">
+<span class="md-text">				// size of the key's subkey with the longest name, in Unicode characters, not including the terminating zero byte</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="KeyInfo-fold-field-MaxValueLen"><label for="KeyInfo-fold-field-MaxValueLen"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-154">MaxValueLen</a> <i><a href="../../../builtin.html#name-uint32">uint32</a></i></label><span id='KeyInfo-fold-field-MaxValueLen-docs' class="fold-docs">
+<span class="md-text">				// longest data component among the key's values, in bytes</span>
+</span></span><span>
+			<input type='checkbox' class="fold" id="KeyInfo-fold-field-MaxValueNameLen"><label for="KeyInfo-fold-field-MaxValueNameLen"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-153">MaxValueNameLen</a> <i><a href="../../../builtin.html#name-uint32">uint32</a></i></label><span id='KeyInfo-fold-field-MaxValueNameLen-docs' class="fold-docs">
+<span class="md-text">				// size of the key's longest value name, in Unicode characters, not including the terminating zero byte</span>
+</span></span><span>
+			<span class="nodocs"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-150">SubKeyCount</a> <i><a href="../../../builtin.html#name-uint32">uint32</a></i></span></span><span>
+			<span class="nodocs"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-152">ValueCount</a> <i><a href="../../../builtin.html#name-uint32">uint32</a></i></span></span>
+			<input type='checkbox' class="showhide" id="KeyInfo-showhide-fields"><i><label for="KeyInfo-showhide-fields" class="show-inline">/* one unexported ... */</label><label for="KeyInfo-showhide-fields" class="hide-inline">/* one unexported: */</label></i><span class="hidden"><i>
+			<span class="nodocs"><a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-155">lastWriteTime</a> <i><a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Filetime">Filetime</a></i></span></i></span></span>
+		<input type='checkbox' class="fold" id="KeyInfo-fold-results"><label for="KeyInfo-fold-results">As Outputs Of (<i>at least one exported</i>)</label><span id='KeyInfo-fold-results-items' class="fold-items"><span>
+			func <a href="#name-Key">Key</a>.<a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-159">Stat</a>() (*<b>KeyInfo</b>, <a href="../../../builtin.html#name-error">error</a>)</span></span>
+
+</span></div></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (total 12, in which 4 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-CreateKey">	<input type='checkbox' class="fold" id="CreateKey-fold-content"><label for="CreateKey-fold-content"> func <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-132">CreateKey</a>(k <a href="#name-Key">Key</a>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (newk <a href="#name-Key">Key</a>, openedExisting <a href="../../../builtin.html#name-bool">bool</a>, err <a href="../../../builtin.html#name-error">error</a>)</label><span id='CreateKey-fold-content-docs' class="fold-docs">
+<span class="md-text">		CreateKey creates a key named path under open key k.
+		CreateKey returns the new key and a boolean flag that reports
+		whether the key already existed.
+		The access parameter specifies the access rights for the key
+		to be created.</span>
+
+</span></div><div class="anchor value-res" id="name-DeleteKey">	<input type='checkbox' class="fold" id="DeleteKey-fold-content"><label for="DeleteKey-fold-content"> func <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-144">DeleteKey</a>(k <a href="#name-Key">Key</a>, path <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='DeleteKey-fold-content-docs' class="fold-docs">
+<span class="md-text">		DeleteKey deletes the subkey path of key k and its values.</span>
+
+</span></div><div class="anchor value-res" id="name-ExpandString">	<input type='checkbox' class="fold" id="ExpandString-fold-content"><label for="ExpandString-fold-content"> func <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-169">ExpandString</a>(value <a href="../../../builtin.html#name-string">string</a>) (<a href="../../../builtin.html#name-string">string</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='ExpandString-fold-content-docs' class="fold-docs">
+<span class="md-text">		ExpandString expands environment-variable strings and replaces
+		them with the values defined for the current user.
+		Use ExpandString to expand EXPAND_SZ strings.</span>
+
+</span></div><div class="anchor value-res" id="name-OpenKey">	<input type='checkbox' class="fold" id="OpenKey-fold-content"><label for="OpenKey-fold-content"> func <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-78">OpenKey</a>(k <a href="#name-Key">Key</a>, path <a href="../../../builtin.html#name-string">string</a>, access <a href="../../../builtin.html#name-uint32">uint32</a>) (<a href="#name-Key">Key</a>, <a href="../../../builtin.html#name-error">error</a>)</label><span id='OpenKey-fold-content-docs' class="fold-docs">
+<span class="md-text">		OpenKey opens a new key with path name relative to key k.
+		It accepts any open key, including CURRENT_USER and others,
+		and returns the new key and an error.
+		The access parameter specifies desired access rights to the
+		key to be opened.</span>
+
+</span></div>	<input type='checkbox' class="showhide" id="unexported-functions-showhide"><i><label for="unexported-functions-showhide" class="show-inline">/* 8 unexporteds ... */</label><label for="unexported-functions-showhide" class="hide-inline">/* 8 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-errnoErr"><i>	<input type='checkbox' class="fold" id="errnoErr-fold-content"><label for="errnoErr-fold-content"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-26">errnoErr</a>(e <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Errno">Errno</a>) <a href="../../../builtin.html#name-error">error</a></label><span id='errnoErr-fold-content-docs' class="fold-docs">
+<span class="md-text">		errnoErr returns common boxed Errno values, to prevent
+		allocations at runtime.</span>
+
+</span></i></div><div class="anchor value-res hidden" id="name-expandEnvironmentStrings"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-100">expandEnvironmentStrings</a>(src *<a href="../../../builtin.html#name-uint16">uint16</a>, dst *<a href="../../../builtin.html#name-uint16">uint16</a>, size <a href="../../../builtin.html#name-uint32">uint32</a>) (n <a href="../../../builtin.html#name-uint32">uint32</a>, err <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regCreateKeyEx"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-52">regCreateKeyEx</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, subkey *<a href="../../../builtin.html#name-uint16">uint16</a>, reserved <a href="../../../builtin.html#name-uint32">uint32</a>, class *<a href="../../../builtin.html#name-uint16">uint16</a>, options <a href="../../../builtin.html#name-uint32">uint32</a>, desired <a href="../../../builtin.html#name-uint32">uint32</a>, sa *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-SecurityAttributes">SecurityAttributes</a>, result *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, disposition *<a href="../../../builtin.html#name-uint32">uint32</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regDeleteKey"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-60">regDeleteKey</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, subkey *<a href="../../../builtin.html#name-uint16">uint16</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regDeleteValue"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-68">regDeleteValue</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, name *<a href="../../../builtin.html#name-uint16">uint16</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regEnumValue"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-76">regEnumValue</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, index <a href="../../../builtin.html#name-uint32">uint32</a>, name *<a href="../../../builtin.html#name-uint16">uint16</a>, nameLen *<a href="../../../builtin.html#name-uint32">uint32</a>, reserved *<a href="../../../builtin.html#name-uint32">uint32</a>, valtype *<a href="../../../builtin.html#name-uint32">uint32</a>, buf *<a href="../../../builtin.html#name-byte">byte</a>, buflen *<a href="../../../builtin.html#name-uint32">uint32</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regLoadMUIString"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-84">regLoadMUIString</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, name *<a href="../../../builtin.html#name-uint16">uint16</a>, buf *<a href="../../../builtin.html#name-uint16">uint16</a>, buflen <a href="../../../builtin.html#name-uint32">uint32</a>, buflenCopied *<a href="../../../builtin.html#name-uint32">uint32</a>, flags <a href="../../../builtin.html#name-uint32">uint32</a>, dir *<a href="../../../builtin.html#name-uint16">uint16</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div><div class="anchor value-res hidden" id="name-regSetValueEx"><i>	<span class="nodocs"> func <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-92">regSetValueEx</a>(key <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Handle">Handle</a>, valueName *<a href="../../../builtin.html#name-uint16">uint16</a>, reserved <a href="../../../builtin.html#name-uint32">uint32</a>, vtype <a href="../../../builtin.html#name-uint32">uint32</a>, buf *<a href="../../../builtin.html#name-byte">byte</a>, bufsize <a href="../../../builtin.html#name-uint32">uint32</a>) (regerrno <a href="../../../builtin.html#name-error">error</a>)</span></i></div></div>
+<div id="exported-variables"><span class="title">Package-Level Variables<span class="title-stat"><i> (total 14, in which 3 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-ErrNotExist">	<input type='checkbox' class="fold" id="ErrNotExist-fold-content"><label for="ErrNotExist-fold-content">  var <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-37">ErrNotExist</a> <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Errno">Errno</a></label><span id='ErrNotExist-fold-content-docs' class="fold-docs">
+<span class="md-text">		ErrNotExist is returned when a registry key or value does not exist.</span>
+
+</span></div><div class="anchor value-res" id="name-ErrShortBuffer">	<input type='checkbox' class="fold" id="ErrShortBuffer-fold-content"><label for="ErrShortBuffer-fold-content">  var <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-34">ErrShortBuffer</a> <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Errno">Errno</a></label><span id='ErrShortBuffer-fold-content-docs' class="fold-docs">
+<span class="md-text">		ErrShortBuffer is returned when the buffer was too short for the operation.</span>
+
+</span></div><div class="anchor value-res" id="name-ErrUnexpectedType">	<input type='checkbox' class="fold" id="ErrUnexpectedType-fold-content"><label for="ErrUnexpectedType-fold-content">  var <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-40">ErrUnexpectedType</a> <a href="../../../builtin.html#name-error">error</a></label><span id='ErrUnexpectedType-fold-content-docs' class="fold-docs">
+<span class="md-text">		ErrUnexpectedType is returned by Get*Value when the value's type was unexpected.</span>
+
+</span></div>	<input type='checkbox' class="showhide" id="unexported-variables-showhide"><i><label for="unexported-variables-showhide" class="show-inline">/* 11 unexporteds ... */</label><label for="unexported-variables-showhide" class="hide-inline">/* 11 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-errERROR_EINVAL"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-21">errERROR_EINVAL</a> <a href="../../../builtin.html#name-error">error</a></span></i></div><div class="anchor value-res hidden" id="name-errERROR_IO_PENDING"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-20">errERROR_IO_PENDING</a> <a href="../../../builtin.html#name-error">error</a></span></i></div><div class="anchor value-res hidden" id="name-modadvapi32"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-40">modadvapi32</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyDLL">LazyDLL</a></span></i></div><div class="anchor value-res hidden" id="name-modkernel32"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-41">modkernel32</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyDLL">LazyDLL</a></span></i></div><div class="anchor value-res hidden" id="name-procExpandEnvironmentStringsW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-49">procExpandEnvironmentStringsW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegCreateKeyExW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-43">procRegCreateKeyExW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegDeleteKeyW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-44">procRegDeleteKeyW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegDeleteValueW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-45">procRegDeleteValueW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegEnumValueW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-46">procRegEnumValueW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegLoadMUIStringW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-47">procRegLoadMUIStringW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div><div class="anchor value-res hidden" id="name-procRegSetValueExW"><i>	<span class="nodocs">  var <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-48">procRegSetValueExW</a> *<a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-LazyProc">LazyProc</a></span></i></div></div>
+<div id="exported-constants"><span class="title">Package-Level Constants<span class="title-stat"><i> (total 34, in which 29 are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-ALL_ACCESS">	<input type='checkbox' class="fold" id="ALL_ACCESS-fold-content"><label for="ALL_ACCESS-fold-content">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-36">ALL_ACCESS</a> = 983103</label><span id='ALL_ACCESS-fold-content-docs' class="fold-docs">
+<span class="md-text">		Registry key security and access rights.
+		See https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-key-security-and-access-rights
+		for details.</span>
+
+</span></div><div class="anchor value-res" id="name-BINARY">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-21">BINARY</a> = 3</span></div><div class="anchor value-res" id="name-CLASSES_ROOT">	<input type='checkbox' class="fold" id="CLASSES_ROOT-fold-content"><label for="CLASSES_ROOT-fold-content">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-61">CLASSES_ROOT</a> <a href="#name-Key">Key</a> = 2147483648</label><span id='CLASSES_ROOT-fold-content-docs' class="fold-docs">
+<span class="md-text">		Windows defines some predefined root keys that are always open.
+		An application can use these keys as entry points to the registry.
+		Normally these keys are used in OpenKey to open new keys,
+		but they can also be used anywhere a Key is required.</span>
+
+</span></div><div class="anchor value-res" id="name-CREATE_LINK">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-37">CREATE_LINK</a> = 32</span></div><div class="anchor value-res" id="name-CREATE_SUB_KEY">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-38">CREATE_SUB_KEY</a> = 4</span></div><div class="anchor value-res" id="name-CURRENT_CONFIG">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-65">CURRENT_CONFIG</a> <a href="#name-Key">Key</a> = 2147483653</span></div><div class="anchor value-res" id="name-CURRENT_USER">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-62">CURRENT_USER</a> <a href="#name-Key">Key</a> = 2147483649</span></div><div class="anchor value-res" id="name-DWORD">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-22">DWORD</a> = 4</span></div><div class="anchor value-res" id="name-DWORD_BIG_ENDIAN">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-23">DWORD_BIG_ENDIAN</a> = 5</span></div><div class="anchor value-res" id="name-ENUMERATE_SUB_KEYS">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-39">ENUMERATE_SUB_KEYS</a> = 8</span></div><div class="anchor value-res" id="name-EXECUTE">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-40">EXECUTE</a> = 131097</span></div><div class="anchor value-res" id="name-EXPAND_SZ">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-20">EXPAND_SZ</a> = 2</span></div><div class="anchor value-res" id="name-FULL_RESOURCE_DESCRIPTOR">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-27">FULL_RESOURCE_DESCRIPTOR</a> = 9</span></div><div class="anchor value-res" id="name-LINK">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-24">LINK</a> = 6</span></div><div class="anchor value-res" id="name-LOCAL_MACHINE">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-63">LOCAL_MACHINE</a> <a href="#name-Key">Key</a> = 2147483650</span></div><div class="anchor value-res" id="name-MULTI_SZ">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-25">MULTI_SZ</a> = 7</span></div><div class="anchor value-res" id="name-NONE">	<input type='checkbox' class="fold" id="NONE-fold-content"><label for="NONE-fold-content">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-18">NONE</a> = 0</label><span id='NONE-fold-content-docs' class="fold-docs">
+<span class="md-text">		Registry value types.</span>
+
+</span></div><div class="anchor value-res" id="name-NOTIFY">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-41">NOTIFY</a> = 16</span></div><div class="anchor value-res" id="name-QUERY_VALUE">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-42">QUERY_VALUE</a> = 1</span></div><div class="anchor value-res" id="name-QWORD">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-29">QWORD</a> = 11</span></div><div class="anchor value-res" id="name-READ">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-43">READ</a> = 131097</span></div><div class="anchor value-res" id="name-RESOURCE_LIST">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-26">RESOURCE_LIST</a> = 8</span></div><div class="anchor value-res" id="name-RESOURCE_REQUIREMENTS_LIST">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-28">RESOURCE_REQUIREMENTS_LIST</a> = 10</span></div><div class="anchor value-res" id="name-SET_VALUE">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-44">SET_VALUE</a> = 2</span></div><div class="anchor value-res" id="name-SZ">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/value.go.html#line-19">SZ</a> = 1</span></div><div class="anchor value-res" id="name-USERS">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-64">USERS</a> <a href="#name-Key">Key</a> = 2147483651</span></div><div class="anchor value-res" id="name-WOW64_32KEY">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-45">WOW64_32KEY</a> = 512</span></div><div class="anchor value-res" id="name-WOW64_64KEY">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-46">WOW64_64KEY</a> = 256</span></div><div class="anchor value-res" id="name-WRITE">	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/key.go.html#line-47">WRITE</a> = 131078</span></div>	<input type='checkbox' class="showhide" id="unexported-constants-showhide"><i><label for="unexported-constants-showhide" class="show-inline">/* 5 unexporteds ... */</label><label for="unexported-constants-showhide" class="hide-inline">/* 5 unexporteds: */</label></i><div class="anchor value-res hidden" id="name-_ERROR_NO_MORE_ITEMS"><i>	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/syscall.go.html#line-17">_ERROR_NO_MORE_ITEMS</a> <a href="../../../syscall.html">syscall</a>.<a href="../../../syscall.html#name-Errno">Errno</a> = 259</span></i></div><div class="anchor value-res hidden" id="name-_REG_CREATED_NEW_KEY"><i>	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/syscall.go.html#line-14">_REG_CREATED_NEW_KEY</a> = 1</span></i></div><div class="anchor value-res hidden" id="name-_REG_OPENED_EXISTING_KEY"><i>	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/syscall.go.html#line-15">_REG_OPENED_EXISTING_KEY</a> = 2</span></i></div><div class="anchor value-res hidden" id="name-_REG_OPTION_NON_VOLATILE"><i>	<span class="nodocs">const <a href="../../../../src/internal/syscall/windows/registry/syscall.go.html#line-12">_REG_OPTION_NON_VOLATILE</a> = 0</span></i></div><div class="anchor value-res hidden" id="name-errnoERROR_IO_PENDING"><i>	<input type='checkbox' class="fold" id="errnoERROR_IO_PENDING-fold-content"><label for="errnoERROR_IO_PENDING-fold-content">const <a href="../../../../src/internal/syscall/windows/registry/zsyscall_windows.go.html#line-16">errnoERROR_IO_PENDING</a> = 997</label><span id='errnoERROR_IO_PENDING-fold-content-docs' class="fold-docs">
+<span class="md-text">		Do the interface allocations only once for common
+		Errno values.</span>
+
+</span></i></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

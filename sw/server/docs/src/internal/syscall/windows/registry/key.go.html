@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: key.go in package internal/syscall/windows/registry</title>
+<link href="../../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	key.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../../../pkg/internal/syscall/windows/registry.html">internal/syscall/windows/registry</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19],
+input[id=r20]:checked ~pre label[for=r20],
+input[id=r21]:checked ~pre label[for=r21],
+input[id=r22]:checked ~pre label[for=r22],
+input[id=r23]:checked ~pre label[for=r23],
+input[id=r24]:checked ~pre label[for=r24],
+input[id=r25]:checked ~pre label[for=r25],
+input[id=r26]:checked ~pre label[for=r26],
+input[id=r27]:checked ~pre label[for=r27],
+input[id=r28]:checked ~pre label[for=r28],
+input[id=r29]:checked ~pre label[for=r29],
+input[id=r30]:checked ~pre label[for=r30],
+input[id=r31]:checked ~pre label[for=r31],
+input[id=r32]:checked ~pre label[for=r32]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="r20" type="radio" name="g"/>
+<input id="r21" type="radio" name="g"/>
+<input id="r22" type="radio" name="g"/>
+<input id="r23" type="radio" name="g"/>
+<input id="r24" type="radio" name="g"/>
+<input id="r25" type="radio" name="g"/>
+<input id="r26" type="radio" name="g"/>
+<input id="r27" type="radio" name="g"/>
+<input id="r28" type="radio" name="g"/>
+<input id="r29" type="radio" name="g"/>
+<input id="r30" type="radio" name="g"/>
+<input id="r31" type="radio" name="g"/>
+<input id="r32" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2015 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="comment">//go:build windows</span></code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<div class="anchor" id="doc"><span class="codeline" id="line-7"><code><span class="comment">// Package registry provides access to the Windows registry.</span></code></span>
+<span class="codeline" id="line-8"><code><span class="comment">//</span></code></span>
+<span class="codeline" id="line-9"><code><span class="comment">// Here is a simple example, opening a registry key and reading a string value from it.</span></code></span>
+<span class="codeline" id="line-10"><code><span class="comment">//</span></code></span>
+<span class="codeline" id="line-11"><code><span class="comment">//	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)</span></code></span>
+<span class="codeline" id="line-12"><code><span class="comment">//	if err != nil {</span></code></span>
+<span class="codeline" id="line-13"><code><span class="comment">//		log.Fatal(err)</span></code></span>
+<span class="codeline" id="line-14"><code><span class="comment">//	}</span></code></span>
+<span class="codeline" id="line-15"><code><span class="comment">//	defer k.Close()</span></code></span>
+<span class="codeline" id="line-16"><code><span class="comment">//</span></code></span>
+<span class="codeline" id="line-17"><code><span class="comment">//	s, _, err := k.GetStringValue("SystemRoot")</span></code></span>
+<span class="codeline" id="line-18"><code><span class="comment">//	if err != nil {</span></code></span>
+<span class="codeline" id="line-19"><code><span class="comment">//		log.Fatal(err)</span></code></span>
+<span class="codeline" id="line-20"><code><span class="comment">//	}</span></code></span>
+<span class="codeline" id="line-21"><code><span class="comment">//	fmt.Printf("Windows system root is %q\n", s)</span></code></span>
+<span class="codeline" id="line-22"><code><span class="comment">//</span></code></span>
+<span class="codeline" id="line-23"><code><span class="comment">// NOTE: This package is a copy of golang.org/x/sys/windows/registry</span></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">// with KeyInfo.ModTime removed to prevent dependency cycles.</span></code></span></div><span class="codeline" id="line-25"><code><span class="keyword">package</span> registry</code></span>
+<span class="codeline" id="line-26"><code></code></span>
+<span class="codeline" id="line-27"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-28"><code>	<label for="i0"><span class="lit-string i0">"runtime"</span></label></code></span>
+<span class="codeline" id="line-29"><code>	<label for="i1"><span class="lit-string i1">"syscall"</span></label></code></span>
+<span class="codeline" id="line-30"><code>)</code></span>
+<span class="codeline" id="line-31"><code></code></span>
+<span class="codeline" id="line-32"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-33"><code>	<span class="comment">// Registry key security and access rights.</span></code></span>
+<span class="codeline" id="line-34"><code><span class="comment">	// See https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-key-security-and-access-rights</span></code></span>
+<span class="codeline" id="line-35"><code><span class="comment">	// for details.</span></code></span>
+<span class="codeline" id="line-36"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-ALL_ACCESS" class="ident">ALL_ACCESS</a>         = <span class="lit-number">0xf003f</span></code></span>
+<span class="codeline" id="line-37"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CREATE_LINK" class="ident">CREATE_LINK</a>        = <span class="lit-number">0x00020</span></code></span>
+<span class="codeline" id="line-38"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CREATE_SUB_KEY" class="ident">CREATE_SUB_KEY</a>     = <span class="lit-number">0x00004</span></code></span>
+<span class="codeline" id="line-39"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-ENUMERATE_SUB_KEYS" class="ident">ENUMERATE_SUB_KEYS</a> = <span class="lit-number">0x00008</span></code></span>
+<span class="codeline" id="line-40"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-EXECUTE" class="ident">EXECUTE</a>            = <span class="lit-number">0x20019</span></code></span>
+<span class="codeline" id="line-41"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-NOTIFY" class="ident">NOTIFY</a>             = <span class="lit-number">0x00010</span></code></span>
+<span class="codeline" id="line-42"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-QUERY_VALUE" class="ident">QUERY_VALUE</a>        = <span class="lit-number">0x00001</span></code></span>
+<span class="codeline" id="line-43"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-READ" class="ident">READ</a>               = <span class="lit-number">0x20019</span></code></span>
+<span class="codeline" id="line-44"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-SET_VALUE" class="ident">SET_VALUE</a>          = <span class="lit-number">0x00002</span></code></span>
+<span class="codeline" id="line-45"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-WOW64_32KEY" class="ident">WOW64_32KEY</a>        = <span class="lit-number">0x00200</span></code></span>
+<span class="codeline" id="line-46"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-WOW64_64KEY" class="ident">WOW64_64KEY</a>        = <span class="lit-number">0x00100</span></code></span>
+<span class="codeline" id="line-47"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-WRITE" class="ident">WRITE</a>              = <span class="lit-number">0x20006</span></code></span>
+<span class="codeline" id="line-48"><code>)</code></span>
+<span class="codeline" id="line-49"><code></code></span>
+<span class="codeline" id="line-50"><code><span class="comment">// Key is a handle to an open Windows registry key.</span></code></span>
+<span class="codeline" id="line-51"><code><span class="comment">// Keys can be obtained by calling OpenKey; there are</span></code></span>
+<span class="codeline" id="line-52"><code><span class="comment">// also some predefined root keys such as CURRENT_USER.</span></code></span>
+<span class="codeline" id="line-53"><code><span class="comment">// Keys can be used directly in the Windows API.</span></code></span>
+<span class="codeline" id="line-54"><code><span class="keyword">type</span> <a href="../../../../../pkg/internal/syscall/windows/registry.html#name-Key" class="ident">Key</a> <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-55"><code></code></span>
+<span class="codeline" id="line-56"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-57"><code>	<span class="comment">// Windows defines some predefined root keys that are always open.</span></code></span>
+<span class="codeline" id="line-58"><code><span class="comment">	// An application can use these keys as entry points to the registry.</span></code></span>
+<span class="codeline" id="line-59"><code><span class="comment">	// Normally these keys are used in OpenKey to open new keys,</span></code></span>
+<span class="codeline" id="line-60"><code><span class="comment">	// but they can also be used anywhere a Key is required.</span></code></span>
+<span class="codeline" id="line-61"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CLASSES_ROOT" class="ident">CLASSES_ROOT</a>   = <a href="#line-54" class="ident">Key</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-993" class="ident">HKEY_CLASSES_ROOT</a>)</code></span>
+<span class="codeline" id="line-62"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CURRENT_USER" class="ident">CURRENT_USER</a>   = <a href="#line-54" class="ident">Key</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-994" class="ident">HKEY_CURRENT_USER</a>)</code></span>
+<span class="codeline" id="line-63"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-LOCAL_MACHINE" class="ident">LOCAL_MACHINE</a>  = <a href="#line-54" class="ident">Key</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-995" class="ident">HKEY_LOCAL_MACHINE</a>)</code></span>
+<span class="codeline" id="line-64"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-USERS" class="ident">USERS</a>          = <a href="#line-54" class="ident">Key</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-996" class="ident">HKEY_USERS</a>)</code></span>
+<span class="codeline" id="line-65"><code>	<a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CURRENT_CONFIG" class="ident">CURRENT_CONFIG</a> = <a href="#line-54" class="ident">Key</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-998" class="ident">HKEY_CURRENT_CONFIG</a>)</code></span>
+<span class="codeline" id="line-66"><code>)</code></span>
+<span class="codeline" id="line-67"><code></code></span>
+<span class="codeline" id="line-68"><code><span class="comment">// Close closes open key k.</span></code></span>
+<span class="codeline" id="line-69"><code><span class="keyword">func</span> (<label for="r0" class="ident">k</label> <a href="#line-54" class="ident">Key</a>) <label for="r1" class="ident"><a href="../../../../../imp/internal/syscall/windows/registry.Key.html#name-.Close" class="ident">Close</a></label>() <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-70"><code>	<span class="keyword">return</span> <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/zsyscall_windows.go.html#line-298" class="ident">RegCloseKey</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r0" class="ident">k</label>))</code></span>
+<span class="codeline" id="line-71"><code>}</code></span>
+<span class="codeline" id="line-72"><code></code></span>
+<span class="codeline" id="line-73"><code><span class="comment">// OpenKey opens a new key with path name relative to key k.</span></code></span>
+<span class="codeline" id="line-74"><code><span class="comment">// It accepts any open key, including CURRENT_USER and others,</span></code></span>
+<span class="codeline" id="line-75"><code><span class="comment">// and returns the new key and an error.</span></code></span>
+<span class="codeline" id="line-76"><code><span class="comment">// The access parameter specifies desired access rights to the</span></code></span>
+<span class="codeline" id="line-77"><code><span class="comment">// key to be opened.</span></code></span>
+<span class="codeline" id="line-78"><code><span class="keyword">func</span> <label for="r2" class="ident"><a href="../../../../../pkg/internal/syscall/windows/registry.html#name-OpenKey" class="ident">OpenKey</a></label>(<label for="r3" class="ident">k</label> <a href="#line-54" class="ident">Key</a>, <label for="r4" class="ident">path</label> <a href="../../../../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r5" class="ident">access</label> <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a>) (<a href="#line-54" class="ident">Key</a>, <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-79"><code>	<label for="r6" class="ident">p</label>, <label for="r7" class="ident">err</label> := <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-114" class="ident">UTF16PtrFromString</a>(<label for="r4" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-80"><code>	<span class="keyword">if</span> <label for="r7" class="ident">err</label> != <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-81"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <label for="r7" class="ident">err</label></code></span>
+<span class="codeline" id="line-82"><code>	}</code></span>
+<span class="codeline" id="line-83"><code>	<span class="keyword">var</span> <label for="r8" class="ident">subkey</label> <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-84"><code>	<label for="r7" class="ident">err</label> = <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/zsyscall_windows.go.html#line-314" class="ident">RegOpenKeyEx</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r3" class="ident">k</label>), <label for="r6" class="ident">p</label>, <span class="lit-number">0</span>, <label for="r5" class="ident">access</label>, &amp;<label for="r8" class="ident">subkey</label>)</code></span>
+<span class="codeline" id="line-85"><code>	<span class="keyword">if</span> <label for="r7" class="ident">err</label> != <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-86"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <label for="r7" class="ident">err</label></code></span>
+<span class="codeline" id="line-87"><code>	}</code></span>
+<span class="codeline" id="line-88"><code>	<span class="keyword">return</span> <a href="#line-54" class="ident">Key</a>(<label for="r8" class="ident">subkey</label>), <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-89"><code>}</code></span>
+<span class="codeline" id="line-90"><code></code></span>
+<span class="codeline" id="line-91"><code><span class="comment">// ReadSubKeyNames returns the names of subkeys of key k.</span></code></span>
+<span class="codeline" id="line-92"><code><span class="keyword">func</span> (<label for="r9" class="ident">k</label> <a href="#line-54" class="ident">Key</a>) <label for="r10" class="ident">ReadSubKeyNames</label>() ([]<a href="../../../../../pkg/builtin.html#name-string" class="ident">string</a>, <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-93"><code>	<span class="comment">// RegEnumKeyEx must be called repeatedly and to completion.</span></code></span>
+<span class="codeline" id="line-94"><code><span class="comment">	// During this time, this goroutine cannot migrate away from</span></code></span>
+<span class="codeline" id="line-95"><code><span class="comment">	// its current thread. See #49320.</span></code></span>
+<span class="codeline" id="line-96"><code>	<a href="../../../../../pkg/runtime.html" class="ident i0">runtime</a>.<a href="../../../../runtime/proc.go.html#line-5293" class="ident">LockOSThread</a>()</code></span>
+<span class="codeline" id="line-97"><code>	<span class="keyword">defer</span> <a href="../../../../../pkg/runtime.html" class="ident i0">runtime</a>.<a href="../../../../runtime/proc.go.html#line-5346" class="ident">UnlockOSThread</a>()</code></span>
+<span class="codeline" id="line-98"><code></code></span>
+<span class="codeline" id="line-99"><code>	<label for="r11" class="ident">names</label> := <a href="../../../../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../../../../pkg/builtin.html#name-string" class="ident">string</a>, <span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-100"><code>	<span class="comment">// Registry key size limit is 255 bytes and described there:</span></code></span>
+<span class="codeline" id="line-101"><code><span class="comment">	// https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-element-size-limits</span></code></span>
+<span class="codeline" id="line-102"><code>	<label for="r12" class="ident">buf</label> := <a href="../../../../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a>, <span class="lit-number">256</span>) <span class="comment">//plus extra room for terminating zero byte</span></code></span>
+<span class="codeline" id="line-103"><code><label for="r13" class="ident">loopItems</label>:</code></span>
+<span class="codeline" id="line-104"><code>	<span class="keyword">for</span> <label for="r14" class="ident">i</label> := <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<span class="lit-number">0</span>); ; <label for="r14" class="ident">i</label>++ {</code></span>
+<span class="codeline" id="line-105"><code>		<label for="r15" class="ident">l</label> := <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<a href="../../../../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r12" class="ident">buf</label>))</code></span>
+<span class="codeline" id="line-106"><code>		<span class="keyword">for</span> {</code></span>
+<span class="codeline" id="line-107"><code>			<label for="r16" class="ident">err</label> := <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-1448" class="ident">RegEnumKeyEx</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r9" class="ident">k</label>), <label for="r14" class="ident">i</label>, &amp;<label for="r12" class="ident">buf</label>[<span class="lit-number">0</span>], &amp;<label for="r15" class="ident">l</label>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-108"><code>			<span class="keyword">if</span> <label for="r16" class="ident">err</label> == <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-109"><code>				<span class="keyword">break</span></code></span>
+<span class="codeline" id="line-110"><code>			}</code></span>
+<span class="codeline" id="line-111"><code>			<span class="keyword">if</span> <label for="r16" class="ident">err</label> == <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-24" class="ident">ERROR_MORE_DATA</a> {</code></span>
+<span class="codeline" id="line-112"><code>				<span class="comment">// Double buffer size and try again.</span></code></span>
+<span class="codeline" id="line-113"><code>				<label for="r15" class="ident">l</label> = <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<span class="lit-number">2</span> * <a href="../../../../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r12" class="ident">buf</label>))</code></span>
+<span class="codeline" id="line-114"><code>				<label for="r12" class="ident">buf</label> = <a href="../../../../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a>, <label for="r15" class="ident">l</label>)</code></span>
+<span class="codeline" id="line-115"><code>				<span class="keyword">continue</span></code></span>
+<span class="codeline" id="line-116"><code>			}</code></span>
+<span class="codeline" id="line-117"><code>			<span class="keyword">if</span> <label for="r16" class="ident">err</label> == <a href="syscall.go.html#line-17" class="ident">_ERROR_NO_MORE_ITEMS</a> {</code></span>
+<span class="codeline" id="line-118"><code>				<span class="keyword">break</span> <label for="r13" class="ident">loopItems</label></code></span>
+<span class="codeline" id="line-119"><code>			}</code></span>
+<span class="codeline" id="line-120"><code>			<span class="keyword">return</span> <label for="r11" class="ident">names</label>, <label for="r16" class="ident">err</label></code></span>
+<span class="codeline" id="line-121"><code>		}</code></span>
+<span class="codeline" id="line-122"><code>		<label for="r11" class="ident">names</label> = <a href="../../../../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r11" class="ident">names</label>, <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-61" class="ident">UTF16ToString</a>(<label for="r12" class="ident">buf</label>[:<label for="r15" class="ident">l</label>]))</code></span>
+<span class="codeline" id="line-123"><code>	}</code></span>
+<span class="codeline" id="line-124"><code>	<span class="keyword">return</span> <label for="r11" class="ident">names</label>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-125"><code>}</code></span>
+<span class="codeline" id="line-126"><code></code></span>
+<span class="codeline" id="line-127"><code><span class="comment">// CreateKey creates a key named path under open key k.</span></code></span>
+<span class="codeline" id="line-128"><code><span class="comment">// CreateKey returns the new key and a boolean flag that reports</span></code></span>
+<span class="codeline" id="line-129"><code><span class="comment">// whether the key already existed.</span></code></span>
+<span class="codeline" id="line-130"><code><span class="comment">// The access parameter specifies the access rights for the key</span></code></span>
+<span class="codeline" id="line-131"><code><span class="comment">// to be created.</span></code></span>
+<span class="codeline" id="line-132"><code><span class="keyword">func</span> <label for="r17" class="ident"><a href="../../../../../pkg/internal/syscall/windows/registry.html#name-CreateKey" class="ident">CreateKey</a></label>(<label for="r18" class="ident">k</label> <a href="#line-54" class="ident">Key</a>, <label for="r19" class="ident">path</label> <a href="../../../../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r20" class="ident">access</label> <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a>) (<label for="r21" class="ident">newk</label> <a href="#line-54" class="ident">Key</a>, <label for="r22" class="ident">openedExisting</label> <a href="../../../../../pkg/builtin.html#name-bool" class="ident">bool</a>, <label for="r23" class="ident">err</label> <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-133"><code>	<span class="keyword">var</span> <label for="r24" class="ident">h</label> <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a></code></span>
+<span class="codeline" id="line-134"><code>	<span class="keyword">var</span> <label for="r25" class="ident">d</label> <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-135"><code>	<label for="r23" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-52" class="ident">regCreateKeyEx</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r18" class="ident">k</label>), <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-108" class="ident">StringToUTF16Ptr</a>(<label for="r19" class="ident">path</label>),</code></span>
+<span class="codeline" id="line-136"><code>		<span class="lit-number">0</span>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="syscall.go.html#line-12" class="ident">_REG_OPTION_NON_VOLATILE</a>, <label for="r20" class="ident">access</label>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, &amp;<label for="r24" class="ident">h</label>, &amp;<label for="r25" class="ident">d</label>)</code></span>
+<span class="codeline" id="line-137"><code>	<span class="keyword">if</span> <label for="r23" class="ident">err</label> != <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-138"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <a href="../../../../../pkg/builtin.html#name-false" class="ident">false</a>, <label for="r23" class="ident">err</label></code></span>
+<span class="codeline" id="line-139"><code>	}</code></span>
+<span class="codeline" id="line-140"><code>	<span class="keyword">return</span> <a href="#line-54" class="ident">Key</a>(<label for="r24" class="ident">h</label>), <label for="r25" class="ident">d</label> == <a href="syscall.go.html#line-15" class="ident">_REG_OPENED_EXISTING_KEY</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-141"><code>}</code></span>
+<span class="codeline" id="line-142"><code></code></span>
+<span class="codeline" id="line-143"><code><span class="comment">// DeleteKey deletes the subkey path of key k and its values.</span></code></span>
+<span class="codeline" id="line-144"><code><span class="keyword">func</span> <label for="r26" class="ident"><a href="../../../../../pkg/internal/syscall/windows/registry.html#name-DeleteKey" class="ident">DeleteKey</a></label>(<label for="r27" class="ident">k</label> <a href="#line-54" class="ident">Key</a>, <label for="r28" class="ident">path</label> <a href="../../../../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-145"><code>	<span class="keyword">return</span> <a href="zsyscall_windows.go.html#line-60" class="ident">regDeleteKey</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r27" class="ident">k</label>), <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-108" class="ident">StringToUTF16Ptr</a>(<label for="r28" class="ident">path</label>))</code></span>
+<span class="codeline" id="line-146"><code>}</code></span>
+<span class="codeline" id="line-147"><code></code></span>
+<span class="codeline" id="line-148"><code><span class="comment">// A KeyInfo describes the statistics of a key. It is returned by Stat.</span></code></span>
+<span class="codeline" id="line-149"><code><span class="keyword">type</span> <a href="../../../../../pkg/internal/syscall/windows/registry.html#name-KeyInfo" class="ident">KeyInfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-150"><code>	SubKeyCount     <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-151"><code>	MaxSubKeyLen    <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a> <span class="comment">// size of the key's subkey with the longest name, in Unicode characters, not including the terminating zero byte</span></code></span>
+<span class="codeline" id="line-152"><code>	ValueCount      <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-153"><code>	MaxValueNameLen <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a> <span class="comment">// size of the key's longest value name, in Unicode characters, not including the terminating zero byte</span></code></span>
+<span class="codeline" id="line-154"><code>	MaxValueLen     <a href="../../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a> <span class="comment">// longest data component among the key's values, in bytes</span></code></span>
+<span class="codeline" id="line-155"><code>	lastWriteTime   <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/types_windows.go.html#line-348" class="ident">Filetime</a></code></span>
+<span class="codeline" id="line-156"><code>}</code></span>
+<span class="codeline" id="line-157"><code></code></span>
+<span class="codeline" id="line-158"><code><span class="comment">// Stat retrieves information about the open key k.</span></code></span>
+<span class="codeline" id="line-159"><code><span class="keyword">func</span> (<label for="r29" class="ident">k</label> <a href="#line-54" class="ident">Key</a>) <label for="r30" class="ident">Stat</label>() (*<a href="#line-149" class="ident">KeyInfo</a>, <a href="../../../../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-160"><code>	<span class="keyword">var</span> <label for="r31" class="ident">ki</label> <a href="#line-149" class="ident">KeyInfo</a></code></span>
+<span class="codeline" id="line-161"><code>	<label for="r32" class="ident">err</label> := <a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/zsyscall_windows.go.html#line-322" class="ident">RegQueryInfoKey</a>(<a href="../../../../../pkg/syscall.html" class="ident i1">syscall</a>.<a href="../../../../syscall/syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r29" class="ident">k</label>), <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>,</code></span>
+<span class="codeline" id="line-162"><code>		&amp;<label for="r31" class="ident">ki</label>.<a href="#line-150" class="ident">SubKeyCount</a>, &amp;<label for="r31" class="ident">ki</label>.<a href="#line-151" class="ident">MaxSubKeyLen</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, &amp;<label for="r31" class="ident">ki</label>.<a href="#line-152" class="ident">ValueCount</a>,</code></span>
+<span class="codeline" id="line-163"><code>		&amp;<label for="r31" class="ident">ki</label>.<a href="#line-153" class="ident">MaxValueNameLen</a>, &amp;<label for="r31" class="ident">ki</label>.<a href="#line-154" class="ident">MaxValueLen</a>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, &amp;<label for="r31" class="ident">ki</label>.<a href="#line-155" class="ident">lastWriteTime</a>)</code></span>
+<span class="codeline" id="line-164"><code>	<span class="keyword">if</span> <label for="r32" class="ident">err</label> != <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-165"><code>		<span class="keyword">return</span> <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a>, <label for="r32" class="ident">err</label></code></span>
+<span class="codeline" id="line-166"><code>	}</code></span>
+<span class="codeline" id="line-167"><code>	<span class="keyword">return</span> &amp;<label for="r31" class="ident">ki</label>, <a href="../../../../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-168"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

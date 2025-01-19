@@ -25,7 +25,7 @@ func (p_im *IncomingMessage) ToString() string {
 	return fmt.Sprintf("Command: %s, Params: %v", p_im.Command, p_im.Params)
 }
 
-// GetCommand validates a client response.
+// GetCommand parses the message received from the client. It returns the command or an error.
 func GetCommand(parts []string) (*IncomingMessage, error) {
 	// sanity check
 	if parts == nil {

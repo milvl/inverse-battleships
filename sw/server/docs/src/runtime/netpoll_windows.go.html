@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: netpoll_windows.go in package runtime</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	netpoll_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/runtime.html">runtime</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19],
+input[id=r20]:checked ~pre label[for=r20],
+input[id=r21]:checked ~pre label[for=r21],
+input[id=r22]:checked ~pre label[for=r22],
+input[id=r23]:checked ~pre label[for=r23],
+input[id=r24]:checked ~pre label[for=r24],
+input[id=r25]:checked ~pre label[for=r25],
+input[id=r26]:checked ~pre label[for=r26],
+input[id=r27]:checked ~pre label[for=r27],
+input[id=r28]:checked ~pre label[for=r28],
+input[id=r29]:checked ~pre label[for=r29],
+input[id=r30]:checked ~pre label[for=r30],
+input[id=r31]:checked ~pre label[for=r31],
+input[id=r32]:checked ~pre label[for=r32],
+input[id=r33]:checked ~pre label[for=r33],
+input[id=r34]:checked ~pre label[for=r34],
+input[id=r35]:checked ~pre label[for=r35],
+input[id=r36]:checked ~pre label[for=r36],
+input[id=r37]:checked ~pre label[for=r37],
+input[id=r38]:checked ~pre label[for=r38],
+input[id=r39]:checked ~pre label[for=r39],
+input[id=r40]:checked ~pre label[for=r40],
+input[id=r41]:checked ~pre label[for=r41],
+input[id=r42]:checked ~pre label[for=r42],
+input[id=r43]:checked ~pre label[for=r43],
+input[id=r44]:checked ~pre label[for=r44],
+input[id=r45]:checked ~pre label[for=r45],
+input[id=r46]:checked ~pre label[for=r46],
+input[id=r47]:checked ~pre label[for=r47]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1,
+input[id=i2]:checked ~pre .i2
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="r20" type="radio" name="g"/>
+<input id="r21" type="radio" name="g"/>
+<input id="r22" type="radio" name="g"/>
+<input id="r23" type="radio" name="g"/>
+<input id="r24" type="radio" name="g"/>
+<input id="r25" type="radio" name="g"/>
+<input id="r26" type="radio" name="g"/>
+<input id="r27" type="radio" name="g"/>
+<input id="r28" type="radio" name="g"/>
+<input id="r29" type="radio" name="g"/>
+<input id="r30" type="radio" name="g"/>
+<input id="r31" type="radio" name="g"/>
+<input id="r32" type="radio" name="g"/>
+<input id="r33" type="radio" name="g"/>
+<input id="r34" type="radio" name="g"/>
+<input id="r35" type="radio" name="g"/>
+<input id="r36" type="radio" name="g"/>
+<input id="r37" type="radio" name="g"/>
+<input id="r38" type="radio" name="g"/>
+<input id="r39" type="radio" name="g"/>
+<input id="r40" type="radio" name="g"/>
+<input id="r41" type="radio" name="g"/>
+<input id="r42" type="radio" name="g"/>
+<input id="r43" type="radio" name="g"/>
+<input id="r44" type="radio" name="g"/>
+<input id="r45" type="radio" name="g"/>
+<input id="r46" type="radio" name="g"/>
+<input id="r47" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+<input id="i2" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2013 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="keyword">package</span> runtime</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-8"><code>	<label for="i0"><span class="lit-string i0">"internal/goarch"</span></label></code></span>
+<span class="codeline" id="line-9"><code>	<label for="i1"><span class="lit-string i1">"internal/runtime/atomic"</span></label></code></span>
+<span class="codeline" id="line-10"><code>	<label for="i2"><span class="lit-string i2">"unsafe"</span></label></code></span>
+<span class="codeline" id="line-11"><code>)</code></span>
+<span class="codeline" id="line-12"><code></code></span>
+<span class="codeline" id="line-13"><code><span class="keyword">const</span> <a href="../../pkg/runtime.html#name-_DWORD_MAX" class="ident">_DWORD_MAX</a> = <span class="lit-number">0xffffffff</span></code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code><span class="keyword">const</span> <a href="../../pkg/runtime.html#name-_INVALID_HANDLE_VALUE" class="ident">_INVALID_HANDLE_VALUE</a> = ^<a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-16"><code></code></span>
+<span class="codeline" id="line-17"><code><span class="comment">// Sources are used to identify the event that created an overlapped entry.</span></code></span>
+<span class="codeline" id="line-18"><code><span class="comment">// The source values are arbitrary. There is no risk of collision with user</span></code></span>
+<span class="codeline" id="line-19"><code><span class="comment">// defined values because the only way to set the key of an overlapped entry</span></code></span>
+<span class="codeline" id="line-20"><code><span class="comment">// is using the iocphandle, which is not accessible to user code.</span></code></span>
+<span class="codeline" id="line-21"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-22"><code>	<a href="../../pkg/runtime.html#name-netpollSourceReady" class="ident">netpollSourceReady</a> = <a href="../../pkg/builtin.html#name-iota" class="ident">iota</a> + <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-23"><code>	<a href="../../pkg/runtime.html#name-netpollSourceBreak" class="ident">netpollSourceBreak</a></code></span>
+<span class="codeline" id="line-24"><code>	<a href="../../pkg/runtime.html#name-netpollSourceTimer" class="ident">netpollSourceTimer</a></code></span>
+<span class="codeline" id="line-25"><code>)</code></span>
+<span class="codeline" id="line-26"><code></code></span>
+<span class="codeline" id="line-27"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-28"><code>	<span class="comment">// sourceBits is the number of bits needed to represent a source.</span></code></span>
+<span class="codeline" id="line-29"><code><span class="comment">	// 4 bits can hold 16 different sources, which is more than enough.</span></code></span>
+<span class="codeline" id="line-30"><code><span class="comment">	// It is set to a low value so the overlapped entry key can</span></code></span>
+<span class="codeline" id="line-31"><code><span class="comment">	// contain as much bits as possible for the pollDesc pointer.</span></code></span>
+<span class="codeline" id="line-32"><code>	<a href="../../pkg/runtime.html#name-sourceBits" class="ident">sourceBits</a>  = <span class="lit-number">4</span> <span class="comment">// 4 bits can hold 16 different sources, which is more than enough.</span></code></span>
+<span class="codeline" id="line-33"><code>	<a href="../../pkg/runtime.html#name-sourceMasks" class="ident">sourceMasks</a> = <span class="lit-number">1</span>&lt;&lt;<a href="#line-32" class="ident">sourceBits</a> - <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-34"><code>)</code></span>
+<span class="codeline" id="line-35"><code></code></span>
+<span class="codeline" id="line-36"><code><span class="comment">// packNetpollKey creates a key from a source and a tag.</span></code></span>
+<span class="codeline" id="line-37"><code><span class="comment">// Bits that don't fit in the result are discarded.</span></code></span>
+<span class="codeline" id="line-38"><code><span class="keyword">func</span> <label for="r0" class="ident"><a href="../../pkg/runtime.html#name-packNetpollKey" class="ident">packNetpollKey</a></label>(<label for="r1" class="ident">source</label> <a href="../../pkg/builtin.html#name-uint8" class="ident">uint8</a>, <label for="r2" class="ident">pd</label> *<a href="netpoll.go.html#line-75" class="ident">pollDesc</a>) <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a> {</code></span>
+<span class="codeline" id="line-39"><code>	<span class="comment">// TODO: Consider combining the source with pd.fdseq to detect stale pollDescs.</span></code></span>
+<span class="codeline" id="line-40"><code>	<span class="keyword">if</span> <label for="r1" class="ident">source</label> &gt; (<span class="lit-number">1</span>&lt;&lt;<a href="#line-32" class="ident">sourceBits</a>)-<span class="lit-number">1</span> {</code></span>
+<span class="codeline" id="line-41"><code>		<span class="comment">// Also fail on 64-bit systems, even though it can hold more bits.</span></code></span>
+<span class="codeline" id="line-42"><code>		<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: source value is too large"</span>)</code></span>
+<span class="codeline" id="line-43"><code>	}</code></span>
+<span class="codeline" id="line-44"><code>	<span class="keyword">if</span> <a href="../../pkg/internal/goarch.html" class="ident i0">goarch</a>.<a href="../internal/goarch/goarch.go.html#line-33" class="ident">PtrSize</a> == <span class="lit-number">4</span> {</code></span>
+<span class="codeline" id="line-45"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(<label for="r2" class="ident">pd</label>))&lt;&lt;<a href="#line-32" class="ident">sourceBits</a> | <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r1" class="ident">source</label>)</code></span>
+<span class="codeline" id="line-46"><code>	}</code></span>
+<span class="codeline" id="line-47"><code>	<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="tagptr_64bit.go.html#line-57" class="ident">taggedPointerPack</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(<label for="r2" class="ident">pd</label>), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r1" class="ident">source</label>)))</code></span>
+<span class="codeline" id="line-48"><code>}</code></span>
+<span class="codeline" id="line-49"><code></code></span>
+<span class="codeline" id="line-50"><code><span class="comment">// unpackNetpollSource returns the source packed key.</span></code></span>
+<span class="codeline" id="line-51"><code><span class="keyword">func</span> <label for="r3" class="ident"><a href="../../pkg/runtime.html#name-unpackNetpollSource" class="ident">unpackNetpollSource</a></label>(<label for="r4" class="ident">key</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) <a href="../../pkg/builtin.html#name-uint8" class="ident">uint8</a> {</code></span>
+<span class="codeline" id="line-52"><code>	<span class="keyword">if</span> <a href="../../pkg/internal/goarch.html" class="ident i0">goarch</a>.<a href="../internal/goarch/goarch.go.html#line-33" class="ident">PtrSize</a> == <span class="lit-number">4</span> {</code></span>
+<span class="codeline" id="line-53"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uint8" class="ident">uint8</a>(<label for="r4" class="ident">key</label> &amp; <a href="#line-33" class="ident">sourceMasks</a>)</code></span>
+<span class="codeline" id="line-54"><code>	}</code></span>
+<span class="codeline" id="line-55"><code>	<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-uint8" class="ident">uint8</a>(<a href="tagptr.go.html#line-11" class="ident">taggedPointer</a>(<label for="r4" class="ident">key</label>).<a href="tagptr_64bit.go.html#line-87" class="ident">tag</a>())</code></span>
+<span class="codeline" id="line-56"><code>}</code></span>
+<span class="codeline" id="line-57"><code></code></span>
+<span class="codeline" id="line-58"><code><span class="comment">// pollOperation must be the same as beginning of internal/poll.operation.</span></code></span>
+<span class="codeline" id="line-59"><code><span class="comment">// Keep these in sync.</span></code></span>
+<span class="codeline" id="line-60"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-pollOperation" class="ident">pollOperation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-61"><code>	<span class="comment">// used by windows</span></code></span>
+<span class="codeline" id="line-62"><code>	_ <a href="defs_windows.go.html#line-76" class="ident">overlapped</a></code></span>
+<span class="codeline" id="line-63"><code>	<span class="comment">// used by netpoll</span></code></span>
+<span class="codeline" id="line-64"><code>	pd   *<a href="netpoll.go.html#line-75" class="ident">pollDesc</a></code></span>
+<span class="codeline" id="line-65"><code>	mode <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a></code></span>
+<span class="codeline" id="line-66"><code>}</code></span>
+<span class="codeline" id="line-67"><code></code></span>
+<span class="codeline" id="line-68"><code><span class="comment">// pollOperationFromOverlappedEntry returns the pollOperation contained in</span></code></span>
+<span class="codeline" id="line-69"><code><span class="comment">// e. It can return nil if the entry is not from internal/poll.</span></code></span>
+<span class="codeline" id="line-70"><code><span class="comment">// See go.dev/issue/58870</span></code></span>
+<span class="codeline" id="line-71"><code><span class="keyword">func</span> <label for="r5" class="ident"><a href="../../pkg/runtime.html#name-pollOperationFromOverlappedEntry" class="ident">pollOperationFromOverlappedEntry</a></label>(<label for="r6" class="ident">e</label> *<a href="#line-91" class="ident">overlappedEntry</a>) *<a href="#line-60" class="ident">pollOperation</a> {</code></span>
+<span class="codeline" id="line-72"><code>	<span class="keyword">if</span> <label for="r6" class="ident">e</label>.<a href="#line-93" class="ident">ov</a> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-73"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-74"><code>	}</code></span>
+<span class="codeline" id="line-75"><code>	<label for="r7" class="ident">op</label> := (*<a href="#line-60" class="ident">pollOperation</a>)(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(<label for="r6" class="ident">e</label>.<a href="#line-93" class="ident">ov</a>))</code></span>
+<span class="codeline" id="line-76"><code>	<span class="comment">// Check that the key matches the pollDesc pointer.</span></code></span>
+<span class="codeline" id="line-77"><code>	<span class="keyword">var</span> <label for="r8" class="ident">keyMatch</label> <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a></code></span>
+<span class="codeline" id="line-78"><code>	<span class="keyword">if</span> <a href="../../pkg/internal/goarch.html" class="ident i0">goarch</a>.<a href="../internal/goarch/goarch.go.html#line-33" class="ident">PtrSize</a> == <span class="lit-number">4</span> {</code></span>
+<span class="codeline" id="line-79"><code>		<label for="r8" class="ident">keyMatch</label> = <label for="r6" class="ident">e</label>.<a href="#line-92" class="ident">key</a>&amp;^<a href="#line-33" class="ident">sourceMasks</a> == <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(<label for="r7" class="ident">op</label>.<a href="#line-64" class="ident">pd</a>))&lt;&lt;<a href="#line-32" class="ident">sourceBits</a></code></span>
+<span class="codeline" id="line-80"><code>	} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-81"><code>		<label for="r8" class="ident">keyMatch</label> = (*<a href="netpoll.go.html#line-75" class="ident">pollDesc</a>)(<a href="tagptr.go.html#line-11" class="ident">taggedPointer</a>(<label for="r6" class="ident">e</label>.<a href="#line-92" class="ident">key</a>).<a href="tagptr_64bit.go.html#line-71" class="ident">pointer</a>()) == <label for="r7" class="ident">op</label>.<a href="#line-64" class="ident">pd</a></code></span>
+<span class="codeline" id="line-82"><code>	}</code></span>
+<span class="codeline" id="line-83"><code>	<span class="keyword">if</span> !<label for="r8" class="ident">keyMatch</label> {</code></span>
+<span class="codeline" id="line-84"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-85"><code>	}</code></span>
+<span class="codeline" id="line-86"><code>	<span class="keyword">return</span> <label for="r7" class="ident">op</label></code></span>
+<span class="codeline" id="line-87"><code>}</code></span>
+<span class="codeline" id="line-88"><code></code></span>
+<span class="codeline" id="line-89"><code><span class="comment">// overlappedEntry contains the information returned by a call to GetQueuedCompletionStatusEx.</span></code></span>
+<span class="codeline" id="line-90"><code><span class="comment">// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-overlapped_entry</span></code></span>
+<span class="codeline" id="line-91"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-overlappedEntry" class="ident">overlappedEntry</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-92"><code>	key      <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-93"><code>	ov       *<a href="defs_windows.go.html#line-76" class="ident">overlapped</a></code></span>
+<span class="codeline" id="line-94"><code>	internal <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-95"><code>	qty      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-96"><code>}</code></span>
+<span class="codeline" id="line-97"><code></code></span>
+<span class="codeline" id="line-98"><code><span class="keyword">var</span> (</code></span>
+<span class="codeline" id="line-99"><code>	<a href="../../pkg/runtime.html#name-iocphandle" class="ident">iocphandle</a> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a> = <a href="#line-15" class="ident">_INVALID_HANDLE_VALUE</a> <span class="comment">// completion port io handle</span></code></span>
+<span class="codeline" id="line-100"><code></code></span>
+<span class="codeline" id="line-101"><code>	<a href="../../pkg/runtime.html#name-netpollWakeSig" class="ident">netpollWakeSig</a> <a href="../../pkg/internal/runtime/atomic.html" class="ident i1">atomic</a>.<a href="../internal/runtime/atomic/types.go.html#line-185" class="ident">Uint32</a> <span class="comment">// used to avoid duplicate calls of netpollBreak</span></code></span>
+<span class="codeline" id="line-102"><code>)</code></span>
+<span class="codeline" id="line-103"><code></code></span>
+<span class="codeline" id="line-104"><code><span class="keyword">func</span> <label for="r9" class="ident"><a href="../../pkg/runtime.html#name-netpollinit" class="ident">netpollinit</a></label>() {</code></span>
+<span class="codeline" id="line-105"><code>	<a href="#line-99" class="ident">iocphandle</a> = <a href="os_windows.go.html#line-1014" class="ident">stdcall4</a>(<a href="os_windows.go.html#line-81" class="ident">_CreateIoCompletionPort</a>, <a href="#line-15" class="ident">_INVALID_HANDLE_VALUE</a>, <span class="lit-number">0</span>, <span class="lit-number">0</span>, <a href="#line-13" class="ident">_DWORD_MAX</a>)</code></span>
+<span class="codeline" id="line-106"><code>	<span class="keyword">if</span> <a href="#line-99" class="ident">iocphandle</a> == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-107"><code>		<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: CreateIoCompletionPort failed (errno="</span>, <a href="os_windows.go.html#line-358" class="ident">getlasterror</a>(), <span class="lit-string">")"</span>)</code></span>
+<span class="codeline" id="line-108"><code>		<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpollinit failed"</span>)</code></span>
+<span class="codeline" id="line-109"><code>	}</code></span>
+<span class="codeline" id="line-110"><code>}</code></span>
+<span class="codeline" id="line-111"><code></code></span>
+<span class="codeline" id="line-112"><code><span class="keyword">func</span> <label for="r10" class="ident"><a href="../../pkg/runtime.html#name-netpollIsPollDescriptor" class="ident">netpollIsPollDescriptor</a></label>(<label for="r11" class="ident">fd</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a> {</code></span>
+<span class="codeline" id="line-113"><code>	<span class="keyword">return</span> <label for="r11" class="ident">fd</label> == <a href="#line-99" class="ident">iocphandle</a></code></span>
+<span class="codeline" id="line-114"><code>}</code></span>
+<span class="codeline" id="line-115"><code></code></span>
+<span class="codeline" id="line-116"><code><span class="keyword">func</span> <label for="r12" class="ident"><a href="../../pkg/runtime.html#name-netpollopen" class="ident">netpollopen</a></label>(<label for="r13" class="ident">fd</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>, <label for="r14" class="ident">pd</label> *<a href="netpoll.go.html#line-75" class="ident">pollDesc</a>) <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a> {</code></span>
+<span class="codeline" id="line-117"><code>	<label for="r15" class="ident">key</label> := <a href="#line-38" class="ident">packNetpollKey</a>(<a href="#line-22" class="ident">netpollSourceReady</a>, <label for="r14" class="ident">pd</label>)</code></span>
+<span class="codeline" id="line-118"><code>	<span class="keyword">if</span> <a href="os_windows.go.html#line-1014" class="ident">stdcall4</a>(<a href="os_windows.go.html#line-81" class="ident">_CreateIoCompletionPort</a>, <label for="r13" class="ident">fd</label>, <a href="#line-99" class="ident">iocphandle</a>, <label for="r15" class="ident">key</label>, <span class="lit-number">0</span>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-119"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a>(<a href="os_windows.go.html#line-358" class="ident">getlasterror</a>())</code></span>
+<span class="codeline" id="line-120"><code>	}</code></span>
+<span class="codeline" id="line-121"><code>	<span class="keyword">return</span> <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-122"><code>}</code></span>
+<span class="codeline" id="line-123"><code></code></span>
+<span class="codeline" id="line-124"><code><span class="keyword">func</span> <label for="r16" class="ident"><a href="../../pkg/runtime.html#name-netpollclose" class="ident">netpollclose</a></label>(<label for="r17" class="ident">fd</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>) <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a> {</code></span>
+<span class="codeline" id="line-125"><code>	<span class="comment">// nothing to do</span></code></span>
+<span class="codeline" id="line-126"><code>	<span class="keyword">return</span> <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-127"><code>}</code></span>
+<span class="codeline" id="line-128"><code></code></span>
+<span class="codeline" id="line-129"><code><span class="keyword">func</span> <label for="r18" class="ident"><a href="../../pkg/runtime.html#name-netpollarm" class="ident">netpollarm</a></label>(<label for="r19" class="ident">pd</label> *<a href="netpoll.go.html#line-75" class="ident">pollDesc</a>, <label for="r20" class="ident">mode</label> <a href="../../pkg/builtin.html#name-int" class="ident">int</a>) {</code></span>
+<span class="codeline" id="line-130"><code>	<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: unused"</span>)</code></span>
+<span class="codeline" id="line-131"><code>}</code></span>
+<span class="codeline" id="line-132"><code></code></span>
+<span class="codeline" id="line-133"><code><span class="keyword">func</span> <label for="r21" class="ident"><a href="../../pkg/runtime.html#name-netpollBreak" class="ident">netpollBreak</a></label>() {</code></span>
+<span class="codeline" id="line-134"><code>	<span class="comment">// Failing to cas indicates there is an in-flight wakeup, so we're done here.</span></code></span>
+<span class="codeline" id="line-135"><code>	<span class="keyword">if</span> !<a href="#line-101" class="ident">netpollWakeSig</a>.<a href="../internal/runtime/atomic/types.go.html#line-235" class="ident">CompareAndSwap</a>(<span class="lit-number">0</span>, <span class="lit-number">1</span>) {</code></span>
+<span class="codeline" id="line-136"><code>		<span class="keyword">return</span></code></span>
+<span class="codeline" id="line-137"><code>	}</code></span>
+<span class="codeline" id="line-138"><code></code></span>
+<span class="codeline" id="line-139"><code>	<label for="r22" class="ident">key</label> := <a href="#line-38" class="ident">packNetpollKey</a>(<a href="#line-23" class="ident">netpollSourceBreak</a>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-140"><code>	<span class="keyword">if</span> <a href="os_windows.go.html#line-1014" class="ident">stdcall4</a>(<a href="os_windows.go.html#line-102" class="ident">_PostQueuedCompletionStatus</a>, <a href="#line-99" class="ident">iocphandle</a>, <span class="lit-number">0</span>, <label for="r22" class="ident">key</label>, <span class="lit-number">0</span>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-141"><code>		<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: netpoll: PostQueuedCompletionStatus failed (errno="</span>, <a href="os_windows.go.html#line-358" class="ident">getlasterror</a>(), <span class="lit-string">")"</span>)</code></span>
+<span class="codeline" id="line-142"><code>		<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll: PostQueuedCompletionStatus failed"</span>)</code></span>
+<span class="codeline" id="line-143"><code>	}</code></span>
+<span class="codeline" id="line-144"><code>}</code></span>
+<span class="codeline" id="line-145"><code></code></span>
+<span class="codeline" id="line-146"><code><span class="comment">// netpoll checks for ready network connections.</span></code></span>
+<span class="codeline" id="line-147"><code><span class="comment">// Returns list of goroutines that become runnable.</span></code></span>
+<span class="codeline" id="line-148"><code><span class="comment">// delay &lt; 0: blocks indefinitely</span></code></span>
+<span class="codeline" id="line-149"><code><span class="comment">// delay == 0: does not block, just polls</span></code></span>
+<span class="codeline" id="line-150"><code><span class="comment">// delay &gt; 0: block for up to that many nanoseconds</span></code></span>
+<span class="codeline" id="line-151"><code><span class="keyword">func</span> <label for="r23" class="ident"><a href="../../pkg/runtime.html#name-netpoll" class="ident">netpoll</a></label>(<label for="r24" class="ident">delay</label> <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>) (<a href="proc.go.html#line-7028" class="ident">gList</a>, <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a>) {</code></span>
+<span class="codeline" id="line-152"><code>	<span class="keyword">if</span> <a href="#line-99" class="ident">iocphandle</a> == <a href="#line-15" class="ident">_INVALID_HANDLE_VALUE</a> {</code></span>
+<span class="codeline" id="line-153"><code>		<span class="keyword">return</span> <a href="proc.go.html#line-7028" class="ident">gList</a>{}, <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-154"><code>	}</code></span>
+<span class="codeline" id="line-155"><code></code></span>
+<span class="codeline" id="line-156"><code>	<span class="keyword">var</span> <label for="r25" class="ident">entries</label> [<span class="lit-number">64</span>]<a href="#line-91" class="ident">overlappedEntry</a></code></span>
+<span class="codeline" id="line-157"><code>	<span class="keyword">var</span> <label for="r26" class="ident">wait</label> <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-158"><code>	<span class="keyword">var</span> <label for="r27" class="ident">toRun</label> <a href="proc.go.html#line-7028" class="ident">gList</a></code></span>
+<span class="codeline" id="line-159"><code>	<label for="r28" class="ident">mp</label> := <a href="stubs.go.html#line-31" class="ident">getg</a>().<a href="runtime2.go.html#line-436" class="ident">m</a></code></span>
+<span class="codeline" id="line-160"><code></code></span>
+<span class="codeline" id="line-161"><code>	<span class="keyword">if</span> <label for="r24" class="ident">delay</label> &gt;= <span class="lit-number">1e15</span> {</code></span>
+<span class="codeline" id="line-162"><code>		<span class="comment">// An arbitrary cap on how long to wait for a timer.</span></code></span>
+<span class="codeline" id="line-163"><code><span class="comment">		// 1e15 ns == ~11.5 days.</span></code></span>
+<span class="codeline" id="line-164"><code>		<label for="r24" class="ident">delay</label> = <span class="lit-number">1e15</span></code></span>
+<span class="codeline" id="line-165"><code>	}</code></span>
+<span class="codeline" id="line-166"><code></code></span>
+<span class="codeline" id="line-167"><code>	<span class="keyword">if</span> <label for="r24" class="ident">delay</label> &gt; <span class="lit-number">0</span> &amp;&amp; <label for="r28" class="ident">mp</label>.<a href="os_windows.go.html#line-171" class="ident">waitIocpHandle</a> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-168"><code>		<span class="comment">// GetQueuedCompletionStatusEx doesn't use a high resolution timer internally,</span></code></span>
+<span class="codeline" id="line-169"><code><span class="comment">		// so we use a separate higher resolution timer associated with a wait completion</span></code></span>
+<span class="codeline" id="line-170"><code><span class="comment">		// packet to wake up the poller. Note that the completion packet can be delivered</span></code></span>
+<span class="codeline" id="line-171"><code><span class="comment">		// to another thread, and the Go scheduler expects netpoll to only block up to delay,</span></code></span>
+<span class="codeline" id="line-172"><code><span class="comment">		// so we still need to use a timeout with GetQueuedCompletionStatusEx.</span></code></span>
+<span class="codeline" id="line-173"><code><span class="comment">		// TODO: Improve the Go scheduler to support non-blocking timers.</span></code></span>
+<span class="codeline" id="line-174"><code>		<label for="r29" class="ident">signaled</label> := <a href="#line-242" class="ident">netpollQueueTimer</a>(<label for="r24" class="ident">delay</label>)</code></span>
+<span class="codeline" id="line-175"><code>		<span class="keyword">if</span> <label for="r29" class="ident">signaled</label> {</code></span>
+<span class="codeline" id="line-176"><code>			<span class="comment">// There is a small window between the SetWaitableTimer and the NtAssociateWaitCompletionPacket</span></code></span>
+<span class="codeline" id="line-177"><code><span class="comment">			// where the timer can expire. We can return immediately in this case.</span></code></span>
+<span class="codeline" id="line-178"><code>			<span class="keyword">return</span> <a href="proc.go.html#line-7028" class="ident">gList</a>{}, <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-179"><code>		}</code></span>
+<span class="codeline" id="line-180"><code>	}</code></span>
+<span class="codeline" id="line-181"><code>	<span class="keyword">if</span> <label for="r24" class="ident">delay</label> &lt; <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-182"><code>		<label for="r26" class="ident">wait</label> = <a href="defs_windows.go.html#line-41" class="ident">_INFINITE</a></code></span>
+<span class="codeline" id="line-183"><code>	} <span class="keyword">else</span> <span class="keyword">if</span> <label for="r24" class="ident">delay</label> == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-184"><code>		<label for="r26" class="ident">wait</label> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-185"><code>	} <span class="keyword">else</span> <span class="keyword">if</span> <label for="r24" class="ident">delay</label> &lt; <span class="lit-number">1e6</span> {</code></span>
+<span class="codeline" id="line-186"><code>		<label for="r26" class="ident">wait</label> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-187"><code>	} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-188"><code>		<label for="r26" class="ident">wait</label> = <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<label for="r24" class="ident">delay</label> / <span class="lit-number">1e6</span>)</code></span>
+<span class="codeline" id="line-189"><code>	}</code></span>
+<span class="codeline" id="line-190"><code>	<label for="r30" class="ident">n</label> := <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r25" class="ident">entries</label>) / <a href="../../pkg/builtin.html#name-int" class="ident">int</a>(<a href="runtime2.go.html#line-1178" class="ident">gomaxprocs</a>)</code></span>
+<span class="codeline" id="line-191"><code>	<span class="keyword">if</span> <label for="r30" class="ident">n</label> &lt; <span class="lit-number">8</span> {</code></span>
+<span class="codeline" id="line-192"><code>		<label for="r30" class="ident">n</label> = <span class="lit-number">8</span></code></span>
+<span class="codeline" id="line-193"><code>	}</code></span>
+<span class="codeline" id="line-194"><code>	<span class="keyword">if</span> <label for="r24" class="ident">delay</label> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-195"><code>		<label for="r28" class="ident">mp</label>.<a href="runtime2.go.html#line-578" class="ident">blocked</a> = <a href="../../pkg/builtin.html#name-true" class="ident">true</a></code></span>
+<span class="codeline" id="line-196"><code>	}</code></span>
+<span class="codeline" id="line-197"><code>	<span class="keyword">if</span> <a href="os_windows.go.html#line-1032" class="ident">stdcall6</a>(<a href="os_windows.go.html#line-94" class="ident">_GetQueuedCompletionStatusEx</a>, <a href="#line-99" class="ident">iocphandle</a>, <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r25" class="ident">entries</label>[<span class="lit-number">0</span>])), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r30" class="ident">n</label>), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r30" class="ident">n</label>)), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r26" class="ident">wait</label>), <span class="lit-number">0</span>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-198"><code>		<label for="r28" class="ident">mp</label>.<a href="runtime2.go.html#line-578" class="ident">blocked</a> = <a href="../../pkg/builtin.html#name-false" class="ident">false</a></code></span>
+<span class="codeline" id="line-199"><code>		<label for="r31" class="ident">errno</label> := <a href="os_windows.go.html#line-358" class="ident">getlasterror</a>()</code></span>
+<span class="codeline" id="line-200"><code>		<span class="keyword">if</span> <label for="r31" class="ident">errno</label> == <a href="defs_windows.go.html#line-42" class="ident">_WAIT_TIMEOUT</a> {</code></span>
+<span class="codeline" id="line-201"><code>			<span class="keyword">return</span> <a href="proc.go.html#line-7028" class="ident">gList</a>{}, <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-202"><code>		}</code></span>
+<span class="codeline" id="line-203"><code>		<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: GetQueuedCompletionStatusEx failed (errno="</span>, <label for="r31" class="ident">errno</label>, <span class="lit-string">")"</span>)</code></span>
+<span class="codeline" id="line-204"><code>		<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-205"><code>	}</code></span>
+<span class="codeline" id="line-206"><code>	<label for="r28" class="ident">mp</label>.<a href="runtime2.go.html#line-578" class="ident">blocked</a> = <a href="../../pkg/builtin.html#name-false" class="ident">false</a></code></span>
+<span class="codeline" id="line-207"><code>	<label for="r32" class="ident">delta</label> := <a href="../../pkg/builtin.html#name-int32" class="ident">int32</a>(<span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-208"><code>	<span class="keyword">for</span> <label for="r33" class="ident">i</label> := <span class="lit-number">0</span>; <label for="r33" class="ident">i</label> &lt; <label for="r30" class="ident">n</label>; <label for="r33" class="ident">i</label>++ {</code></span>
+<span class="codeline" id="line-209"><code>		<label for="r34" class="ident">e</label> := &amp;<label for="r25" class="ident">entries</label>[<label for="r33" class="ident">i</label>]</code></span>
+<span class="codeline" id="line-210"><code>		<span class="keyword">switch</span> <a href="#line-51" class="ident">unpackNetpollSource</a>(<label for="r34" class="ident">e</label>.<a href="#line-92" class="ident">key</a>) {</code></span>
+<span class="codeline" id="line-211"><code>		<span class="keyword">case</span> <a href="#line-22" class="ident">netpollSourceReady</a>:</code></span>
+<span class="codeline" id="line-212"><code>			<label for="r35" class="ident">op</label> := <a href="#line-71" class="ident">pollOperationFromOverlappedEntry</a>(<label for="r34" class="ident">e</label>)</code></span>
+<span class="codeline" id="line-213"><code>			<span class="keyword">if</span> <label for="r35" class="ident">op</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-214"><code>				<span class="comment">// Entry from outside the Go runtime and internal/poll, ignore.</span></code></span>
+<span class="codeline" id="line-215"><code>				<span class="keyword">continue</span></code></span>
+<span class="codeline" id="line-216"><code>			}</code></span>
+<span class="codeline" id="line-217"><code>			<span class="comment">// Entry from internal/poll.</span></code></span>
+<span class="codeline" id="line-218"><code>			<label for="r36" class="ident">mode</label> := <label for="r35" class="ident">op</label>.<a href="#line-65" class="ident">mode</a></code></span>
+<span class="codeline" id="line-219"><code>			<span class="keyword">if</span> <label for="r36" class="ident">mode</label> != <span class="lit-number">'r'</span> &amp;&amp; <label for="r36" class="ident">mode</label> != <span class="lit-number">'w'</span> {</code></span>
+<span class="codeline" id="line-220"><code>				<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: GetQueuedCompletionStatusEx returned net_op with invalid mode="</span>, <label for="r36" class="ident">mode</label>)</code></span>
+<span class="codeline" id="line-221"><code>				<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-222"><code>			}</code></span>
+<span class="codeline" id="line-223"><code>			<label for="r32" class="ident">delta</label> += <a href="netpoll.go.html#line-494" class="ident">netpollready</a>(&amp;<label for="r27" class="ident">toRun</label>, <label for="r35" class="ident">op</label>.<a href="#line-64" class="ident">pd</a>, <label for="r36" class="ident">mode</label>)</code></span>
+<span class="codeline" id="line-224"><code>		<span class="keyword">case</span> <a href="#line-23" class="ident">netpollSourceBreak</a>:</code></span>
+<span class="codeline" id="line-225"><code>			<a href="#line-101" class="ident">netpollWakeSig</a>.<a href="../internal/runtime/atomic/types.go.html#line-213" class="ident">Store</a>(<span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-226"><code>			<span class="keyword">if</span> <label for="r24" class="ident">delay</label> == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-227"><code>				<span class="comment">// Forward the notification to the blocked poller.</span></code></span>
+<span class="codeline" id="line-228"><code>				<a href="#line-133" class="ident">netpollBreak</a>()</code></span>
+<span class="codeline" id="line-229"><code>			}</code></span>
+<span class="codeline" id="line-230"><code>		<span class="keyword">case</span> <a href="#line-24" class="ident">netpollSourceTimer</a>:</code></span>
+<span class="codeline" id="line-231"><code>			<span class="comment">// TODO: We could avoid calling NtCancelWaitCompletionPacket for expired wait completion packets.</span></code></span>
+<span class="codeline" id="line-232"><code>		<span class="keyword">default</span>:</code></span>
+<span class="codeline" id="line-233"><code>			<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: GetQueuedCompletionStatusEx returned net_op with invalid key="</span>, <label for="r34" class="ident">e</label>.<a href="#line-92" class="ident">key</a>)</code></span>
+<span class="codeline" id="line-234"><code>			<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-235"><code>		}</code></span>
+<span class="codeline" id="line-236"><code>	}</code></span>
+<span class="codeline" id="line-237"><code>	<span class="keyword">return</span> <label for="r27" class="ident">toRun</label>, <label for="r32" class="ident">delta</label></code></span>
+<span class="codeline" id="line-238"><code>}</code></span>
+<span class="codeline" id="line-239"><code></code></span>
+<span class="codeline" id="line-240"><code><span class="comment">// netpollQueueTimer queues a timer to wake up the poller after the given delay.</span></code></span>
+<span class="codeline" id="line-241"><code><span class="comment">// It returns true if the timer expired during this call.</span></code></span>
+<span class="codeline" id="line-242"><code><span class="keyword">func</span> <label for="r37" class="ident"><a href="../../pkg/runtime.html#name-netpollQueueTimer" class="ident">netpollQueueTimer</a></label>(<label for="r38" class="ident">delay</label> <a href="../../pkg/builtin.html#name-int64" class="ident">int64</a>) (<label for="r39" class="ident">signaled</label> <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a>) {</code></span>
+<span class="codeline" id="line-243"><code>	<span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-244"><code>		<label for="r40" class="ident">STATUS_SUCCESS</label>   = <span class="lit-number">0x00000000</span></code></span>
+<span class="codeline" id="line-245"><code>		<label for="r41" class="ident">STATUS_PENDING</label>   = <span class="lit-number">0x00000103</span></code></span>
+<span class="codeline" id="line-246"><code>		<label for="r42" class="ident">STATUS_CANCELLED</label> = <span class="lit-number">0xC0000120</span></code></span>
+<span class="codeline" id="line-247"><code>	)</code></span>
+<span class="codeline" id="line-248"><code>	<label for="r43" class="ident">mp</label> := <a href="stubs.go.html#line-31" class="ident">getg</a>().<a href="runtime2.go.html#line-436" class="ident">m</a></code></span>
+<span class="codeline" id="line-249"><code>	<span class="comment">// A wait completion packet can only be associated with one timer at a time,</span></code></span>
+<span class="codeline" id="line-250"><code><span class="comment">	// so we need to cancel the previous one if it exists. This wouldn't be necessary</span></code></span>
+<span class="codeline" id="line-251"><code><span class="comment">	// if the poller would only be woken up by the timer, in which case the association</span></code></span>
+<span class="codeline" id="line-252"><code><span class="comment">	// would be automatically canceled, but it can also be woken up by other events,</span></code></span>
+<span class="codeline" id="line-253"><code><span class="comment">	// such as a netpollBreak, so we can get to this point with a timer that hasn't</span></code></span>
+<span class="codeline" id="line-254"><code><span class="comment">	// expired yet. In this case, the completion packet can still be picked up by</span></code></span>
+<span class="codeline" id="line-255"><code><span class="comment">	// another thread, so defer the cancellation until it is really necessary.</span></code></span>
+<span class="codeline" id="line-256"><code>	<label for="r44" class="ident">errno</label> := <a href="os_windows.go.html#line-996" class="ident">stdcall2</a>(<a href="os_windows.go.html#line-138" class="ident">_NtCancelWaitCompletionPacket</a>, <label for="r43" class="ident">mp</label>.<a href="os_windows.go.html#line-171" class="ident">waitIocpHandle</a>, <span class="lit-number">1</span>)</code></span>
+<span class="codeline" id="line-257"><code>	<span class="keyword">switch</span> <label for="r44" class="ident">errno</label> {</code></span>
+<span class="codeline" id="line-258"><code>	<span class="keyword">case</span> <label for="r42" class="ident">STATUS_CANCELLED</label>:</code></span>
+<span class="codeline" id="line-259"><code>		<span class="comment">// STATUS_CANCELLED is returned when the associated timer has already expired,</span></code></span>
+<span class="codeline" id="line-260"><code><span class="comment">		// in which automatically cancels the wait completion packet.</span></code></span>
+<span class="codeline" id="line-261"><code>		<span class="keyword">fallthrough</span></code></span>
+<span class="codeline" id="line-262"><code>	<span class="keyword">case</span> <label for="r40" class="ident">STATUS_SUCCESS</label>:</code></span>
+<span class="codeline" id="line-263"><code>		<label for="r45" class="ident">dt</label> := -<label for="r38" class="ident">delay</label> / <span class="lit-number">100</span> <span class="comment">// relative sleep (negative), 100ns units</span></code></span>
+<span class="codeline" id="line-264"><code>		<span class="keyword">if</span> <a href="os_windows.go.html#line-1032" class="ident">stdcall6</a>(<a href="os_windows.go.html#line-115" class="ident">_SetWaitableTimer</a>, <label for="r43" class="ident">mp</label>.<a href="os_windows.go.html#line-170" class="ident">waitIocpTimer</a>, <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r45" class="ident">dt</label>)), <span class="lit-number">0</span>, <span class="lit-number">0</span>, <span class="lit-number">0</span>, <span class="lit-number">0</span>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-265"><code>			<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: SetWaitableTimer failed; errno="</span>, <a href="os_windows.go.html#line-358" class="ident">getlasterror</a>())</code></span>
+<span class="codeline" id="line-266"><code>			<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-267"><code>		}</code></span>
+<span class="codeline" id="line-268"><code>		<label for="r46" class="ident">key</label> := <a href="#line-38" class="ident">packNetpollKey</a>(<a href="#line-24" class="ident">netpollSourceTimer</a>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-269"><code>		<span class="keyword">if</span> <label for="r47" class="ident">errno</label> := <a href="os_windows.go.html#line-1050" class="ident">stdcall8</a>(<a href="os_windows.go.html#line-137" class="ident">_NtAssociateWaitCompletionPacket</a>, <label for="r43" class="ident">mp</label>.<a href="os_windows.go.html#line-171" class="ident">waitIocpHandle</a>, <a href="#line-99" class="ident">iocphandle</a>, <label for="r43" class="ident">mp</label>.<a href="os_windows.go.html#line-170" class="ident">waitIocpTimer</a>, <label for="r46" class="ident">key</label>, <span class="lit-number">0</span>, <span class="lit-number">0</span>, <span class="lit-number">0</span>, <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/unsafe.html" class="ident i2">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r39" class="ident">signaled</label>))); <label for="r47" class="ident">errno</label> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-270"><code>			<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: NtAssociateWaitCompletionPacket failed; errno="</span>, <label for="r47" class="ident">errno</label>)</code></span>
+<span class="codeline" id="line-271"><code>			<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-272"><code>		}</code></span>
+<span class="codeline" id="line-273"><code>	<span class="keyword">case</span> <label for="r41" class="ident">STATUS_PENDING</label>:</code></span>
+<span class="codeline" id="line-274"><code>		<span class="comment">// STATUS_PENDING is returned if the wait operation can't be canceled yet.</span></code></span>
+<span class="codeline" id="line-275"><code><span class="comment">		// This can happen if this thread was woken up by another event, such as a netpollBreak,</span></code></span>
+<span class="codeline" id="line-276"><code><span class="comment">		// and the timer expired just while calling NtCancelWaitCompletionPacket, in which case</span></code></span>
+<span class="codeline" id="line-277"><code><span class="comment">		// this call fails to cancel the association to avoid a race condition.</span></code></span>
+<span class="codeline" id="line-278"><code><span class="comment">		// This is a rare case, so we can just avoid using the high resolution timer this time.</span></code></span>
+<span class="codeline" id="line-279"><code>	<span class="keyword">default</span>:</code></span>
+<span class="codeline" id="line-280"><code>		<a href="../../pkg/builtin.html#name-println" class="ident">println</a>(<span class="lit-string">"runtime: NtCancelWaitCompletionPacket failed; errno="</span>, <label for="r44" class="ident">errno</label>)</code></span>
+<span class="codeline" id="line-281"><code>		<a href="panic.go.html#line-1058" class="ident">throw</a>(<span class="lit-string">"runtime: netpoll failed"</span>)</code></span>
+<span class="codeline" id="line-282"><code>	}</code></span>
+<span class="codeline" id="line-283"><code>	<span class="keyword">return</span> <label for="r39" class="ident">signaled</label></code></span>
+<span class="codeline" id="line-284"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

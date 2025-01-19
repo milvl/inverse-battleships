@@ -9,6 +9,25 @@ from typing import List
 import logging
 import os
 
+FILE_PATH_REPLACEMENT_ID = "FILE_PATH"
+LANG_NAME_REPLACEMENT_ID = "LANG_NAME"
+FUNC_BODY_REPLACEMENT_ID = "FUNC_BODY"
+
+
+MD_TEMPLATE_BASE = \
+f'''## File: {FILE_PATH_REPLACEMENT_ID}
+
+### Functions/Methods
+
+'''
+
+MD_TEMPLATE_FUNC = \
+f'''```{LANG_NAME_REPLACEMENT_ID}
+{FUNC_BODY_REPLACEMENT_ID}
+```
+
+'''
+
 
 def __parse_python_methods(file_path: str) -> List[str]:
     """
@@ -200,13 +219,37 @@ class ProgrammingLanguage:
 
     name: str
     file_extension: str
-    parse_function: callable
+    md_id: str
+    parse_functions: callable
 
 
 LANGUAGES_MAPPING = {
-    '.py': ProgrammingLanguage("Python", ".py", __parse_python_methods),
-    '.go': ProgrammingLanguage("Go", ".go", __parse_go_functions)
+    '.py': ProgrammingLanguage('Python', '.py', 'python', __parse_python_methods),
+    '.go': ProgrammingLanguage('Go', '.go', 'go', __parse_go_functions),
 }
+
+def extract_all_files_path_from_roots(initial_roots: List[str]):
+    """
+    Extracts all the file paths from the given roots.
+
+    :param initial_roots: The initial roots to start the search from.
+    :type initial_roots: List[str]
+    :return: A list of all the file paths.
+    """
+    
+    all_file_paths = []
+    roots = initial_roots
+
+    while len(roots) > 0:
+        root = roots.pop(0)
+        for _, dirnames, filenames in os.walk(root):
+            for filename in filenames:
+                all_file_paths.append(os.path.join(root, filename))
+            for dirname in dirnames:
+                roots.append(os.path.join(root, dirname))
+            break
+    
+    return all_file_paths
 
 
 def main():
@@ -214,30 +257,36 @@ def main():
     client_root = "client"
     server_root = "server"
 
-    all_files = []
-    roots = [client_root, server_root]
-    while len(roots) > 0:
-        root = roots.pop(0)
-        for _, dirnames, filenames in os.walk(root):
-            for filename in filenames:
-                all_files.append(os.path.join(root, filename))
-            for dirname in dirnames:
-                roots.append(os.path.join(root, dirname))
-            break
+    all_files_client = extract_all_files_path_from_roots([client_root])
+    all_files_server = extract_all_files_path_from_roots([server_root])
+    all_files_client = sorted(all_files_client, key=lambda p: (p.count('/') + p.count('\\'), p))
+    all_files_server = sorted(all_files_server, key=lambda p: (p.count('/') + p.count('\\'), p))
 
-    for file in all_files:
-        file_extension = os.path.splitext(file)[1]
-        if file_extension in LANGUAGES_MAPPING:
-            language = LANGUAGES_MAPPING[file_extension]
-            functions = language.parse_function(file)
-            print(f"File: {file}")
-            for function in functions:
-                print(function)
-            print()
+    # client files
+    res_path = 'client_methods.md'
+    with open(res_path, 'w') as file:
+        file.write("# Client files:\n\n")
+        for file_path in all_files_client:
+            _, file_extension = os.path.splitext(file_path)
+            if file_extension in LANGUAGES_MAPPING:
+                language = LANGUAGES_MAPPING[file_extension]
+                functions = language.parse_functions(file_path)
+                file.write(MD_TEMPLATE_BASE.replace(FILE_PATH_REPLACEMENT_ID, file_path))
+                for function in functions:
+                    file.write(MD_TEMPLATE_FUNC.replace(LANG_NAME_REPLACEMENT_ID, language.md_id).replace(FUNC_BODY_REPLACEMENT_ID, function.strip().replace("\t", "    ")))
 
-        
-
-
+    # server files
+    res_path = 'server_functions.md'
+    with open(res_path, 'w') as file:
+        file.write("# Server files:\n\n")
+        for file_path in all_files_server:
+            _, file_extension = os.path.splitext(file_path)
+            if file_extension in LANGUAGES_MAPPING:
+                language = LANGUAGES_MAPPING[file_extension]
+                functions = language.parse_functions(file_path)
+                file.write(MD_TEMPLATE_BASE.replace(FILE_PATH_REPLACEMENT_ID, file_path))
+                for function in functions:
+                    file.write(MD_TEMPLATE_FUNC.replace(LANG_NAME_REPLACEMENT_ID, language.md_id).replace(FUNC_BODY_REPLACEMENT_ID, function.strip().replace("\t", "    ")))
 
 if __name__ == "__main__":
     main()

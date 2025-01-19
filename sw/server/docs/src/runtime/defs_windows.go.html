@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: defs_windows.go in package runtime</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	defs_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/runtime.html">runtime</a>
+</code></pre>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2009 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="comment">// Windows architecture-independent definitions.</span></code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">package</span> runtime</code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-10"><code>	<a href="../../pkg/runtime.html#name-_PROT_NONE" class="ident">_PROT_NONE</a>  = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-11"><code>	<a href="../../pkg/runtime.html#name-_PROT_READ" class="ident">_PROT_READ</a>  = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-12"><code>	<a href="../../pkg/runtime.html#name-_PROT_WRITE" class="ident">_PROT_WRITE</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-13"><code>	<a href="../../pkg/runtime.html#name-_PROT_EXEC" class="ident">_PROT_EXEC</a>  = <span class="lit-number">4</span></code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code>	<a href="../../pkg/runtime.html#name-_MAP_ANON" class="ident">_MAP_ANON</a>    = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-16"><code>	<a href="../../pkg/runtime.html#name-_MAP_PRIVATE" class="ident">_MAP_PRIVATE</a> = <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-17"><code></code></span>
+<span class="codeline" id="line-18"><code>	<a href="../../pkg/runtime.html#name-_DUPLICATE_SAME_ACCESS" class="ident">_DUPLICATE_SAME_ACCESS</a>   = <span class="lit-number">0x2</span></code></span>
+<span class="codeline" id="line-19"><code>	<a href="../../pkg/runtime.html#name-_THREAD_PRIORITY_HIGHEST" class="ident">_THREAD_PRIORITY_HIGHEST</a> = <span class="lit-number">0x2</span></code></span>
+<span class="codeline" id="line-20"><code></code></span>
+<span class="codeline" id="line-21"><code>	<a href="../../pkg/runtime.html#name-_SIGINT" class="ident">_SIGINT</a>              = <span class="lit-number">0x2</span></code></span>
+<span class="codeline" id="line-22"><code>	<a href="../../pkg/runtime.html#name-_SIGTERM" class="ident">_SIGTERM</a>             = <span class="lit-number">0xF</span></code></span>
+<span class="codeline" id="line-23"><code>	<a href="../../pkg/runtime.html#name-_CTRL_C_EVENT" class="ident">_CTRL_C_EVENT</a>        = <span class="lit-number">0x0</span></code></span>
+<span class="codeline" id="line-24"><code>	<a href="../../pkg/runtime.html#name-_CTRL_BREAK_EVENT" class="ident">_CTRL_BREAK_EVENT</a>    = <span class="lit-number">0x1</span></code></span>
+<span class="codeline" id="line-25"><code>	<a href="../../pkg/runtime.html#name-_CTRL_CLOSE_EVENT" class="ident">_CTRL_CLOSE_EVENT</a>    = <span class="lit-number">0x2</span></code></span>
+<span class="codeline" id="line-26"><code>	<a href="../../pkg/runtime.html#name-_CTRL_LOGOFF_EVENT" class="ident">_CTRL_LOGOFF_EVENT</a>   = <span class="lit-number">0x5</span></code></span>
+<span class="codeline" id="line-27"><code>	<a href="../../pkg/runtime.html#name-_CTRL_SHUTDOWN_EVENT" class="ident">_CTRL_SHUTDOWN_EVENT</a> = <span class="lit-number">0x6</span></code></span>
+<span class="codeline" id="line-28"><code></code></span>
+<span class="codeline" id="line-29"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_ACCESS_VIOLATION" class="ident">_EXCEPTION_ACCESS_VIOLATION</a>     = <span class="lit-number">0xc0000005</span></code></span>
+<span class="codeline" id="line-30"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_IN_PAGE_ERROR" class="ident">_EXCEPTION_IN_PAGE_ERROR</a>        = <span class="lit-number">0xc0000006</span></code></span>
+<span class="codeline" id="line-31"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_BREAKPOINT" class="ident">_EXCEPTION_BREAKPOINT</a>           = <span class="lit-number">0x80000003</span></code></span>
+<span class="codeline" id="line-32"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_ILLEGAL_INSTRUCTION" class="ident">_EXCEPTION_ILLEGAL_INSTRUCTION</a>  = <span class="lit-number">0xc000001d</span></code></span>
+<span class="codeline" id="line-33"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_FLT_DENORMAL_OPERAND" class="ident">_EXCEPTION_FLT_DENORMAL_OPERAND</a> = <span class="lit-number">0xc000008d</span></code></span>
+<span class="codeline" id="line-34"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_FLT_DIVIDE_BY_ZERO" class="ident">_EXCEPTION_FLT_DIVIDE_BY_ZERO</a>   = <span class="lit-number">0xc000008e</span></code></span>
+<span class="codeline" id="line-35"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_FLT_INEXACT_RESULT" class="ident">_EXCEPTION_FLT_INEXACT_RESULT</a>   = <span class="lit-number">0xc000008f</span></code></span>
+<span class="codeline" id="line-36"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_FLT_OVERFLOW" class="ident">_EXCEPTION_FLT_OVERFLOW</a>         = <span class="lit-number">0xc0000091</span></code></span>
+<span class="codeline" id="line-37"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_FLT_UNDERFLOW" class="ident">_EXCEPTION_FLT_UNDERFLOW</a>        = <span class="lit-number">0xc0000093</span></code></span>
+<span class="codeline" id="line-38"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_INT_DIVIDE_BY_ZERO" class="ident">_EXCEPTION_INT_DIVIDE_BY_ZERO</a>   = <span class="lit-number">0xc0000094</span></code></span>
+<span class="codeline" id="line-39"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_INT_OVERFLOW" class="ident">_EXCEPTION_INT_OVERFLOW</a>         = <span class="lit-number">0xc0000095</span></code></span>
+<span class="codeline" id="line-40"><code></code></span>
+<span class="codeline" id="line-41"><code>	<a href="../../pkg/runtime.html#name-_INFINITE" class="ident">_INFINITE</a>     = <span class="lit-number">0xffffffff</span></code></span>
+<span class="codeline" id="line-42"><code>	<a href="../../pkg/runtime.html#name-_WAIT_TIMEOUT" class="ident">_WAIT_TIMEOUT</a> = <span class="lit-number">0x102</span></code></span>
+<span class="codeline" id="line-43"><code></code></span>
+<span class="codeline" id="line-44"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_CONTINUE_EXECUTION" class="ident">_EXCEPTION_CONTINUE_EXECUTION</a>  = -<span class="lit-number">0x1</span></code></span>
+<span class="codeline" id="line-45"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_CONTINUE_SEARCH" class="ident">_EXCEPTION_CONTINUE_SEARCH</a>     = <span class="lit-number">0x0</span></code></span>
+<span class="codeline" id="line-46"><code>	<a href="../../pkg/runtime.html#name-_EXCEPTION_CONTINUE_SEARCH_SEH" class="ident">_EXCEPTION_CONTINUE_SEARCH_SEH</a> = <span class="lit-number">0x1</span></code></span>
+<span class="codeline" id="line-47"><code>)</code></span>
+<span class="codeline" id="line-48"><code></code></span>
+<span class="codeline" id="line-49"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-systeminfo" class="ident">systeminfo</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-50"><code>	anon0                       [<span class="lit-number">4</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-51"><code>	dwpagesize                  <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-52"><code>	lpminimumapplicationaddress *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-53"><code>	lpmaximumapplicationaddress *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-54"><code>	dwactiveprocessormask       <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-55"><code>	dwnumberofprocessors        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-56"><code>	dwprocessortype             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-57"><code>	dwallocationgranularity     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-58"><code>	wprocessorlevel             <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-59"><code>	wprocessorrevision          <a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-60"><code>}</code></span>
+<span class="codeline" id="line-61"><code></code></span>
+<span class="codeline" id="line-62"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-exceptionpointers" class="ident">exceptionpointers</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-63"><code>	record  *<a href="#line-67" class="ident">exceptionrecord</a></code></span>
+<span class="codeline" id="line-64"><code>	context *<a href="defs_windows_amd64.go.html#line-14" class="ident">context</a></code></span>
+<span class="codeline" id="line-65"><code>}</code></span>
+<span class="codeline" id="line-66"><code></code></span>
+<span class="codeline" id="line-67"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-exceptionrecord" class="ident">exceptionrecord</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-68"><code>	exceptioncode        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-69"><code>	exceptionflags       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-70"><code>	exceptionrecord      *<a href="#line-67" class="ident">exceptionrecord</a></code></span>
+<span class="codeline" id="line-71"><code>	exceptionaddress     <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-72"><code>	numberparameters     <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-73"><code>	exceptioninformation [<span class="lit-number">15</span>]<a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-74"><code>}</code></span>
+<span class="codeline" id="line-75"><code></code></span>
+<span class="codeline" id="line-76"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-overlapped" class="ident">overlapped</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-77"><code>	internal     <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-78"><code>	internalhigh <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-79"><code>	anon0        [<span class="lit-number">8</span>]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-80"><code>	hevent       *<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-81"><code>}</code></span>
+<span class="codeline" id="line-82"><code></code></span>
+<span class="codeline" id="line-83"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-memoryBasicInformation" class="ident">memoryBasicInformation</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-84"><code>	baseAddress       <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-85"><code>	allocationBase    <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-86"><code>	allocationProtect <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-87"><code>	regionSize        <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-88"><code>	state             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-89"><code>	protect           <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-90"><code>	type_             <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-91"><code>}</code></span>
+<span class="codeline" id="line-92"><code></code></span>
+<span class="codeline" id="line-93"><code><span class="comment">// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_osversioninfow</span></code></span>
+<span class="codeline" id="line-94"><code><span class="keyword">type</span> <a href="../../pkg/runtime.html#name-_OSVERSIONINFOW" class="ident">_OSVERSIONINFOW</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-95"><code>	osVersionInfoSize <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-96"><code>	majorVersion      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-97"><code>	minorVersion      <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-98"><code>	buildNumber       <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-99"><code>	platformId        <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-100"><code>	csdVersion        [<span class="lit-number">128</span>]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-101"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

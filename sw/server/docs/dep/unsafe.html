@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dependency Relation: unsafe</title>
+<link href="../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre><code><span style="font-size:xx-large;">package <b>unsafe</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../pkg/unsafe.html">unsafe</a>
+
+<span class="title" id="imported-by">Imported By</span><div id="packages">
+<code>     <span class="order"> 1</span>. <a href="../pkg/bytes.html">bytes</a></code>
+<code>     <span class="order"> 2</span>. <a href="../pkg/encoding/json.html">encoding/json</a></code>
+<code>     <span class="order"> 3</span>. <a href="../pkg/errors.html">errors</a></code>
+<code>     <span class="order"> 4</span>. <a href="../pkg/internal/abi.html">internal/abi</a></code>
+<code>     <span class="order"> 5</span>. <a href="../pkg/internal/asan.html" class="path-duplicate">internal</a><a href="../pkg/internal/asan.html">/asan</a></code>
+<code>     <span class="order"> 6</span>. <a href="../pkg/internal/bytealg.html" class="path-duplicate">internal</a><a href="../pkg/internal/bytealg.html">/bytealg</a></code>
+<code>     <span class="order"> 7</span>. <a href="../pkg/internal/chacha8rand.html" class="path-duplicate">internal</a><a href="../pkg/internal/chacha8rand.html">/chacha8rand</a></code>
+<code>     <span class="order"> 8</span>. <a href="../pkg/internal/concurrent.html" class="path-duplicate">internal</a><a href="../pkg/internal/concurrent.html">/concurrent</a></code>
+<code>     <span class="order"> 9</span>. <a href="../pkg/internal/coverage/rtcov.html" class="path-duplicate">internal</a><a href="../pkg/internal/coverage/rtcov.html">/coverage/rtcov</a></code>
+<code>     <span class="order">10</span>. <a href="../pkg/internal/cpu.html" class="path-duplicate">internal</a><a href="../pkg/internal/cpu.html">/cpu</a></code>
+<code>     <span class="order">11</span>. <a href="../pkg/internal/godebug.html" class="path-duplicate">internal</a><a href="../pkg/internal/godebug.html">/godebug</a></code>
+<code>     <span class="order">12</span>. <a href="../pkg/internal/msan.html" class="path-duplicate">internal</a><a href="../pkg/internal/msan.html">/msan</a></code>
+<code>     <span class="order">13</span>. <a href="../pkg/internal/poll.html" class="path-duplicate">internal</a><a href="../pkg/internal/poll.html">/poll</a></code>
+<code>     <span class="order">14</span>. <a href="../pkg/internal/race.html" class="path-duplicate">internal</a><a href="../pkg/internal/race.html">/race</a></code>
+<code>     <span class="order">15</span>. <a href="../pkg/internal/reflectlite.html" class="path-duplicate">internal</a><a href="../pkg/internal/reflectlite.html">/reflectlite</a></code>
+<code>     <span class="order">16</span>. <a href="../pkg/internal/runtime/atomic.html" class="path-duplicate">internal</a><a href="../pkg/internal/runtime/atomic.html">/runtime/atomic</a></code>
+<code>     <span class="order">17</span>. <a href="../pkg/internal/runtime/exithook.html" class="path-duplicate">internal/runtime</a><a href="../pkg/internal/runtime/exithook.html">/exithook</a></code>
+<code>     <span class="order">18</span>. <a href="../pkg/internal/stringslite.html" class="path-duplicate">internal</a><a href="../pkg/internal/stringslite.html">/stringslite</a></code>
+<code>     <span class="order">19</span>. <a href="../pkg/internal/syscall/execenv.html" class="path-duplicate">internal</a><a href="../pkg/internal/syscall/execenv.html">/syscall/execenv</a></code>
+<code>     <span class="order">20</span>. <a href="../pkg/internal/syscall/windows.html" class="path-duplicate">internal/syscall</a><a href="../pkg/internal/syscall/windows.html">/windows</a></code>
+<code>     <span class="order">21</span>. <a href="../pkg/internal/syscall/windows/registry.html" class="path-duplicate">internal/syscall/windows</a><a href="../pkg/internal/syscall/windows/registry.html">/registry</a></code>
+<code>     <span class="order">22</span>. <a href="../pkg/internal/testlog.html" class="path-duplicate">internal</a><a href="../pkg/internal/testlog.html">/testlog</a></code>
+<code>     <span class="order">23</span>. <a href="../pkg/internal/unsafeheader.html" class="path-duplicate">internal</a><a href="../pkg/internal/unsafeheader.html">/unsafeheader</a></code>
+<code>     <span class="order">24</span>. <a href="../pkg/internal/weak.html" class="path-duplicate">internal</a><a href="../pkg/internal/weak.html">/weak</a></code>
+<code>     <span class="order">25</span>. <a href="../pkg/iter.html">iter</a></code>
+<code>     <span class="order">26</span>. <a href="../pkg/math.html">math</a></code>
+<code>     <span class="order">27</span>. <a href="../pkg/math/bits.html" class="path-duplicate">math</a><a href="../pkg/math/bits.html">/bits</a></code>
+<code>     <span class="order">28</span>. <a href="../pkg/math/rand.html" class="path-duplicate">math</a><a href="../pkg/math/rand.html">/rand</a></code>
+<code>     <span class="order">29</span>. <a href="../pkg/math/rand/v2.html" class="path-duplicate">math/rand</a><a href="../pkg/math/rand/v2.html">/v2</a></code>
+<code>     <span class="order">30</span>. <a href="../pkg/net.html">net</a></code>
+<code>     <span class="order">31</span>. <a href="../pkg/os.html">os</a></code>
+<code>     <span class="order">32</span>. <a href="../pkg/reflect.html">reflect</a></code>
+<code>     <span class="order">33</span>. <a href="../pkg/runtime.html">runtime</a></code>
+<code>     <span class="order">34</span>. <a href="../pkg/slices.html">slices</a></code>
+<code>     <span class="order">35</span>. <a href="../pkg/strings.html">strings</a></code>
+<code>     <span class="order">36</span>. <a href="../pkg/sync.html">sync</a></code>
+<code>     <span class="order">37</span>. <a href="../pkg/sync/atomic.html" class="path-duplicate">sync</a><a href="../pkg/sync/atomic.html">/atomic</a></code>
+<code>     <span class="order">38</span>. <a href="../pkg/syscall.html">syscall</a></code>
+<code>     <span class="order">39</span>. <a href="../pkg/time.html">time</a></code>
+<code>     <span class="order">40</span>. <a href="../pkg/unique.html">unique</a></code></div><pre id="footer">
+<table><tr><td><img src="../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

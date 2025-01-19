@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: removeall_noat.go in package os</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	removeall_noat.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/os.html">os</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1,
+input[id=i2]:checked ~pre .i2
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+<input id="i2" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2018 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="comment">//go:build !unix</span></code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">package</span> os</code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-10"><code>	<label for="i0"><span class="lit-string i0">"io"</span></label></code></span>
+<span class="codeline" id="line-11"><code>	<label for="i1"><span class="lit-string i1">"runtime"</span></label></code></span>
+<span class="codeline" id="line-12"><code>	<label for="i2"><span class="lit-string i2">"syscall"</span></label></code></span>
+<span class="codeline" id="line-13"><code>)</code></span>
+<span class="codeline" id="line-14"><code></code></span>
+<span class="codeline" id="line-15"><code><span class="keyword">func</span> <label for="r0" class="ident"><a href="../../pkg/os.html#name-removeAll" class="ident">removeAll</a></label>(<label for="r1" class="ident">path</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../pkg/builtin.html#name-error" class="ident">error</a> {</code></span>
+<span class="codeline" id="line-16"><code>	<span class="keyword">if</span> <label for="r1" class="ident">path</label> == <span class="lit-string">""</span> {</code></span>
+<span class="codeline" id="line-17"><code>		<span class="comment">// fail silently to retain compatibility with previous behavior</span></code></span>
+<span class="codeline" id="line-18"><code><span class="comment">		// of RemoveAll. See issue 28830.</span></code></span>
+<span class="codeline" id="line-19"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-20"><code>	}</code></span>
+<span class="codeline" id="line-21"><code></code></span>
+<span class="codeline" id="line-22"><code>	<span class="comment">// The rmdir system call permits removing "." on Plan 9,</span></code></span>
+<span class="codeline" id="line-23"><code><span class="comment">	// so we don't permit it to remain consistent with the</span></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">	// "at" implementation of RemoveAll.</span></code></span>
+<span class="codeline" id="line-25"><code>	<span class="keyword">if</span> <a href="path.go.html#line-78" class="ident">endsWithDot</a>(<label for="r1" class="ident">path</label>) {</code></span>
+<span class="codeline" id="line-26"><code>		<span class="keyword">return</span> &amp;<a href="error.go.html#line-46" class="ident">PathError</a>{<a href="../io/fs/fs.go.html#line-251" class="ident">Op</a>: <span class="lit-string">"RemoveAll"</span>, <a href="../io/fs/fs.go.html#line-252" class="ident">Path</a>: <label for="r1" class="ident">path</label>, <a href="../io/fs/fs.go.html#line-253" class="ident">Err</a>: <a href="../../pkg/syscall.html" class="ident i2">syscall</a>.<a href="../syscall/zerrors_windows.go.html#line-56" class="ident">EINVAL</a>}</code></span>
+<span class="codeline" id="line-27"><code>	}</code></span>
+<span class="codeline" id="line-28"><code></code></span>
+<span class="codeline" id="line-29"><code>	<span class="comment">// Simple case: if Remove works, we're done.</span></code></span>
+<span class="codeline" id="line-30"><code>	<label for="r2" class="ident">err</label> := <a href="file_windows.go.html#line-180" class="ident">Remove</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-31"><code>	<span class="keyword">if</span> <label for="r2" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> || <a href="error.go.html#line-90" class="ident">IsNotExist</a>(<label for="r2" class="ident">err</label>) {</code></span>
+<span class="codeline" id="line-32"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-33"><code>	}</code></span>
+<span class="codeline" id="line-34"><code></code></span>
+<span class="codeline" id="line-35"><code>	<span class="comment">// Otherwise, is this a directory we need to recurse into?</span></code></span>
+<span class="codeline" id="line-36"><code>	<label for="r3" class="ident">dir</label>, <label for="r4" class="ident">serr</label> := <a href="stat.go.html#line-24" class="ident">Lstat</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-37"><code>	<span class="keyword">if</span> <label for="r4" class="ident">serr</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-38"><code>		<span class="keyword">if</span> <label for="r5" class="ident">serr</label>, <label for="r6" class="ident">ok</label> := <label for="r4" class="ident">serr</label>.(*<a href="error.go.html#line-46" class="ident">PathError</a>); <label for="r6" class="ident">ok</label> &amp;&amp; (<a href="error.go.html#line-90" class="ident">IsNotExist</a>(<label for="r5" class="ident">serr</label>.<a href="../io/fs/fs.go.html#line-253" class="ident">Err</a>) || <label for="r5" class="ident">serr</label>.<a href="../io/fs/fs.go.html#line-253" class="ident">Err</a> == <a href="../../pkg/syscall.html" class="ident i2">syscall</a>.<a href="../syscall/zerrors_windows.go.html#line-9" class="ident">ENOTDIR</a>) {</code></span>
+<span class="codeline" id="line-39"><code>			<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-40"><code>		}</code></span>
+<span class="codeline" id="line-41"><code>		<span class="keyword">return</span> <label for="r4" class="ident">serr</label></code></span>
+<span class="codeline" id="line-42"><code>	}</code></span>
+<span class="codeline" id="line-43"><code>	<span class="keyword">if</span> !<label for="r3" class="ident">dir</label>.<a href="../io/fs/fs.go.html#line-162" class="ident">IsDir</a>() {</code></span>
+<span class="codeline" id="line-44"><code>		<span class="comment">// Not a directory; return the error from Remove.</span></code></span>
+<span class="codeline" id="line-45"><code>		<span class="keyword">return</span> <label for="r2" class="ident">err</label></code></span>
+<span class="codeline" id="line-46"><code>	}</code></span>
+<span class="codeline" id="line-47"><code></code></span>
+<span class="codeline" id="line-48"><code>	<span class="comment">// Remove contents &amp; return first error.</span></code></span>
+<span class="codeline" id="line-49"><code>	<label for="r2" class="ident">err</label> = <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-50"><code>	<span class="keyword">for</span> {</code></span>
+<span class="codeline" id="line-51"><code>		<label for="r7" class="ident">fd</label>, <label for="r8" class="ident">err</label> := <a href="file.go.html#line-364" class="ident">Open</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-52"><code>		<span class="keyword">if</span> <label for="r8" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-53"><code>			<span class="keyword">if</span> <a href="error.go.html#line-90" class="ident">IsNotExist</a>(<label for="r8" class="ident">err</label>) {</code></span>
+<span class="codeline" id="line-54"><code>				<span class="comment">// Already deleted by someone else.</span></code></span>
+<span class="codeline" id="line-55"><code>				<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-56"><code>			}</code></span>
+<span class="codeline" id="line-57"><code>			<span class="keyword">return</span> <label for="r8" class="ident">err</label></code></span>
+<span class="codeline" id="line-58"><code>		}</code></span>
+<span class="codeline" id="line-59"><code></code></span>
+<span class="codeline" id="line-60"><code>		<span class="keyword">const</span> <label for="r9" class="ident">reqSize</label> = <span class="lit-number">1024</span></code></span>
+<span class="codeline" id="line-61"><code>		<span class="keyword">var</span> <label for="r10" class="ident">names</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a></code></span>
+<span class="codeline" id="line-62"><code>		<span class="keyword">var</span> <label for="r11" class="ident">readErr</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a></code></span>
+<span class="codeline" id="line-63"><code></code></span>
+<span class="codeline" id="line-64"><code>		<span class="keyword">for</span> {</code></span>
+<span class="codeline" id="line-65"><code>			<label for="r12" class="ident">numErr</label> := <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-66"><code>			<label for="r10" class="ident">names</label>, <label for="r11" class="ident">readErr</label> = <label for="r7" class="ident">fd</label>.<a href="dir.go.html#line-69" class="ident">Readdirnames</a>(<label for="r9" class="ident">reqSize</label>)</code></span>
+<span class="codeline" id="line-67"><code></code></span>
+<span class="codeline" id="line-68"><code>			<span class="keyword">for</span> <label for="r13" class="ident">_</label>, <label for="r14" class="ident">name</label> := <span class="keyword">range</span> <label for="r10" class="ident">names</label> {</code></span>
+<span class="codeline" id="line-69"><code>				<label for="r15" class="ident">err1</label> := <a href="path.go.html#line-73" class="ident">RemoveAll</a>(<label for="r1" class="ident">path</label> + <a href="../../pkg/builtin.html#name-string" class="ident">string</a>(<a href="path_windows.go.html#line-14" class="ident">PathSeparator</a>) + <label for="r14" class="ident">name</label>)</code></span>
+<span class="codeline" id="line-70"><code>				<span class="keyword">if</span> <label for="r8" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-71"><code>					<label for="r8" class="ident">err</label> = <label for="r15" class="ident">err1</label></code></span>
+<span class="codeline" id="line-72"><code>				}</code></span>
+<span class="codeline" id="line-73"><code>				<span class="keyword">if</span> <label for="r15" class="ident">err1</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-74"><code>					<label for="r12" class="ident">numErr</label>++</code></span>
+<span class="codeline" id="line-75"><code>				}</code></span>
+<span class="codeline" id="line-76"><code>			}</code></span>
+<span class="codeline" id="line-77"><code></code></span>
+<span class="codeline" id="line-78"><code>			<span class="comment">// If we can delete any entry, break to start new iteration.</span></code></span>
+<span class="codeline" id="line-79"><code><span class="comment">			// Otherwise, we discard current names, get next entries and try deleting them.</span></code></span>
+<span class="codeline" id="line-80"><code>			<span class="keyword">if</span> <label for="r12" class="ident">numErr</label> != <label for="r9" class="ident">reqSize</label> {</code></span>
+<span class="codeline" id="line-81"><code>				<span class="keyword">break</span></code></span>
+<span class="codeline" id="line-82"><code>			}</code></span>
+<span class="codeline" id="line-83"><code>		}</code></span>
+<span class="codeline" id="line-84"><code></code></span>
+<span class="codeline" id="line-85"><code>		<span class="comment">// Removing files from the directory may have caused</span></code></span>
+<span class="codeline" id="line-86"><code><span class="comment">		// the OS to reshuffle it. Simply calling Readdirnames</span></code></span>
+<span class="codeline" id="line-87"><code><span class="comment">		// again may skip some entries. The only reliable way</span></code></span>
+<span class="codeline" id="line-88"><code><span class="comment">		// to avoid this is to close and re-open the</span></code></span>
+<span class="codeline" id="line-89"><code><span class="comment">		// directory. See issue 20841.</span></code></span>
+<span class="codeline" id="line-90"><code>		<label for="r7" class="ident">fd</label>.<a href="file_posix.go.html#line-19" class="ident">Close</a>()</code></span>
+<span class="codeline" id="line-91"><code></code></span>
+<span class="codeline" id="line-92"><code>		<span class="keyword">if</span> <label for="r11" class="ident">readErr</label> == <a href="../../pkg/io.html" class="ident i0">io</a>.<a href="../io/io.go.html#line-44" class="ident">EOF</a> {</code></span>
+<span class="codeline" id="line-93"><code>			<span class="keyword">break</span></code></span>
+<span class="codeline" id="line-94"><code>		}</code></span>
+<span class="codeline" id="line-95"><code>		<span class="comment">// If Readdirnames returned an error, use it.</span></code></span>
+<span class="codeline" id="line-96"><code>		<span class="keyword">if</span> <label for="r8" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-97"><code>			<label for="r8" class="ident">err</label> = <label for="r11" class="ident">readErr</label></code></span>
+<span class="codeline" id="line-98"><code>		}</code></span>
+<span class="codeline" id="line-99"><code>		<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r10" class="ident">names</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-100"><code>			<span class="keyword">break</span></code></span>
+<span class="codeline" id="line-101"><code>		}</code></span>
+<span class="codeline" id="line-102"><code></code></span>
+<span class="codeline" id="line-103"><code>		<span class="comment">// We don't want to re-open unnecessarily, so if we</span></code></span>
+<span class="codeline" id="line-104"><code><span class="comment">		// got fewer than request names from Readdirnames, try</span></code></span>
+<span class="codeline" id="line-105"><code><span class="comment">		// simply removing the directory now. If that</span></code></span>
+<span class="codeline" id="line-106"><code><span class="comment">		// succeeds, we are done.</span></code></span>
+<span class="codeline" id="line-107"><code>		<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r10" class="ident">names</label>) &lt; <label for="r9" class="ident">reqSize</label> {</code></span>
+<span class="codeline" id="line-108"><code>			<label for="r16" class="ident">err1</label> := <a href="file_windows.go.html#line-180" class="ident">Remove</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-109"><code>			<span class="keyword">if</span> <label for="r16" class="ident">err1</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> || <a href="error.go.html#line-90" class="ident">IsNotExist</a>(<label for="r16" class="ident">err1</label>) {</code></span>
+<span class="codeline" id="line-110"><code>				<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-111"><code>			}</code></span>
+<span class="codeline" id="line-112"><code></code></span>
+<span class="codeline" id="line-113"><code>			<span class="keyword">if</span> <label for="r8" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-114"><code>				<span class="comment">// We got some error removing the</span></code></span>
+<span class="codeline" id="line-115"><code><span class="comment">				// directory contents, and since we</span></code></span>
+<span class="codeline" id="line-116"><code><span class="comment">				// read fewer names than we requested</span></code></span>
+<span class="codeline" id="line-117"><code><span class="comment">				// there probably aren't more files to</span></code></span>
+<span class="codeline" id="line-118"><code><span class="comment">				// remove. Don't loop around to read</span></code></span>
+<span class="codeline" id="line-119"><code><span class="comment">				// the directory again. We'll probably</span></code></span>
+<span class="codeline" id="line-120"><code><span class="comment">				// just get the same error.</span></code></span>
+<span class="codeline" id="line-121"><code>				<span class="keyword">return</span> <label for="r8" class="ident">err</label></code></span>
+<span class="codeline" id="line-122"><code>			}</code></span>
+<span class="codeline" id="line-123"><code>		}</code></span>
+<span class="codeline" id="line-124"><code>	}</code></span>
+<span class="codeline" id="line-125"><code></code></span>
+<span class="codeline" id="line-126"><code>	<span class="comment">// Remove directory.</span></code></span>
+<span class="codeline" id="line-127"><code>	<label for="r17" class="ident">err1</label> := <a href="file_windows.go.html#line-180" class="ident">Remove</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-128"><code>	<span class="keyword">if</span> <label for="r17" class="ident">err1</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> || <a href="error.go.html#line-90" class="ident">IsNotExist</a>(<label for="r17" class="ident">err1</label>) {</code></span>
+<span class="codeline" id="line-129"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-130"><code>	}</code></span>
+<span class="codeline" id="line-131"><code>	<span class="keyword">if</span> <a href="../../pkg/runtime.html" class="ident i1">runtime</a>.<a href="../runtime/extern.go.html#line-367" class="ident">GOOS</a> == <span class="lit-string">"windows"</span> &amp;&amp; <a href="error.go.html#line-100" class="ident">IsPermission</a>(<label for="r17" class="ident">err1</label>) {</code></span>
+<span class="codeline" id="line-132"><code>		<span class="keyword">if</span> <label for="r18" class="ident">fs</label>, <label for="r19" class="ident">err</label> := <a href="stat.go.html#line-11" class="ident">Stat</a>(<label for="r1" class="ident">path</label>); <label for="r19" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-133"><code>			<span class="keyword">if</span> <label for="r19" class="ident">err</label> = <a href="file.go.html#line-613" class="ident">Chmod</a>(<label for="r1" class="ident">path</label>, <a href="types.go.html#line-30" class="ident">FileMode</a>(<span class="lit-number">0200</span>|<a href="../../pkg/builtin.html#name-int" class="ident">int</a>(<label for="r18" class="ident">fs</label>.<a href="../io/fs/fs.go.html#line-160" class="ident">Mode</a>()))); <label for="r19" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-134"><code>				<label for="r17" class="ident">err1</label> = <a href="file_windows.go.html#line-180" class="ident">Remove</a>(<label for="r1" class="ident">path</label>)</code></span>
+<span class="codeline" id="line-135"><code>			}</code></span>
+<span class="codeline" id="line-136"><code>		}</code></span>
+<span class="codeline" id="line-137"><code>	}</code></span>
+<span class="codeline" id="line-138"><code>	<span class="keyword">if</span> <label for="r2" class="ident">err</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-139"><code>		<label for="r2" class="ident">err</label> = <label for="r17" class="ident">err1</label></code></span>
+<span class="codeline" id="line-140"><code>	}</code></span>
+<span class="codeline" id="line-141"><code>	<span class="keyword">return</span> <label for="r2" class="ident">err</label></code></span>
+<span class="codeline" id="line-142"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

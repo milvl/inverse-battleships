@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: reparse_windows.go in package internal/syscall/windows</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	reparse_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../../../pkg/internal/syscall/windows.html">internal/syscall/windows</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2016 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="keyword">package</span> windows</code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-8"><code>	<label for="i0"><span class="lit-string i0">"syscall"</span></label></code></span>
+<span class="codeline" id="line-9"><code>	<label for="i1"><span class="lit-string i1">"unsafe"</span></label></code></span>
+<span class="codeline" id="line-10"><code>)</code></span>
+<span class="codeline" id="line-11"><code></code></span>
+<span class="codeline" id="line-12"><code><span class="comment">// Reparse tag values are taken from</span></code></span>
+<span class="codeline" id="line-13"><code><span class="comment">// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/c8e77b37-3909-4fe6-a4ea-2b9d423b1ee4</span></code></span>
+<span class="codeline" id="line-14"><code><span class="keyword">const</span> (</code></span>
+<span class="codeline" id="line-15"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-FSCTL_SET_REPARSE_POINT" class="ident">FSCTL_SET_REPARSE_POINT</a>    = <span class="lit-number">0x000900A4</span></code></span>
+<span class="codeline" id="line-16"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-IO_REPARSE_TAG_MOUNT_POINT" class="ident">IO_REPARSE_TAG_MOUNT_POINT</a> = <span class="lit-number">0xA0000003</span></code></span>
+<span class="codeline" id="line-17"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-IO_REPARSE_TAG_DEDUP" class="ident">IO_REPARSE_TAG_DEDUP</a>       = <span class="lit-number">0x80000013</span></code></span>
+<span class="codeline" id="line-18"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-IO_REPARSE_TAG_AF_UNIX" class="ident">IO_REPARSE_TAG_AF_UNIX</a>     = <span class="lit-number">0x80000023</span></code></span>
+<span class="codeline" id="line-19"><code></code></span>
+<span class="codeline" id="line-20"><code>	<a href="../../../../pkg/internal/syscall/windows.html#name-SYMLINK_FLAG_RELATIVE" class="ident">SYMLINK_FLAG_RELATIVE</a> = <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-21"><code>)</code></span>
+<span class="codeline" id="line-22"><code></code></span>
+<span class="codeline" id="line-23"><code><span class="comment">// These structures are described</span></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">// in https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/ca069dad-ed16-42aa-b057-b6b207f447cc</span></code></span>
+<span class="codeline" id="line-25"><code><span class="comment">// and https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/b41f1cbf-10df-4a47-98d4-1c52a833d913.</span></code></span>
+<span class="codeline" id="line-26"><code></code></span>
+<span class="codeline" id="line-27"><code><span class="keyword">type</span> <a href="../../../../pkg/internal/syscall/windows.html#name-REPARSE_DATA_BUFFER" class="ident">REPARSE_DATA_BUFFER</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-28"><code>	ReparseTag        <a href="../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-29"><code>	ReparseDataLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-30"><code>	Reserved          <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-31"><code>	DUMMYUNIONNAME    <a href="../../../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-32"><code>}</code></span>
+<span class="codeline" id="line-33"><code></code></span>
+<span class="codeline" id="line-34"><code><span class="comment">// REPARSE_DATA_BUFFER_HEADER is a common part of REPARSE_DATA_BUFFER structure.</span></code></span>
+<span class="codeline" id="line-35"><code><span class="keyword">type</span> <a href="../../../../pkg/internal/syscall/windows.html#name-REPARSE_DATA_BUFFER_HEADER" class="ident">REPARSE_DATA_BUFFER_HEADER</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-36"><code>	ReparseTag <a href="../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-37"><code>	<span class="comment">// The size, in bytes, of the reparse data that follows</span></code></span>
+<span class="codeline" id="line-38"><code><span class="comment">	// the common portion of the REPARSE_DATA_BUFFER element.</span></code></span>
+<span class="codeline" id="line-39"><code><span class="comment">	// This value is the length of the data starting at the</span></code></span>
+<span class="codeline" id="line-40"><code><span class="comment">	// SubstituteNameOffset field.</span></code></span>
+<span class="codeline" id="line-41"><code>	ReparseDataLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-42"><code>	Reserved          <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-43"><code>}</code></span>
+<span class="codeline" id="line-44"><code></code></span>
+<span class="codeline" id="line-45"><code><span class="keyword">type</span> <a href="../../../../pkg/internal/syscall/windows.html#name-SymbolicLinkReparseBuffer" class="ident">SymbolicLinkReparseBuffer</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-46"><code>	<span class="comment">// The integer that contains the offset, in bytes,</span></code></span>
+<span class="codeline" id="line-47"><code><span class="comment">	// of the substitute name string in the PathBuffer array,</span></code></span>
+<span class="codeline" id="line-48"><code><span class="comment">	// computed as an offset from byte 0 of PathBuffer. Note that</span></code></span>
+<span class="codeline" id="line-49"><code><span class="comment">	// this offset must be divided by 2 to get the array index.</span></code></span>
+<span class="codeline" id="line-50"><code>	SubstituteNameOffset <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-51"><code>	<span class="comment">// The integer that contains the length, in bytes, of the</span></code></span>
+<span class="codeline" id="line-52"><code><span class="comment">	// substitute name string. If this string is null-terminated,</span></code></span>
+<span class="codeline" id="line-53"><code><span class="comment">	// SubstituteNameLength does not include the Unicode null character.</span></code></span>
+<span class="codeline" id="line-54"><code>	SubstituteNameLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-55"><code>	<span class="comment">// PrintNameOffset is similar to SubstituteNameOffset.</span></code></span>
+<span class="codeline" id="line-56"><code>	PrintNameOffset <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-57"><code>	<span class="comment">// PrintNameLength is similar to SubstituteNameLength.</span></code></span>
+<span class="codeline" id="line-58"><code>	PrintNameLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-59"><code>	<span class="comment">// Flags specifies whether the substitute name is a full path name or</span></code></span>
+<span class="codeline" id="line-60"><code><span class="comment">	// a path name relative to the directory containing the symbolic link.</span></code></span>
+<span class="codeline" id="line-61"><code>	Flags      <a href="../../../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-62"><code>	PathBuffer [<span class="lit-number">1</span>]<a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-63"><code>}</code></span>
+<span class="codeline" id="line-64"><code></code></span>
+<span class="codeline" id="line-65"><code><span class="comment">// Path returns path stored in rb.</span></code></span>
+<span class="codeline" id="line-66"><code><span class="keyword">func</span> (<label for="r0" class="ident">rb</label> *<a href="#line-45" class="ident">SymbolicLinkReparseBuffer</a>) <label for="r1" class="ident">Path</label>() <a href="../../../../pkg/builtin.html#name-string" class="ident">string</a> {</code></span>
+<span class="codeline" id="line-67"><code>	<label for="r2" class="ident">n1</label> := <label for="r0" class="ident">rb</label>.<a href="#line-50" class="ident">SubstituteNameOffset</a> / <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-68"><code>	<label for="r3" class="ident">n2</label> := (<label for="r0" class="ident">rb</label>.<a href="#line-50" class="ident">SubstituteNameOffset</a> + <label for="r0" class="ident">rb</label>.<a href="#line-54" class="ident">SubstituteNameLength</a>) / <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-69"><code>	<span class="keyword">return</span> <a href="../../../../pkg/syscall.html" class="ident i0">syscall</a>.<a href="../../../syscall/syscall_windows.go.html#line-61" class="ident">UTF16ToString</a>((*[<span class="lit-number">0xffff</span>]<a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a>)(<a href="../../../../pkg/unsafe.html" class="ident i1">unsafe</a>.<a href="../../../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r0" class="ident">rb</label>.<a href="#line-62" class="ident">PathBuffer</a>[<span class="lit-number">0</span>]))[<label for="r2" class="ident">n1</label>:<label for="r3" class="ident">n2</label>:<label for="r3" class="ident">n2</label>])</code></span>
+<span class="codeline" id="line-70"><code>}</code></span>
+<span class="codeline" id="line-71"><code></code></span>
+<span class="codeline" id="line-72"><code><span class="keyword">type</span> <a href="../../../../pkg/internal/syscall/windows.html#name-MountPointReparseBuffer" class="ident">MountPointReparseBuffer</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-73"><code>	<span class="comment">// The integer that contains the offset, in bytes,</span></code></span>
+<span class="codeline" id="line-74"><code><span class="comment">	// of the substitute name string in the PathBuffer array,</span></code></span>
+<span class="codeline" id="line-75"><code><span class="comment">	// computed as an offset from byte 0 of PathBuffer. Note that</span></code></span>
+<span class="codeline" id="line-76"><code><span class="comment">	// this offset must be divided by 2 to get the array index.</span></code></span>
+<span class="codeline" id="line-77"><code>	SubstituteNameOffset <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-78"><code>	<span class="comment">// The integer that contains the length, in bytes, of the</span></code></span>
+<span class="codeline" id="line-79"><code><span class="comment">	// substitute name string. If this string is null-terminated,</span></code></span>
+<span class="codeline" id="line-80"><code><span class="comment">	// SubstituteNameLength does not include the Unicode null character.</span></code></span>
+<span class="codeline" id="line-81"><code>	SubstituteNameLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-82"><code>	<span class="comment">// PrintNameOffset is similar to SubstituteNameOffset.</span></code></span>
+<span class="codeline" id="line-83"><code>	PrintNameOffset <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-84"><code>	<span class="comment">// PrintNameLength is similar to SubstituteNameLength.</span></code></span>
+<span class="codeline" id="line-85"><code>	PrintNameLength <a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-86"><code>	PathBuffer      [<span class="lit-number">1</span>]<a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-87"><code>}</code></span>
+<span class="codeline" id="line-88"><code></code></span>
+<span class="codeline" id="line-89"><code><span class="comment">// Path returns path stored in rb.</span></code></span>
+<span class="codeline" id="line-90"><code><span class="keyword">func</span> (<label for="r4" class="ident">rb</label> *<a href="#line-72" class="ident">MountPointReparseBuffer</a>) <label for="r5" class="ident">Path</label>() <a href="../../../../pkg/builtin.html#name-string" class="ident">string</a> {</code></span>
+<span class="codeline" id="line-91"><code>	<label for="r6" class="ident">n1</label> := <label for="r4" class="ident">rb</label>.<a href="#line-77" class="ident">SubstituteNameOffset</a> / <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-92"><code>	<label for="r7" class="ident">n2</label> := (<label for="r4" class="ident">rb</label>.<a href="#line-77" class="ident">SubstituteNameOffset</a> + <label for="r4" class="ident">rb</label>.<a href="#line-81" class="ident">SubstituteNameLength</a>) / <span class="lit-number">2</span></code></span>
+<span class="codeline" id="line-93"><code>	<span class="keyword">return</span> <a href="../../../../pkg/syscall.html" class="ident i0">syscall</a>.<a href="../../../syscall/syscall_windows.go.html#line-61" class="ident">UTF16ToString</a>((*[<span class="lit-number">0xffff</span>]<a href="../../../../pkg/builtin.html#name-uint16" class="ident">uint16</a>)(<a href="../../../../pkg/unsafe.html" class="ident i1">unsafe</a>.<a href="../../../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r4" class="ident">rb</label>.<a href="#line-86" class="ident">PathBuffer</a>[<span class="lit-number">0</span>]))[<label for="r6" class="ident">n1</label>:<label for="r7" class="ident">n2</label>:<label for="r7" class="ident">n2</label>])</code></span>
+<span class="codeline" id="line-94"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

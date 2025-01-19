@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: exec_windows.go in package syscall</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	exec_windows.go
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/syscall.html">syscall</a>
+</code></pre>
+<style>input[type=radio] {display: none;}
+input[id=r0]:checked ~pre label[for=r0],
+input[id=r1]:checked ~pre label[for=r1],
+input[id=r2]:checked ~pre label[for=r2],
+input[id=r3]:checked ~pre label[for=r3],
+input[id=r4]:checked ~pre label[for=r4],
+input[id=r5]:checked ~pre label[for=r5],
+input[id=r6]:checked ~pre label[for=r6],
+input[id=r7]:checked ~pre label[for=r7],
+input[id=r8]:checked ~pre label[for=r8],
+input[id=r9]:checked ~pre label[for=r9],
+input[id=r10]:checked ~pre label[for=r10],
+input[id=r11]:checked ~pre label[for=r11],
+input[id=r12]:checked ~pre label[for=r12],
+input[id=r13]:checked ~pre label[for=r13],
+input[id=r14]:checked ~pre label[for=r14],
+input[id=r15]:checked ~pre label[for=r15],
+input[id=r16]:checked ~pre label[for=r16],
+input[id=r17]:checked ~pre label[for=r17],
+input[id=r18]:checked ~pre label[for=r18],
+input[id=r19]:checked ~pre label[for=r19],
+input[id=r20]:checked ~pre label[for=r20],
+input[id=r21]:checked ~pre label[for=r21],
+input[id=r22]:checked ~pre label[for=r22],
+input[id=r23]:checked ~pre label[for=r23],
+input[id=r24]:checked ~pre label[for=r24],
+input[id=r25]:checked ~pre label[for=r25],
+input[id=r26]:checked ~pre label[for=r26],
+input[id=r27]:checked ~pre label[for=r27],
+input[id=r28]:checked ~pre label[for=r28],
+input[id=r29]:checked ~pre label[for=r29],
+input[id=r30]:checked ~pre label[for=r30],
+input[id=r31]:checked ~pre label[for=r31],
+input[id=r32]:checked ~pre label[for=r32],
+input[id=r33]:checked ~pre label[for=r33],
+input[id=r34]:checked ~pre label[for=r34],
+input[id=r35]:checked ~pre label[for=r35],
+input[id=r36]:checked ~pre label[for=r36],
+input[id=r37]:checked ~pre label[for=r37],
+input[id=r38]:checked ~pre label[for=r38],
+input[id=r39]:checked ~pre label[for=r39],
+input[id=r40]:checked ~pre label[for=r40],
+input[id=r41]:checked ~pre label[for=r41],
+input[id=r42]:checked ~pre label[for=r42],
+input[id=r43]:checked ~pre label[for=r43],
+input[id=r44]:checked ~pre label[for=r44],
+input[id=r45]:checked ~pre label[for=r45],
+input[id=r46]:checked ~pre label[for=r46],
+input[id=r47]:checked ~pre label[for=r47],
+input[id=r48]:checked ~pre label[for=r48],
+input[id=r49]:checked ~pre label[for=r49],
+input[id=r50]:checked ~pre label[for=r50],
+input[id=r51]:checked ~pre label[for=r51],
+input[id=r52]:checked ~pre label[for=r52],
+input[id=r53]:checked ~pre label[for=r53],
+input[id=r54]:checked ~pre label[for=r54],
+input[id=r55]:checked ~pre label[for=r55],
+input[id=r56]:checked ~pre label[for=r56],
+input[id=r57]:checked ~pre label[for=r57],
+input[id=r58]:checked ~pre label[for=r58],
+input[id=r59]:checked ~pre label[for=r59],
+input[id=r60]:checked ~pre label[for=r60],
+input[id=r61]:checked ~pre label[for=r61],
+input[id=r62]:checked ~pre label[for=r62],
+input[id=r63]:checked ~pre label[for=r63],
+input[id=r64]:checked ~pre label[for=r64],
+input[id=r65]:checked ~pre label[for=r65],
+input[id=r66]:checked ~pre label[for=r66],
+input[id=r67]:checked ~pre label[for=r67],
+input[id=r68]:checked ~pre label[for=r68],
+input[id=r69]:checked ~pre label[for=r69],
+input[id=r70]:checked ~pre label[for=r70],
+input[id=r71]:checked ~pre label[for=r71],
+input[id=r72]:checked ~pre label[for=r72],
+input[id=r73]:checked ~pre label[for=r73],
+input[id=r74]:checked ~pre label[for=r74],
+input[id=r75]:checked ~pre label[for=r75],
+input[id=r76]:checked ~pre label[for=r76],
+input[id=r77]:checked ~pre label[for=r77],
+input[id=r78]:checked ~pre label[for=r78],
+input[id=r79]:checked ~pre label[for=r79],
+input[id=r80]:checked ~pre label[for=r80],
+input[id=r81]:checked ~pre label[for=r81],
+input[id=r82]:checked ~pre label[for=r82],
+input[id=r83]:checked ~pre label[for=r83],
+input[id=r84]:checked ~pre label[for=r84],
+input[id=r85]:checked ~pre label[for=r85],
+input[id=r86]:checked ~pre label[for=r86],
+input[id=r87]:checked ~pre label[for=r87],
+input[id=r88]:checked ~pre label[for=r88],
+input[id=r89]:checked ~pre label[for=r89]
+{background: #226; color: #ff8;}
+input[id=i0]:checked ~pre .i0,
+input[id=i1]:checked ~pre .i1,
+input[id=i2]:checked ~pre .i2,
+input[id=i3]:checked ~pre .i3,
+input[id=i4]:checked ~pre .i4
+{background: brown; color: #eed;}
+</style><input id="r0" type="radio" name="g"/>
+<input id="r1" type="radio" name="g"/>
+<input id="r2" type="radio" name="g"/>
+<input id="r3" type="radio" name="g"/>
+<input id="r4" type="radio" name="g"/>
+<input id="r5" type="radio" name="g"/>
+<input id="r6" type="radio" name="g"/>
+<input id="r7" type="radio" name="g"/>
+<input id="r8" type="radio" name="g"/>
+<input id="r9" type="radio" name="g"/>
+<input id="r10" type="radio" name="g"/>
+<input id="r11" type="radio" name="g"/>
+<input id="r12" type="radio" name="g"/>
+<input id="r13" type="radio" name="g"/>
+<input id="r14" type="radio" name="g"/>
+<input id="r15" type="radio" name="g"/>
+<input id="r16" type="radio" name="g"/>
+<input id="r17" type="radio" name="g"/>
+<input id="r18" type="radio" name="g"/>
+<input id="r19" type="radio" name="g"/>
+<input id="r20" type="radio" name="g"/>
+<input id="r21" type="radio" name="g"/>
+<input id="r22" type="radio" name="g"/>
+<input id="r23" type="radio" name="g"/>
+<input id="r24" type="radio" name="g"/>
+<input id="r25" type="radio" name="g"/>
+<input id="r26" type="radio" name="g"/>
+<input id="r27" type="radio" name="g"/>
+<input id="r28" type="radio" name="g"/>
+<input id="r29" type="radio" name="g"/>
+<input id="r30" type="radio" name="g"/>
+<input id="r31" type="radio" name="g"/>
+<input id="r32" type="radio" name="g"/>
+<input id="r33" type="radio" name="g"/>
+<input id="r34" type="radio" name="g"/>
+<input id="r35" type="radio" name="g"/>
+<input id="r36" type="radio" name="g"/>
+<input id="r37" type="radio" name="g"/>
+<input id="r38" type="radio" name="g"/>
+<input id="r39" type="radio" name="g"/>
+<input id="r40" type="radio" name="g"/>
+<input id="r41" type="radio" name="g"/>
+<input id="r42" type="radio" name="g"/>
+<input id="r43" type="radio" name="g"/>
+<input id="r44" type="radio" name="g"/>
+<input id="r45" type="radio" name="g"/>
+<input id="r46" type="radio" name="g"/>
+<input id="r47" type="radio" name="g"/>
+<input id="r48" type="radio" name="g"/>
+<input id="r49" type="radio" name="g"/>
+<input id="r50" type="radio" name="g"/>
+<input id="r51" type="radio" name="g"/>
+<input id="r52" type="radio" name="g"/>
+<input id="r53" type="radio" name="g"/>
+<input id="r54" type="radio" name="g"/>
+<input id="r55" type="radio" name="g"/>
+<input id="r56" type="radio" name="g"/>
+<input id="r57" type="radio" name="g"/>
+<input id="r58" type="radio" name="g"/>
+<input id="r59" type="radio" name="g"/>
+<input id="r60" type="radio" name="g"/>
+<input id="r61" type="radio" name="g"/>
+<input id="r62" type="radio" name="g"/>
+<input id="r63" type="radio" name="g"/>
+<input id="r64" type="radio" name="g"/>
+<input id="r65" type="radio" name="g"/>
+<input id="r66" type="radio" name="g"/>
+<input id="r67" type="radio" name="g"/>
+<input id="r68" type="radio" name="g"/>
+<input id="r69" type="radio" name="g"/>
+<input id="r70" type="radio" name="g"/>
+<input id="r71" type="radio" name="g"/>
+<input id="r72" type="radio" name="g"/>
+<input id="r73" type="radio" name="g"/>
+<input id="r74" type="radio" name="g"/>
+<input id="r75" type="radio" name="g"/>
+<input id="r76" type="radio" name="g"/>
+<input id="r77" type="radio" name="g"/>
+<input id="r78" type="radio" name="g"/>
+<input id="r79" type="radio" name="g"/>
+<input id="r80" type="radio" name="g"/>
+<input id="r81" type="radio" name="g"/>
+<input id="r82" type="radio" name="g"/>
+<input id="r83" type="radio" name="g"/>
+<input id="r84" type="radio" name="g"/>
+<input id="r85" type="radio" name="g"/>
+<input id="r86" type="radio" name="g"/>
+<input id="r87" type="radio" name="g"/>
+<input id="r88" type="radio" name="g"/>
+<input id="r89" type="radio" name="g"/>
+<input id="i0" type="radio" name="i"/>
+<input id="i1" type="radio" name="i"/>
+<input id="i2" type="radio" name="i"/>
+<input id="i3" type="radio" name="i"/>
+<input id="i4" type="radio" name="i"/>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code><span class="comment">// Copyright 2009 The Go Authors. All rights reserved.</span></code></span>
+<span class="codeline" id="line-2"><code><span class="comment">// Use of this source code is governed by a BSD-style</span></code></span>
+<span class="codeline" id="line-3"><code><span class="comment">// license that can be found in the LICENSE file.</span></code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code><span class="comment">// Fork, exec, wait, etc.</span></code></span>
+<span class="codeline" id="line-6"><code></code></span>
+<span class="codeline" id="line-7"><code><span class="keyword">package</span> syscall</code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code><span class="keyword">import</span> (</code></span>
+<span class="codeline" id="line-10"><code>	<label for="i0"><span class="lit-string i0">"internal/bytealg"</span></label></code></span>
+<span class="codeline" id="line-11"><code>	<label for="i1"><span class="lit-string i1">"runtime"</span></label></code></span>
+<span class="codeline" id="line-12"><code>	<label for="i2"><span class="lit-string i2">"sync"</span></label></code></span>
+<span class="codeline" id="line-13"><code>	<label for="i3"><span class="lit-string i3">"unicode/utf16"</span></label></code></span>
+<span class="codeline" id="line-14"><code>	<label for="i4"><span class="lit-string i4">"unsafe"</span></label></code></span>
+<span class="codeline" id="line-15"><code>)</code></span>
+<span class="codeline" id="line-16"><code></code></span>
+<span class="codeline" id="line-17"><code><span class="comment">// ForkLock is not used on Windows.</span></code></span>
+<span class="codeline" id="line-18"><code><span class="keyword">var</span> <a href="../../pkg/syscall.html#name-ForkLock" class="ident">ForkLock</a> <a href="../../pkg/sync.html" class="ident i2">sync</a>.<a href="../sync/rwmutex.go.html#line-37" class="ident">RWMutex</a></code></span>
+<span class="codeline" id="line-19"><code></code></span>
+<span class="codeline" id="line-20"><code><span class="comment">// EscapeArg rewrites command line argument s as prescribed</span></code></span>
+<span class="codeline" id="line-21"><code><span class="comment">// in https://msdn.microsoft.com/en-us/library/ms880421.</span></code></span>
+<span class="codeline" id="line-22"><code><span class="comment">// This function returns "" (2 double quotes) if s is empty.</span></code></span>
+<span class="codeline" id="line-23"><code><span class="comment">// Alternatively, these transformations are done:</span></code></span>
+<span class="codeline" id="line-24"><code><span class="comment">//   - every back slash (\) is doubled, but only if immediately</span></code></span>
+<span class="codeline" id="line-25"><code><span class="comment">//     followed by double quote (");</span></code></span>
+<span class="codeline" id="line-26"><code><span class="comment">//   - every double quote (") is escaped by back slash (\);</span></code></span>
+<span class="codeline" id="line-27"><code><span class="comment">//   - finally, s is wrapped with double quotes (arg -&gt; "arg"),</span></code></span>
+<span class="codeline" id="line-28"><code><span class="comment">//     but only if there is space or tab inside s.</span></code></span>
+<span class="codeline" id="line-29"><code><span class="keyword">func</span> <label for="r0" class="ident"><a href="../../pkg/syscall.html#name-EscapeArg" class="ident">EscapeArg</a></label>(<label for="r1" class="ident">s</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../pkg/builtin.html#name-string" class="ident">string</a> {</code></span>
+<span class="codeline" id="line-30"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r1" class="ident">s</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-31"><code>		<span class="keyword">return</span> <span class="lit-string">`""`</span></code></span>
+<span class="codeline" id="line-32"><code>	}</code></span>
+<span class="codeline" id="line-33"><code>	<span class="keyword">for</span> <label for="r2" class="ident">i</label> := <span class="lit-number">0</span>; <label for="r2" class="ident">i</label> &lt; <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r1" class="ident">s</label>); <label for="r2" class="ident">i</label>++ {</code></span>
+<span class="codeline" id="line-34"><code>		<span class="keyword">switch</span> <label for="r1" class="ident">s</label>[<label for="r2" class="ident">i</label>] {</code></span>
+<span class="codeline" id="line-35"><code>		<span class="keyword">case</span> <span class="lit-number">'"'</span>, <span class="lit-number">'\\'</span>, <span class="lit-number">' '</span>, <span class="lit-number">'\t'</span>:</code></span>
+<span class="codeline" id="line-36"><code>			<span class="comment">// Some escaping required.</span></code></span>
+<span class="codeline" id="line-37"><code>			<label for="r3" class="ident">b</label> := <a href="../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>, <span class="lit-number">0</span>, <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r1" class="ident">s</label>)+<span class="lit-number">2</span>)</code></span>
+<span class="codeline" id="line-38"><code>			<label for="r3" class="ident">b</label> = <a href="#line-47" class="ident">appendEscapeArg</a>(<label for="r3" class="ident">b</label>, <label for="r1" class="ident">s</label>)</code></span>
+<span class="codeline" id="line-39"><code>			<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>(<label for="r3" class="ident">b</label>)</code></span>
+<span class="codeline" id="line-40"><code>		}</code></span>
+<span class="codeline" id="line-41"><code>	}</code></span>
+<span class="codeline" id="line-42"><code>	<span class="keyword">return</span> <label for="r1" class="ident">s</label></code></span>
+<span class="codeline" id="line-43"><code>}</code></span>
+<span class="codeline" id="line-44"><code></code></span>
+<span class="codeline" id="line-45"><code><span class="comment">// appendEscapeArg escapes the string s, as per escapeArg,</span></code></span>
+<span class="codeline" id="line-46"><code><span class="comment">// appends the result to b, and returns the updated slice.</span></code></span>
+<span class="codeline" id="line-47"><code><span class="keyword">func</span> <label for="r4" class="ident"><a href="../../pkg/syscall.html#name-appendEscapeArg" class="ident">appendEscapeArg</a></label>(<label for="r5" class="ident">b</label> []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a>, <label for="r6" class="ident">s</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a> {</code></span>
+<span class="codeline" id="line-48"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r6" class="ident">s</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-49"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-string">`""`</span>...)</code></span>
+<span class="codeline" id="line-50"><code>	}</code></span>
+<span class="codeline" id="line-51"><code></code></span>
+<span class="codeline" id="line-52"><code>	<label for="r7" class="ident">needsBackslash</label> := <a href="../../pkg/builtin.html#name-false" class="ident">false</a></code></span>
+<span class="codeline" id="line-53"><code>	<label for="r8" class="ident">hasSpace</label> := <a href="../../pkg/builtin.html#name-false" class="ident">false</a></code></span>
+<span class="codeline" id="line-54"><code>	<span class="keyword">for</span> <label for="r9" class="ident">i</label> := <span class="lit-number">0</span>; <label for="r9" class="ident">i</label> &lt; <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r6" class="ident">s</label>); <label for="r9" class="ident">i</label>++ {</code></span>
+<span class="codeline" id="line-55"><code>		<span class="keyword">switch</span> <label for="r6" class="ident">s</label>[<label for="r9" class="ident">i</label>] {</code></span>
+<span class="codeline" id="line-56"><code>		<span class="keyword">case</span> <span class="lit-number">'"'</span>, <span class="lit-number">'\\'</span>:</code></span>
+<span class="codeline" id="line-57"><code>			<label for="r7" class="ident">needsBackslash</label> = <a href="../../pkg/builtin.html#name-true" class="ident">true</a></code></span>
+<span class="codeline" id="line-58"><code>		<span class="keyword">case</span> <span class="lit-number">' '</span>, <span class="lit-number">'\t'</span>:</code></span>
+<span class="codeline" id="line-59"><code>			<label for="r8" class="ident">hasSpace</label> = <a href="../../pkg/builtin.html#name-true" class="ident">true</a></code></span>
+<span class="codeline" id="line-60"><code>		}</code></span>
+<span class="codeline" id="line-61"><code>	}</code></span>
+<span class="codeline" id="line-62"><code></code></span>
+<span class="codeline" id="line-63"><code>	<span class="keyword">if</span> !<label for="r7" class="ident">needsBackslash</label> &amp;&amp; !<label for="r8" class="ident">hasSpace</label> {</code></span>
+<span class="codeline" id="line-64"><code>		<span class="comment">// No special handling required; normal case.</span></code></span>
+<span class="codeline" id="line-65"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <label for="r6" class="ident">s</label>...)</code></span>
+<span class="codeline" id="line-66"><code>	}</code></span>
+<span class="codeline" id="line-67"><code>	<span class="keyword">if</span> !<label for="r7" class="ident">needsBackslash</label> {</code></span>
+<span class="codeline" id="line-68"><code>		<span class="comment">// hasSpace is true, so we need to quote the string.</span></code></span>
+<span class="codeline" id="line-69"><code>		<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'"'</span>)</code></span>
+<span class="codeline" id="line-70"><code>		<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <label for="r6" class="ident">s</label>...)</code></span>
+<span class="codeline" id="line-71"><code>		<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'"'</span>)</code></span>
+<span class="codeline" id="line-72"><code>	}</code></span>
+<span class="codeline" id="line-73"><code></code></span>
+<span class="codeline" id="line-74"><code>	<span class="keyword">if</span> <label for="r8" class="ident">hasSpace</label> {</code></span>
+<span class="codeline" id="line-75"><code>		<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'"'</span>)</code></span>
+<span class="codeline" id="line-76"><code>	}</code></span>
+<span class="codeline" id="line-77"><code>	<label for="r10" class="ident">slashes</label> := <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-78"><code>	<span class="keyword">for</span> <label for="r11" class="ident">i</label> := <span class="lit-number">0</span>; <label for="r11" class="ident">i</label> &lt; <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r6" class="ident">s</label>); <label for="r11" class="ident">i</label>++ {</code></span>
+<span class="codeline" id="line-79"><code>		<label for="r12" class="ident">c</label> := <label for="r6" class="ident">s</label>[<label for="r11" class="ident">i</label>]</code></span>
+<span class="codeline" id="line-80"><code>		<span class="keyword">switch</span> <label for="r12" class="ident">c</label> {</code></span>
+<span class="codeline" id="line-81"><code>		<span class="keyword">default</span>:</code></span>
+<span class="codeline" id="line-82"><code>			<label for="r10" class="ident">slashes</label> = <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-83"><code>		<span class="keyword">case</span> <span class="lit-number">'\\'</span>:</code></span>
+<span class="codeline" id="line-84"><code>			<label for="r10" class="ident">slashes</label>++</code></span>
+<span class="codeline" id="line-85"><code>		<span class="keyword">case</span> <span class="lit-number">'"'</span>:</code></span>
+<span class="codeline" id="line-86"><code>			<span class="keyword">for</span> ; <label for="r10" class="ident">slashes</label> &gt; <span class="lit-number">0</span>; <label for="r10" class="ident">slashes</label>-- {</code></span>
+<span class="codeline" id="line-87"><code>				<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'\\'</span>)</code></span>
+<span class="codeline" id="line-88"><code>			}</code></span>
+<span class="codeline" id="line-89"><code>			<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'\\'</span>)</code></span>
+<span class="codeline" id="line-90"><code>		}</code></span>
+<span class="codeline" id="line-91"><code>		<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <label for="r12" class="ident">c</label>)</code></span>
+<span class="codeline" id="line-92"><code>	}</code></span>
+<span class="codeline" id="line-93"><code>	<span class="keyword">if</span> <label for="r8" class="ident">hasSpace</label> {</code></span>
+<span class="codeline" id="line-94"><code>		<span class="keyword">for</span> ; <label for="r10" class="ident">slashes</label> &gt; <span class="lit-number">0</span>; <label for="r10" class="ident">slashes</label>-- {</code></span>
+<span class="codeline" id="line-95"><code>			<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'\\'</span>)</code></span>
+<span class="codeline" id="line-96"><code>		}</code></span>
+<span class="codeline" id="line-97"><code>		<label for="r5" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r5" class="ident">b</label>, <span class="lit-number">'"'</span>)</code></span>
+<span class="codeline" id="line-98"><code>	}</code></span>
+<span class="codeline" id="line-99"><code></code></span>
+<span class="codeline" id="line-100"><code>	<span class="keyword">return</span> <label for="r5" class="ident">b</label></code></span>
+<span class="codeline" id="line-101"><code>}</code></span>
+<span class="codeline" id="line-102"><code></code></span>
+<span class="codeline" id="line-103"><code><span class="comment">// makeCmdLine builds a command line out of args by escaping "special"</span></code></span>
+<span class="codeline" id="line-104"><code><span class="comment">// characters and joining the arguments with spaces.</span></code></span>
+<span class="codeline" id="line-105"><code><span class="keyword">func</span> <label for="r13" class="ident"><a href="../../pkg/syscall.html#name-makeCmdLine" class="ident">makeCmdLine</a></label>(<label for="r14" class="ident">args</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a>) <a href="../../pkg/builtin.html#name-string" class="ident">string</a> {</code></span>
+<span class="codeline" id="line-106"><code>	<span class="keyword">var</span> <label for="r15" class="ident">b</label> []<a href="../../pkg/builtin.html#name-byte" class="ident">byte</a></code></span>
+<span class="codeline" id="line-107"><code>	<span class="keyword">for</span> <label for="r16" class="ident">_</label>, <label for="r17" class="ident">v</label> := <span class="keyword">range</span> <label for="r14" class="ident">args</label> {</code></span>
+<span class="codeline" id="line-108"><code>		<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r15" class="ident">b</label>) &gt; <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-109"><code>			<label for="r15" class="ident">b</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r15" class="ident">b</label>, <span class="lit-number">' '</span>)</code></span>
+<span class="codeline" id="line-110"><code>		}</code></span>
+<span class="codeline" id="line-111"><code>		<label for="r15" class="ident">b</label> = <a href="#line-47" class="ident">appendEscapeArg</a>(<label for="r15" class="ident">b</label>, <label for="r17" class="ident">v</label>)</code></span>
+<span class="codeline" id="line-112"><code>	}</code></span>
+<span class="codeline" id="line-113"><code>	<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>(<label for="r15" class="ident">b</label>)</code></span>
+<span class="codeline" id="line-114"><code>}</code></span>
+<span class="codeline" id="line-115"><code></code></span>
+<span class="codeline" id="line-116"><code><span class="comment">// createEnvBlock converts an array of environment strings into</span></code></span>
+<span class="codeline" id="line-117"><code><span class="comment">// the representation required by CreateProcess: a sequence of NUL</span></code></span>
+<span class="codeline" id="line-118"><code><span class="comment">// terminated strings followed by a nil.</span></code></span>
+<span class="codeline" id="line-119"><code><span class="comment">// Last bytes are two UCS-2 NULs, or four NUL bytes.</span></code></span>
+<span class="codeline" id="line-120"><code><span class="comment">// If any string contains a NUL, it returns (nil, EINVAL).</span></code></span>
+<span class="codeline" id="line-121"><code><span class="keyword">func</span> <label for="r18" class="ident"><a href="../../pkg/syscall.html#name-createEnvBlock" class="ident">createEnvBlock</a></label>(<label for="r19" class="ident">envv</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a>) ([]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a>, <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-122"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r19" class="ident">envv</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-123"><code>		<span class="keyword">return</span> <a href="../../pkg/unicode/utf16.html" class="ident i3">utf16</a>.<a href="../unicode/utf16/utf16.go.html#line-69" class="ident">Encode</a>([]<a href="../../pkg/builtin.html#name-rune" class="ident">rune</a>(<span class="lit-string">"\x00\x00"</span>)), <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-124"><code>	}</code></span>
+<span class="codeline" id="line-125"><code>	<span class="keyword">var</span> <label for="r20" class="ident">length</label> <a href="../../pkg/builtin.html#name-int" class="ident">int</a></code></span>
+<span class="codeline" id="line-126"><code>	<span class="keyword">for</span> <label for="r21" class="ident">_</label>, <label for="r22" class="ident">s</label> := <span class="keyword">range</span> <label for="r19" class="ident">envv</label> {</code></span>
+<span class="codeline" id="line-127"><code>		<span class="keyword">if</span> <a href="../../pkg/internal/bytealg.html" class="ident i0">bytealg</a>.<a href="../internal/bytealg/indexbyte_native.go.html#line-13" class="ident">IndexByteString</a>(<label for="r22" class="ident">s</label>, <span class="lit-number">0</span>) != -<span class="lit-number">1</span> {</code></span>
+<span class="codeline" id="line-128"><code>			<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="zerrors_windows.go.html#line-56" class="ident">EINVAL</a></code></span>
+<span class="codeline" id="line-129"><code>		}</code></span>
+<span class="codeline" id="line-130"><code>		<label for="r20" class="ident">length</label> += <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r22" class="ident">s</label>) + <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-131"><code>	}</code></span>
+<span class="codeline" id="line-132"><code>	<label for="r20" class="ident">length</label> += <span class="lit-number">1</span></code></span>
+<span class="codeline" id="line-133"><code></code></span>
+<span class="codeline" id="line-134"><code>	<label for="r23" class="ident">b</label> := <a href="../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a>, <span class="lit-number">0</span>, <label for="r20" class="ident">length</label>)</code></span>
+<span class="codeline" id="line-135"><code>	<span class="keyword">for</span> <label for="r24" class="ident">_</label>, <label for="r25" class="ident">s</label> := <span class="keyword">range</span> <label for="r19" class="ident">envv</label> {</code></span>
+<span class="codeline" id="line-136"><code>		<span class="keyword">for</span> <label for="r26" class="ident">_</label>, <label for="r27" class="ident">c</label> := <span class="keyword">range</span> <label for="r25" class="ident">s</label> {</code></span>
+<span class="codeline" id="line-137"><code>			<label for="r23" class="ident">b</label> = <a href="../../pkg/unicode/utf16.html" class="ident i3">utf16</a>.<a href="../unicode/utf16/utf16.go.html#line-100" class="ident">AppendRune</a>(<label for="r23" class="ident">b</label>, <label for="r27" class="ident">c</label>)</code></span>
+<span class="codeline" id="line-138"><code>		}</code></span>
+<span class="codeline" id="line-139"><code>		<label for="r23" class="ident">b</label> = <a href="../../pkg/unicode/utf16.html" class="ident i3">utf16</a>.<a href="../unicode/utf16/utf16.go.html#line-100" class="ident">AppendRune</a>(<label for="r23" class="ident">b</label>, <span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-140"><code>	}</code></span>
+<span class="codeline" id="line-141"><code>	<label for="r23" class="ident">b</label> = <a href="../../pkg/unicode/utf16.html" class="ident i3">utf16</a>.<a href="../unicode/utf16/utf16.go.html#line-100" class="ident">AppendRune</a>(<label for="r23" class="ident">b</label>, <span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-142"><code>	<span class="keyword">return</span> <label for="r23" class="ident">b</label>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-143"><code>}</code></span>
+<span class="codeline" id="line-144"><code></code></span>
+<span class="codeline" id="line-145"><code><span class="keyword">func</span> <label for="r28" class="ident"><a href="../../pkg/syscall.html#name-CloseOnExec" class="ident">CloseOnExec</a></label>(<label for="r29" class="ident">fd</label> <a href="syscall_windows.go.html#line-22" class="ident">Handle</a>) {</code></span>
+<span class="codeline" id="line-146"><code>	<a href="zsyscall_windows.go.html#line-1091" class="ident">SetHandleInformation</a>(<a href="syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r29" class="ident">fd</label>), <a href="types_windows.go.html#line-119" class="ident">HANDLE_FLAG_INHERIT</a>, <span class="lit-number">0</span>)</code></span>
+<span class="codeline" id="line-147"><code>}</code></span>
+<span class="codeline" id="line-148"><code></code></span>
+<span class="codeline" id="line-149"><code><span class="keyword">func</span> <label for="r30" class="ident"><a href="../../pkg/syscall.html#name-SetNonblock" class="ident">SetNonblock</a></label>(<label for="r31" class="ident">fd</label> <a href="syscall_windows.go.html#line-22" class="ident">Handle</a>, <label for="r32" class="ident">nonblocking</label> <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a>) (<label for="r33" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-150"><code>	<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-151"><code>}</code></span>
+<span class="codeline" id="line-152"><code></code></span>
+<span class="codeline" id="line-153"><code><span class="comment">// FullPath retrieves the full path of the specified file.</span></code></span>
+<span class="codeline" id="line-154"><code><span class="keyword">func</span> <label for="r34" class="ident"><a href="../../pkg/syscall.html#name-FullPath" class="ident">FullPath</a></label>(<label for="r35" class="ident">name</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) (<label for="r36" class="ident">path</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r37" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-155"><code>	<label for="r38" class="ident">p</label>, <label for="r37" class="ident">err</label> := <a href="syscall_windows.go.html#line-114" class="ident">UTF16PtrFromString</a>(<label for="r35" class="ident">name</label>)</code></span>
+<span class="codeline" id="line-156"><code>	<span class="keyword">if</span> <label for="r37" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-157"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r37" class="ident">err</label></code></span>
+<span class="codeline" id="line-158"><code>	}</code></span>
+<span class="codeline" id="line-159"><code>	<label for="r39" class="ident">n</label> := <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<span class="lit-number">100</span>)</code></span>
+<span class="codeline" id="line-160"><code>	<span class="keyword">for</span> {</code></span>
+<span class="codeline" id="line-161"><code>		<label for="r40" class="ident">buf</label> := <a href="../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a>, <label for="r39" class="ident">n</label>)</code></span>
+<span class="codeline" id="line-162"><code>		<label for="r39" class="ident">n</label>, <label for="r37" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-790" class="ident">GetFullPathName</a>(<label for="r38" class="ident">p</label>, <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r40" class="ident">buf</label>)), &amp;<label for="r40" class="ident">buf</label>[<span class="lit-number">0</span>], <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-163"><code>		<span class="keyword">if</span> <label for="r37" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-164"><code>			<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r37" class="ident">err</label></code></span>
+<span class="codeline" id="line-165"><code>		}</code></span>
+<span class="codeline" id="line-166"><code>		<span class="keyword">if</span> <label for="r39" class="ident">n</label> &lt;= <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r40" class="ident">buf</label>)) {</code></span>
+<span class="codeline" id="line-167"><code>			<span class="keyword">return</span> <a href="syscall_windows.go.html#line-61" class="ident">UTF16ToString</a>(<label for="r40" class="ident">buf</label>[:<label for="r39" class="ident">n</label>]), <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-168"><code>		}</code></span>
+<span class="codeline" id="line-169"><code>	}</code></span>
+<span class="codeline" id="line-170"><code>}</code></span>
+<span class="codeline" id="line-171"><code></code></span>
+<span class="codeline" id="line-172"><code><span class="keyword">func</span> <label for="r41" class="ident"><a href="../../pkg/syscall.html#name-isSlash" class="ident">isSlash</a></label>(<label for="r42" class="ident">c</label> <a href="../../pkg/builtin.html#name-uint8" class="ident">uint8</a>) <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a> {</code></span>
+<span class="codeline" id="line-173"><code>	<span class="keyword">return</span> <label for="r42" class="ident">c</label> == <span class="lit-number">'\\'</span> || <label for="r42" class="ident">c</label> == <span class="lit-number">'/'</span></code></span>
+<span class="codeline" id="line-174"><code>}</code></span>
+<span class="codeline" id="line-175"><code></code></span>
+<span class="codeline" id="line-176"><code><span class="keyword">func</span> <label for="r43" class="ident"><a href="../../pkg/syscall.html#name-normalizeDir" class="ident">normalizeDir</a></label>(<label for="r44" class="ident">dir</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) (<label for="r45" class="ident">name</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r46" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-177"><code>	<label for="r47" class="ident">ndir</label>, <label for="r46" class="ident">err</label> := <a href="#line-154" class="ident">FullPath</a>(<label for="r44" class="ident">dir</label>)</code></span>
+<span class="codeline" id="line-178"><code>	<span class="keyword">if</span> <label for="r46" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-179"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r46" class="ident">err</label></code></span>
+<span class="codeline" id="line-180"><code>	}</code></span>
+<span class="codeline" id="line-181"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r47" class="ident">ndir</label>) &gt; <span class="lit-number">2</span> &amp;&amp; <a href="#line-172" class="ident">isSlash</a>(<label for="r47" class="ident">ndir</label>[<span class="lit-number">0</span>]) &amp;&amp; <a href="#line-172" class="ident">isSlash</a>(<label for="r47" class="ident">ndir</label>[<span class="lit-number">1</span>]) {</code></span>
+<span class="codeline" id="line-182"><code>		<span class="comment">// dir cannot have \\server\share\path form</span></code></span>
+<span class="codeline" id="line-183"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <a href="zerrors_windows.go.html#line-56" class="ident">EINVAL</a></code></span>
+<span class="codeline" id="line-184"><code>	}</code></span>
+<span class="codeline" id="line-185"><code>	<span class="keyword">return</span> <label for="r47" class="ident">ndir</label>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-186"><code>}</code></span>
+<span class="codeline" id="line-187"><code></code></span>
+<span class="codeline" id="line-188"><code><span class="keyword">func</span> <label for="r48" class="ident"><a href="../../pkg/syscall.html#name-volToUpper" class="ident">volToUpper</a></label>(<label for="r49" class="ident">ch</label> <a href="../../pkg/builtin.html#name-int" class="ident">int</a>) <a href="../../pkg/builtin.html#name-int" class="ident">int</a> {</code></span>
+<span class="codeline" id="line-189"><code>	<span class="keyword">if</span> <span class="lit-number">'a'</span> &lt;= <label for="r49" class="ident">ch</label> &amp;&amp; <label for="r49" class="ident">ch</label> &lt;= <span class="lit-number">'z'</span> {</code></span>
+<span class="codeline" id="line-190"><code>		<label for="r49" class="ident">ch</label> += <span class="lit-number">'A'</span> - <span class="lit-number">'a'</span></code></span>
+<span class="codeline" id="line-191"><code>	}</code></span>
+<span class="codeline" id="line-192"><code>	<span class="keyword">return</span> <label for="r49" class="ident">ch</label></code></span>
+<span class="codeline" id="line-193"><code>}</code></span>
+<span class="codeline" id="line-194"><code></code></span>
+<span class="codeline" id="line-195"><code><span class="keyword">func</span> <label for="r50" class="ident"><a href="../../pkg/syscall.html#name-joinExeDirAndFName" class="ident">joinExeDirAndFName</a></label>(<label for="r51" class="ident">dir</label>, <label for="r52" class="ident">p</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>) (<label for="r53" class="ident">name</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r54" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-196"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r52" class="ident">p</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-197"><code>		<span class="keyword">return</span> <span class="lit-string">""</span>, <a href="zerrors_windows.go.html#line-56" class="ident">EINVAL</a></code></span>
+<span class="codeline" id="line-198"><code>	}</code></span>
+<span class="codeline" id="line-199"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r52" class="ident">p</label>) &gt; <span class="lit-number">2</span> &amp;&amp; <a href="#line-172" class="ident">isSlash</a>(<label for="r52" class="ident">p</label>[<span class="lit-number">0</span>]) &amp;&amp; <a href="#line-172" class="ident">isSlash</a>(<label for="r52" class="ident">p</label>[<span class="lit-number">1</span>]) {</code></span>
+<span class="codeline" id="line-200"><code>		<span class="comment">// \\server\share\path form</span></code></span>
+<span class="codeline" id="line-201"><code>		<span class="keyword">return</span> <label for="r52" class="ident">p</label>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-202"><code>	}</code></span>
+<span class="codeline" id="line-203"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r52" class="ident">p</label>) &gt; <span class="lit-number">1</span> &amp;&amp; <label for="r52" class="ident">p</label>[<span class="lit-number">1</span>] == <span class="lit-number">':'</span> {</code></span>
+<span class="codeline" id="line-204"><code>		<span class="comment">// has drive letter</span></code></span>
+<span class="codeline" id="line-205"><code>		<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r52" class="ident">p</label>) == <span class="lit-number">2</span> {</code></span>
+<span class="codeline" id="line-206"><code>			<span class="keyword">return</span> <span class="lit-string">""</span>, <a href="zerrors_windows.go.html#line-56" class="ident">EINVAL</a></code></span>
+<span class="codeline" id="line-207"><code>		}</code></span>
+<span class="codeline" id="line-208"><code>		<span class="keyword">if</span> <a href="#line-172" class="ident">isSlash</a>(<label for="r52" class="ident">p</label>[<span class="lit-number">2</span>]) {</code></span>
+<span class="codeline" id="line-209"><code>			<span class="keyword">return</span> <label for="r52" class="ident">p</label>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-210"><code>		} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-211"><code>			<label for="r55" class="ident">d</label>, <label for="r56" class="ident">err</label> := <a href="#line-176" class="ident">normalizeDir</a>(<label for="r51" class="ident">dir</label>)</code></span>
+<span class="codeline" id="line-212"><code>			<span class="keyword">if</span> <label for="r56" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-213"><code>				<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r56" class="ident">err</label></code></span>
+<span class="codeline" id="line-214"><code>			}</code></span>
+<span class="codeline" id="line-215"><code>			<span class="keyword">if</span> <a href="#line-188" class="ident">volToUpper</a>(<a href="../../pkg/builtin.html#name-int" class="ident">int</a>(<label for="r52" class="ident">p</label>[<span class="lit-number">0</span>])) == <a href="#line-188" class="ident">volToUpper</a>(<a href="../../pkg/builtin.html#name-int" class="ident">int</a>(<label for="r55" class="ident">d</label>[<span class="lit-number">0</span>])) {</code></span>
+<span class="codeline" id="line-216"><code>				<span class="keyword">return</span> <a href="#line-154" class="ident">FullPath</a>(<label for="r55" class="ident">d</label> + <span class="lit-string">"\\"</span> + <label for="r52" class="ident">p</label>[<span class="lit-number">2</span>:])</code></span>
+<span class="codeline" id="line-217"><code>			} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-218"><code>				<span class="keyword">return</span> <a href="#line-154" class="ident">FullPath</a>(<label for="r52" class="ident">p</label>)</code></span>
+<span class="codeline" id="line-219"><code>			}</code></span>
+<span class="codeline" id="line-220"><code>		}</code></span>
+<span class="codeline" id="line-221"><code>	} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-222"><code>		<span class="comment">// no drive letter</span></code></span>
+<span class="codeline" id="line-223"><code>		<label for="r57" class="ident">d</label>, <label for="r58" class="ident">err</label> := <a href="#line-176" class="ident">normalizeDir</a>(<label for="r51" class="ident">dir</label>)</code></span>
+<span class="codeline" id="line-224"><code>		<span class="keyword">if</span> <label for="r58" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-225"><code>			<span class="keyword">return</span> <span class="lit-string">""</span>, <label for="r58" class="ident">err</label></code></span>
+<span class="codeline" id="line-226"><code>		}</code></span>
+<span class="codeline" id="line-227"><code>		<span class="keyword">if</span> <a href="#line-172" class="ident">isSlash</a>(<label for="r52" class="ident">p</label>[<span class="lit-number">0</span>]) {</code></span>
+<span class="codeline" id="line-228"><code>			<span class="keyword">return</span> <a href="#line-154" class="ident">FullPath</a>(<label for="r57" class="ident">d</label>[:<span class="lit-number">2</span>] + <label for="r52" class="ident">p</label>)</code></span>
+<span class="codeline" id="line-229"><code>		} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-230"><code>			<span class="keyword">return</span> <a href="#line-154" class="ident">FullPath</a>(<label for="r57" class="ident">d</label> + <span class="lit-string">"\\"</span> + <label for="r52" class="ident">p</label>)</code></span>
+<span class="codeline" id="line-231"><code>		}</code></span>
+<span class="codeline" id="line-232"><code>	}</code></span>
+<span class="codeline" id="line-233"><code>}</code></span>
+<span class="codeline" id="line-234"><code></code></span>
+<span class="codeline" id="line-235"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-ProcAttr" class="ident">ProcAttr</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-236"><code>	Dir   <a href="../../pkg/builtin.html#name-string" class="ident">string</a></code></span>
+<span class="codeline" id="line-237"><code>	Env   []<a href="../../pkg/builtin.html#name-string" class="ident">string</a></code></span>
+<span class="codeline" id="line-238"><code>	Files []<a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a></code></span>
+<span class="codeline" id="line-239"><code>	Sys   *<a href="#line-242" class="ident">SysProcAttr</a></code></span>
+<span class="codeline" id="line-240"><code>}</code></span>
+<span class="codeline" id="line-241"><code></code></span>
+<span class="codeline" id="line-242"><code><span class="keyword">type</span> <a href="../../pkg/syscall.html#name-SysProcAttr" class="ident">SysProcAttr</a> <span class="keyword">struct</span> {</code></span>
+<span class="codeline" id="line-243"><code>	HideWindow                 <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a></code></span>
+<span class="codeline" id="line-244"><code>	CmdLine                    <a href="../../pkg/builtin.html#name-string" class="ident">string</a> <span class="comment">// used if non-empty, else the windows command line is built by escaping the arguments passed to StartProcess</span></code></span>
+<span class="codeline" id="line-245"><code>	CreationFlags              <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a></code></span>
+<span class="codeline" id="line-246"><code>	Token                      <a href="security_windows.go.html#line-301" class="ident">Token</a>               <span class="comment">// if set, runs new process in the security context represented by the token</span></code></span>
+<span class="codeline" id="line-247"><code>	ProcessAttributes          *<a href="types_windows.go.html#line-327" class="ident">SecurityAttributes</a> <span class="comment">// if set, applies these security attributes as the descriptor for the new process</span></code></span>
+<span class="codeline" id="line-248"><code>	ThreadAttributes           *<a href="types_windows.go.html#line-327" class="ident">SecurityAttributes</a> <span class="comment">// if set, applies these security attributes as the descriptor for the main thread of the new process</span></code></span>
+<span class="codeline" id="line-249"><code>	NoInheritHandles           <a href="../../pkg/builtin.html#name-bool" class="ident">bool</a>                <span class="comment">// if set, no handles are inherited by the new process, not even the standard handles, contained in ProcAttr.Files, nor the ones contained in AdditionalInheritedHandles</span></code></span>
+<span class="codeline" id="line-250"><code>	AdditionalInheritedHandles []<a href="syscall_windows.go.html#line-22" class="ident">Handle</a>            <span class="comment">// a list of additional handles, already marked as inheritable, that will be inherited by the new process</span></code></span>
+<span class="codeline" id="line-251"><code>	ParentProcess              <a href="syscall_windows.go.html#line-22" class="ident">Handle</a>              <span class="comment">// if non-zero, the new process regards the process given by this handle as its parent process, and AdditionalInheritedHandles, if set, should exist in this parent process</span></code></span>
+<span class="codeline" id="line-252"><code>}</code></span>
+<span class="codeline" id="line-253"><code></code></span>
+<span class="codeline" id="line-254"><code><span class="keyword">var</span> <a href="../../pkg/syscall.html#name-zeroProcAttr" class="ident">zeroProcAttr</a> <a href="#line-235" class="ident">ProcAttr</a></code></span>
+<span class="codeline" id="line-255"><code><span class="keyword">var</span> <a href="../../pkg/syscall.html#name-zeroSysProcAttr" class="ident">zeroSysProcAttr</a> <a href="#line-242" class="ident">SysProcAttr</a></code></span>
+<span class="codeline" id="line-256"><code></code></span>
+<span class="codeline" id="line-257"><code><span class="keyword">func</span> <label for="r59" class="ident"><a href="../../pkg/syscall.html#name-StartProcess" class="ident">StartProcess</a></label>(<label for="r60" class="ident">argv0</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r61" class="ident">argv</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r62" class="ident">attr</label> *<a href="#line-235" class="ident">ProcAttr</a>) (<label for="r63" class="ident">pid</label> <a href="../../pkg/builtin.html#name-int" class="ident">int</a>, <label for="r64" class="ident">handle</label> <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>, <label for="r65" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-258"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r60" class="ident">argv0</label>) == <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-259"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <a href="zerrors_windows.go.html#line-147" class="ident">EWINDOWS</a></code></span>
+<span class="codeline" id="line-260"><code>	}</code></span>
+<span class="codeline" id="line-261"><code>	<span class="keyword">if</span> <label for="r62" class="ident">attr</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-262"><code>		<label for="r62" class="ident">attr</label> = &amp;<a href="#line-254" class="ident">zeroProcAttr</a></code></span>
+<span class="codeline" id="line-263"><code>	}</code></span>
+<span class="codeline" id="line-264"><code>	<label for="r66" class="ident">sys</label> := <label for="r62" class="ident">attr</label>.<a href="#line-239" class="ident">Sys</a></code></span>
+<span class="codeline" id="line-265"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label> == <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-266"><code>		<label for="r66" class="ident">sys</label> = &amp;<a href="#line-255" class="ident">zeroSysProcAttr</a></code></span>
+<span class="codeline" id="line-267"><code>	}</code></span>
+<span class="codeline" id="line-268"><code></code></span>
+<span class="codeline" id="line-269"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a>) &gt; <span class="lit-number">3</span> {</code></span>
+<span class="codeline" id="line-270"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <a href="zerrors_windows.go.html#line-147" class="ident">EWINDOWS</a></code></span>
+<span class="codeline" id="line-271"><code>	}</code></span>
+<span class="codeline" id="line-272"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a>) &lt; <span class="lit-number">3</span> {</code></span>
+<span class="codeline" id="line-273"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <a href="zerrors_windows.go.html#line-56" class="ident">EINVAL</a></code></span>
+<span class="codeline" id="line-274"><code>	}</code></span>
+<span class="codeline" id="line-275"><code></code></span>
+<span class="codeline" id="line-276"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r62" class="ident">attr</label>.<a href="#line-236" class="ident">Dir</a>) != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-277"><code>		<span class="comment">// StartProcess assumes that argv0 is relative to attr.Dir,</span></code></span>
+<span class="codeline" id="line-278"><code><span class="comment">		// because it implies Chdir(attr.Dir) before executing argv0.</span></code></span>
+<span class="codeline" id="line-279"><code><span class="comment">		// Windows CreateProcess assumes the opposite: it looks for</span></code></span>
+<span class="codeline" id="line-280"><code><span class="comment">		// argv0 relative to the current directory, and, only once the new</span></code></span>
+<span class="codeline" id="line-281"><code><span class="comment">		// process is started, it does Chdir(attr.Dir). We are adjusting</span></code></span>
+<span class="codeline" id="line-282"><code><span class="comment">		// for that difference here by making argv0 absolute.</span></code></span>
+<span class="codeline" id="line-283"><code>		<span class="keyword">var</span> <label for="r67" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a></code></span>
+<span class="codeline" id="line-284"><code>		<label for="r60" class="ident">argv0</label>, <label for="r67" class="ident">err</label> = <a href="#line-195" class="ident">joinExeDirAndFName</a>(<label for="r62" class="ident">attr</label>.<a href="#line-236" class="ident">Dir</a>, <label for="r60" class="ident">argv0</label>)</code></span>
+<span class="codeline" id="line-285"><code>		<span class="keyword">if</span> <label for="r67" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-286"><code>			<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r67" class="ident">err</label></code></span>
+<span class="codeline" id="line-287"><code>		}</code></span>
+<span class="codeline" id="line-288"><code>	}</code></span>
+<span class="codeline" id="line-289"><code>	<label for="r68" class="ident">argv0p</label>, <label for="r65" class="ident">err</label> := <a href="syscall_windows.go.html#line-114" class="ident">UTF16PtrFromString</a>(<label for="r60" class="ident">argv0</label>)</code></span>
+<span class="codeline" id="line-290"><code>	<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-291"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-292"><code>	}</code></span>
+<span class="codeline" id="line-293"><code></code></span>
+<span class="codeline" id="line-294"><code>	<span class="keyword">var</span> <label for="r69" class="ident">cmdline</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a></code></span>
+<span class="codeline" id="line-295"><code>	<span class="comment">// Windows CreateProcess takes the command line as a single string:</span></code></span>
+<span class="codeline" id="line-296"><code><span class="comment">	// use attr.CmdLine if set, else build the command line by escaping</span></code></span>
+<span class="codeline" id="line-297"><code><span class="comment">	// and joining each argument with spaces</span></code></span>
+<span class="codeline" id="line-298"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label>.<a href="#line-244" class="ident">CmdLine</a> != <span class="lit-string">""</span> {</code></span>
+<span class="codeline" id="line-299"><code>		<label for="r69" class="ident">cmdline</label> = <label for="r66" class="ident">sys</label>.<a href="#line-244" class="ident">CmdLine</a></code></span>
+<span class="codeline" id="line-300"><code>	} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-301"><code>		<label for="r69" class="ident">cmdline</label> = <a href="#line-105" class="ident">makeCmdLine</a>(<label for="r61" class="ident">argv</label>)</code></span>
+<span class="codeline" id="line-302"><code>	}</code></span>
+<span class="codeline" id="line-303"><code></code></span>
+<span class="codeline" id="line-304"><code>	<span class="keyword">var</span> <label for="r70" class="ident">argvp</label> *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-305"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r69" class="ident">cmdline</label>) != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-306"><code>		<label for="r70" class="ident">argvp</label>, <label for="r65" class="ident">err</label> = <a href="syscall_windows.go.html#line-114" class="ident">UTF16PtrFromString</a>(<label for="r69" class="ident">cmdline</label>)</code></span>
+<span class="codeline" id="line-307"><code>		<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-308"><code>			<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-309"><code>		}</code></span>
+<span class="codeline" id="line-310"><code>	}</code></span>
+<span class="codeline" id="line-311"><code></code></span>
+<span class="codeline" id="line-312"><code>	<span class="keyword">var</span> <label for="r71" class="ident">dirp</label> *<a href="../../pkg/builtin.html#name-uint16" class="ident">uint16</a></code></span>
+<span class="codeline" id="line-313"><code>	<span class="keyword">if</span> <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r62" class="ident">attr</label>.<a href="#line-236" class="ident">Dir</a>) != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-314"><code>		<label for="r71" class="ident">dirp</label>, <label for="r65" class="ident">err</label> = <a href="syscall_windows.go.html#line-114" class="ident">UTF16PtrFromString</a>(<label for="r62" class="ident">attr</label>.<a href="#line-236" class="ident">Dir</a>)</code></span>
+<span class="codeline" id="line-315"><code>		<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-316"><code>			<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-317"><code>		}</code></span>
+<span class="codeline" id="line-318"><code>	}</code></span>
+<span class="codeline" id="line-319"><code></code></span>
+<span class="codeline" id="line-320"><code>	<label for="r72" class="ident">p</label>, <label for="r73" class="ident">_</label> := <a href="zsyscall_windows.go.html#line-706" class="ident">GetCurrentProcess</a>()</code></span>
+<span class="codeline" id="line-321"><code>	<label for="r74" class="ident">parentProcess</label> := <label for="r72" class="ident">p</label></code></span>
+<span class="codeline" id="line-322"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label>.<a href="#line-251" class="ident">ParentProcess</a> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-323"><code>		<label for="r74" class="ident">parentProcess</label> = <label for="r66" class="ident">sys</label>.<a href="#line-251" class="ident">ParentProcess</a></code></span>
+<span class="codeline" id="line-324"><code>	}</code></span>
+<span class="codeline" id="line-325"><code>	<label for="r75" class="ident">fd</label> := <a href="../../pkg/builtin.html#name-make" class="ident">make</a>([]<a href="syscall_windows.go.html#line-22" class="ident">Handle</a>, <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a>))</code></span>
+<span class="codeline" id="line-326"><code>	<span class="keyword">for</span> <label for="r76" class="ident">i</label> := <span class="keyword">range</span> <label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a> {</code></span>
+<span class="codeline" id="line-327"><code>		<span class="keyword">if</span> <label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a>[<label for="r76" class="ident">i</label>] &gt; <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-328"><code>			<label for="r77" class="ident">err</label> := <a href="zsyscall_windows.go.html#line-588" class="ident">DuplicateHandle</a>(<label for="r72" class="ident">p</label>, <a href="syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r62" class="ident">attr</label>.<a href="#line-238" class="ident">Files</a>[<label for="r76" class="ident">i</label>]), <label for="r74" class="ident">parentProcess</label>, &amp;<label for="r75" class="ident">fd</label>[<label for="r76" class="ident">i</label>], <span class="lit-number">0</span>, <a href="../../pkg/builtin.html#name-true" class="ident">true</a>, <a href="types_windows.go.html#line-123" class="ident">DUPLICATE_SAME_ACCESS</a>)</code></span>
+<span class="codeline" id="line-329"><code>			<span class="keyword">if</span> <label for="r77" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-330"><code>				<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r77" class="ident">err</label></code></span>
+<span class="codeline" id="line-331"><code>			}</code></span>
+<span class="codeline" id="line-332"><code>			<span class="keyword">defer</span> <a href="zsyscall_windows.go.html#line-588" class="ident">DuplicateHandle</a>(<label for="r74" class="ident">parentProcess</label>, <label for="r75" class="ident">fd</label>[<label for="r76" class="ident">i</label>], <span class="lit-number">0</span>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>, <span class="lit-number">0</span>, <a href="../../pkg/builtin.html#name-false" class="ident">false</a>, <a href="types_windows.go.html#line-122" class="ident">DUPLICATE_CLOSE_SOURCE</a>)</code></span>
+<span class="codeline" id="line-333"><code>		}</code></span>
+<span class="codeline" id="line-334"><code>	}</code></span>
+<span class="codeline" id="line-335"><code>	<label for="r78" class="ident">si</label> := <a href="../../pkg/builtin.html#name-new" class="ident">new</a>(<a href="types_windows.go.html#line-503" class="ident">_STARTUPINFOEXW</a>)</code></span>
+<span class="codeline" id="line-336"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-505" class="ident">ProcThreadAttributeList</a>, <label for="r65" class="ident">err</label> = <a href="syscall_windows.go.html#line-1406" class="ident">newProcThreadAttributeList</a>(<span class="lit-number">2</span>)</code></span>
+<span class="codeline" id="line-337"><code>	<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-338"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-339"><code>	}</code></span>
+<span class="codeline" id="line-340"><code>	<span class="keyword">defer</span> <a href="zsyscall_windows.go.html#line-575" class="ident">deleteProcThreadAttributeList</a>(<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-505" class="ident">ProcThreadAttributeList</a>)</code></span>
+<span class="codeline" id="line-341"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-474" class="ident">Cb</a> = <a href="../../pkg/builtin.html#name-uint32" class="ident">uint32</a>(<a href="../../pkg/unsafe.html" class="ident i4">unsafe</a>.<a href="../../pkg/unsafe.html#name-Sizeof" class="ident">Sizeof</a>(*<label for="r78" class="ident">si</label>))</code></span>
+<span class="codeline" id="line-342"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-485" class="ident">Flags</a> = <a href="types_windows.go.html#line-120" class="ident">STARTF_USESTDHANDLES</a></code></span>
+<span class="codeline" id="line-343"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label>.<a href="#line-243" class="ident">HideWindow</a> {</code></span>
+<span class="codeline" id="line-344"><code>		<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-485" class="ident">Flags</a> |= <a href="types_windows.go.html#line-121" class="ident">STARTF_USESHOWWINDOW</a></code></span>
+<span class="codeline" id="line-345"><code>		<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-486" class="ident">ShowWindow</a> = <a href="types_windows.go.html#line-457" class="ident">SW_HIDE</a></code></span>
+<span class="codeline" id="line-346"><code>	}</code></span>
+<span class="codeline" id="line-347"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label>.<a href="#line-251" class="ident">ParentProcess</a> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-348"><code>		<label for="r65" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-1115" class="ident">updateProcThreadAttribute</a>(<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-505" class="ident">ProcThreadAttributeList</a>, <span class="lit-number">0</span>, <a href="types_windows.go.html#line-499" class="ident">_PROC_THREAD_ATTRIBUTE_PARENT_PROCESS</a>, <a href="../../pkg/unsafe.html" class="ident i4">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r66" class="ident">sys</label>.<a href="#line-251" class="ident">ParentProcess</a>), <a href="../../pkg/unsafe.html" class="ident i4">unsafe</a>.<a href="../../pkg/unsafe.html#name-Sizeof" class="ident">Sizeof</a>(<label for="r66" class="ident">sys</label>.<a href="#line-251" class="ident">ParentProcess</a>), <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-349"><code>		<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-350"><code>			<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-351"><code>		}</code></span>
+<span class="codeline" id="line-352"><code>	}</code></span>
+<span class="codeline" id="line-353"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-489" class="ident">StdInput</a> = <label for="r75" class="ident">fd</label>[<span class="lit-number">0</span>]</code></span>
+<span class="codeline" id="line-354"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-490" class="ident">StdOutput</a> = <label for="r75" class="ident">fd</label>[<span class="lit-number">1</span>]</code></span>
+<span class="codeline" id="line-355"><code>	<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-491" class="ident">StdErr</a> = <label for="r75" class="ident">fd</label>[<span class="lit-number">2</span>]</code></span>
+<span class="codeline" id="line-356"><code></code></span>
+<span class="codeline" id="line-357"><code>	<label for="r75" class="ident">fd</label> = <a href="../../pkg/builtin.html#name-append" class="ident">append</a>(<label for="r75" class="ident">fd</label>, <label for="r66" class="ident">sys</label>.<a href="#line-250" class="ident">AdditionalInheritedHandles</a>...)</code></span>
+<span class="codeline" id="line-358"><code></code></span>
+<span class="codeline" id="line-359"><code>	<span class="comment">// The presence of a NULL handle in the list is enough to cause PROC_THREAD_ATTRIBUTE_HANDLE_LIST</span></code></span>
+<span class="codeline" id="line-360"><code><span class="comment">	// to treat the entire list as empty, so remove NULL handles.</span></code></span>
+<span class="codeline" id="line-361"><code>	<label for="r79" class="ident">j</label> := <span class="lit-number">0</span></code></span>
+<span class="codeline" id="line-362"><code>	<span class="keyword">for</span> <label for="r80" class="ident">i</label> := <span class="keyword">range</span> <label for="r75" class="ident">fd</label> {</code></span>
+<span class="codeline" id="line-363"><code>		<span class="keyword">if</span> <label for="r75" class="ident">fd</label>[<label for="r80" class="ident">i</label>] != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-364"><code>			<label for="r75" class="ident">fd</label>[<label for="r79" class="ident">j</label>] = <label for="r75" class="ident">fd</label>[<label for="r80" class="ident">i</label>]</code></span>
+<span class="codeline" id="line-365"><code>			<label for="r79" class="ident">j</label>++</code></span>
+<span class="codeline" id="line-366"><code>		}</code></span>
+<span class="codeline" id="line-367"><code>	}</code></span>
+<span class="codeline" id="line-368"><code>	<label for="r75" class="ident">fd</label> = <label for="r75" class="ident">fd</label>[:<label for="r79" class="ident">j</label>]</code></span>
+<span class="codeline" id="line-369"><code></code></span>
+<span class="codeline" id="line-370"><code>	<label for="r81" class="ident">willInheritHandles</label> := <a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r75" class="ident">fd</label>) &gt; <span class="lit-number">0</span> &amp;&amp; !<label for="r66" class="ident">sys</label>.<a href="#line-249" class="ident">NoInheritHandles</a></code></span>
+<span class="codeline" id="line-371"><code></code></span>
+<span class="codeline" id="line-372"><code>	<span class="comment">// Do not accidentally inherit more than these handles.</span></code></span>
+<span class="codeline" id="line-373"><code>	<span class="keyword">if</span> <label for="r81" class="ident">willInheritHandles</label> {</code></span>
+<span class="codeline" id="line-374"><code>		<label for="r65" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-1115" class="ident">updateProcThreadAttribute</a>(<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-505" class="ident">ProcThreadAttributeList</a>, <span class="lit-number">0</span>, <a href="types_windows.go.html#line-500" class="ident">_PROC_THREAD_ATTRIBUTE_HANDLE_LIST</a>, <a href="../../pkg/unsafe.html" class="ident i4">unsafe</a>.<a href="../../pkg/unsafe.html#name-Pointer" class="ident">Pointer</a>(&amp;<label for="r75" class="ident">fd</label>[<span class="lit-number">0</span>]), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<a href="../../pkg/builtin.html#name-len" class="ident">len</a>(<label for="r75" class="ident">fd</label>))*<a href="../../pkg/unsafe.html" class="ident i4">unsafe</a>.<a href="../../pkg/unsafe.html#name-Sizeof" class="ident">Sizeof</a>(<label for="r75" class="ident">fd</label>[<span class="lit-number">0</span>]), <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>, <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a>)</code></span>
+<span class="codeline" id="line-375"><code>		<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-376"><code>			<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-377"><code>		}</code></span>
+<span class="codeline" id="line-378"><code>	}</code></span>
+<span class="codeline" id="line-379"><code></code></span>
+<span class="codeline" id="line-380"><code>	<label for="r82" class="ident">envBlock</label>, <label for="r65" class="ident">err</label> := <a href="#line-121" class="ident">createEnvBlock</a>(<label for="r62" class="ident">attr</label>.<a href="#line-237" class="ident">Env</a>)</code></span>
+<span class="codeline" id="line-381"><code>	<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-382"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-383"><code>	}</code></span>
+<span class="codeline" id="line-384"><code></code></span>
+<span class="codeline" id="line-385"><code>	<label for="r83" class="ident">pi</label> := <a href="../../pkg/builtin.html#name-new" class="ident">new</a>(<a href="types_windows.go.html#line-510" class="ident">ProcessInformation</a>)</code></span>
+<span class="codeline" id="line-386"><code>	<label for="r84" class="ident">flags</label> := <label for="r66" class="ident">sys</label>.<a href="#line-245" class="ident">CreationFlags</a> | <a href="types_windows.go.html#line-162" class="ident">CREATE_UNICODE_ENVIRONMENT</a> | <a href="types_windows.go.html#line-508" class="ident">_EXTENDED_STARTUPINFO_PRESENT</a></code></span>
+<span class="codeline" id="line-387"><code>	<span class="keyword">if</span> <label for="r66" class="ident">sys</label>.<a href="#line-246" class="ident">Token</a> != <span class="lit-number">0</span> {</code></span>
+<span class="codeline" id="line-388"><code>		<label for="r65" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-224" class="ident">CreateProcessAsUser</a>(<label for="r66" class="ident">sys</label>.<a href="#line-246" class="ident">Token</a>, <label for="r68" class="ident">argv0p</label>, <label for="r70" class="ident">argvp</label>, <label for="r66" class="ident">sys</label>.<a href="#line-247" class="ident">ProcessAttributes</a>, <label for="r66" class="ident">sys</label>.<a href="#line-248" class="ident">ThreadAttributes</a>, <label for="r81" class="ident">willInheritHandles</label>, <label for="r84" class="ident">flags</label>, &amp;<label for="r82" class="ident">envBlock</label>[<span class="lit-number">0</span>], <label for="r71" class="ident">dirp</label>, &amp;<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-504" class="ident">StartupInfo</a>, <label for="r83" class="ident">pi</label>)</code></span>
+<span class="codeline" id="line-389"><code>	} <span class="keyword">else</span> {</code></span>
+<span class="codeline" id="line-390"><code>		<label for="r65" class="ident">err</label> = <a href="zsyscall_windows.go.html#line-538" class="ident">CreateProcess</a>(<label for="r68" class="ident">argv0p</label>, <label for="r70" class="ident">argvp</label>, <label for="r66" class="ident">sys</label>.<a href="#line-247" class="ident">ProcessAttributes</a>, <label for="r66" class="ident">sys</label>.<a href="#line-248" class="ident">ThreadAttributes</a>, <label for="r81" class="ident">willInheritHandles</label>, <label for="r84" class="ident">flags</label>, &amp;<label for="r82" class="ident">envBlock</label>[<span class="lit-number">0</span>], <label for="r71" class="ident">dirp</label>, &amp;<label for="r78" class="ident">si</label>.<a href="types_windows.go.html#line-504" class="ident">StartupInfo</a>, <label for="r83" class="ident">pi</label>)</code></span>
+<span class="codeline" id="line-391"><code>	}</code></span>
+<span class="codeline" id="line-392"><code>	<span class="keyword">if</span> <label for="r65" class="ident">err</label> != <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a> {</code></span>
+<span class="codeline" id="line-393"><code>		<span class="keyword">return</span> <span class="lit-number">0</span>, <span class="lit-number">0</span>, <label for="r65" class="ident">err</label></code></span>
+<span class="codeline" id="line-394"><code>	}</code></span>
+<span class="codeline" id="line-395"><code>	<span class="keyword">defer</span> <a href="zsyscall_windows.go.html#line-479" class="ident">CloseHandle</a>(<a href="syscall_windows.go.html#line-22" class="ident">Handle</a>(<label for="r83" class="ident">pi</label>.<a href="types_windows.go.html#line-512" class="ident">Thread</a>))</code></span>
+<span class="codeline" id="line-396"><code>	<a href="../../pkg/runtime.html" class="ident i1">runtime</a>.<a href="../runtime/mfinal.go.html#line-546" class="ident">KeepAlive</a>(<label for="r75" class="ident">fd</label>)</code></span>
+<span class="codeline" id="line-397"><code>	<a href="../../pkg/runtime.html" class="ident i1">runtime</a>.<a href="../runtime/mfinal.go.html#line-546" class="ident">KeepAlive</a>(<label for="r66" class="ident">sys</label>)</code></span>
+<span class="codeline" id="line-398"><code></code></span>
+<span class="codeline" id="line-399"><code>	<span class="keyword">return</span> <a href="../../pkg/builtin.html#name-int" class="ident">int</a>(<label for="r83" class="ident">pi</label>.<a href="types_windows.go.html#line-513" class="ident">ProcessId</a>), <a href="../../pkg/builtin.html#name-uintptr" class="ident">uintptr</a>(<label for="r83" class="ident">pi</label>.<a href="types_windows.go.html#line-511" class="ident">Process</a>), <a href="../../pkg/builtin.html#name-nil" class="ident">nil</a></code></span>
+<span class="codeline" id="line-400"><code>}</code></span>
+<span class="codeline" id="line-401"><code></code></span>
+<span class="codeline" id="line-402"><code><span class="keyword">func</span> <label for="r85" class="ident"><a href="../../pkg/syscall.html#name-Exec" class="ident">Exec</a></label>(<label for="r86" class="ident">argv0</label> <a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r87" class="ident">argv</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a>, <label for="r88" class="ident">envv</label> []<a href="../../pkg/builtin.html#name-string" class="ident">string</a>) (<label for="r89" class="ident">err</label> <a href="../../pkg/builtin.html#name-error" class="ident">error</a>) {</code></span>
+<span class="codeline" id="line-403"><code>	<span class="keyword">return</span> <a href="zerrors_windows.go.html#line-147" class="ident">EWINDOWS</a></code></span>
+<span class="codeline" id="line-404"><code>}</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

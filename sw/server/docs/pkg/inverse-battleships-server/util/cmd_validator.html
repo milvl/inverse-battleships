@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: inverse-battleships-server/util/cmd_validator</title>
+<link href="../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>cmd_validator</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../../index.html#pkg-inverse-battleships-server/util/cmd_validator">inverse-battleships-server/util/cmd_validator</a><i> (on <a href="https://pkg.go.dev/inverse-battleships-server/util/cmd_validator" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports <a href="../../../dep/inverse-battleships-server/util/cmd_validator.html">7 packages</a>, and imported by <a href="../../../dep/inverse-battleships-server/util/cmd_validator.html#imported-by">one package</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<span class="nodocs">    <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html">cmd_validator.go</a></span></div>
+<div id="exported-types"><span class="title">Package-Level Type Names<span class="title-stat"><i> (only one, which is exported)</i></span></span>
+
+<div id="exported-types-buttons" class="js-on">	/* sort exporteds by: <label id="sort-types-by-alphabet" class="button">alphabet</label> | <label id="sort-types-by-popularity" class="button">popularity</label> */</div><div class="anchor type-res" id="name-IncomingMessage" data-popularity="410">	<input type='checkbox' class="fold" id="IncomingMessage-fold-content"><label for="IncomingMessage-fold-content"> type <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-18">IncomingMessage</a> <i>(struct)</i></label><span id='IncomingMessage-fold-content-docs' class="fold-docs">
+<span class="md-text">		IncomingMessage represents a message received from a client.</span>
+
+		<input type='checkbox' class="fold" id="IncomingMessage-fold-fields"><label for="IncomingMessage-fold-fields">Fields (<i>total 2, both are exported</i>)</label><span id='IncomingMessage-fold-fields-items' class="fold-items"><span>
+			<span class="nodocs"><a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-19">Command</a> <i><a href="../../builtin.html#name-string">string</a></i></span></span><span>
+			<span class="nodocs"><a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-20">Params</a> <i>[]<a href="../../builtin.html#name-string">string</a></i></span></span></span>
+		<input type='checkbox' class="fold" id="IncomingMessage-fold-methods"><label for="IncomingMessage-fold-methods">Methods (<i>only one, which is exported</i>)</label><span id='IncomingMessage-fold-methods-items' class="fold-items"><span>
+			<input type='checkbox' class="fold" id="IncomingMessage-fold-method-ToString"><label for="IncomingMessage-fold-method-ToString">(*IncomingMessage) <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-24">ToString</a>() <a href="../../builtin.html#name-string">string</a></label><span id='IncomingMessage-fold-method-ToString-docs' class="fold-docs">
+<span class="md-text">				ToString returns a string representation of the message.</span>
+</span></span></span>
+		<input type='checkbox' class="fold" id="IncomingMessage-fold-results"><label for="IncomingMessage-fold-results">As Outputs Of (<i>at least 2, in which 1 is exported</i>)</label><span id='IncomingMessage-fold-results-items' class="fold-items"><span>
+			func <a href="#name-GetCommand">GetCommand</a>(parts []<a href="../../builtin.html#name-string">string</a>) (*<b>IncomingMessage</b>, <a href="../../builtin.html#name-error">error</a>)</span>
+			<input type='checkbox' class="showhide" id="IncomingMessage-showhide-inputofs"><i><label for="IncomingMessage-showhide-inputofs" class="show-inline">/* at least one unexported ... */</label><label for="IncomingMessage-showhide-inputofs" class="hide-inline">/* at least one unexported: */</label></i><span class="hidden"><i>
+			func inverse-battleships-server/server.(*<a href="../server.html#name-ClientManager">ClientManager</a>).<a href="../../../src/inverse-battleships-server/server/client_manager.go.html#line-397">readCompleteMessage</a>(pClient *<a href="../server.html">server</a>.<a href="../server.html#name-Client">Client</a>) (*<b>IncomingMessage</b>, <a href="../../builtin.html#name-string">string</a>, <a href="../../builtin.html#name-error">error</a>)</i></span></span>
+		<input type='checkbox' class="fold" id="IncomingMessage-fold-params"><label for="IncomingMessage-fold-params">As Inputs Of (<i>at least 6, in which 3 are exported</i>)</label><span id='IncomingMessage-fold-params-items' class="fold-items"><span>
+			func <a href="#name-ParseActionCmd">ParseActionCmd</a>(pIm *<b>IncomingMessage</b>) ([]<a href="../../builtin.html#name-int">int</a>, <a href="../../builtin.html#name-error">error</a>)</span><span>
+			func <a href="#name-ParseHandshakeCmd">ParseHandshakeCmd</a>(pIm *<b>IncomingMessage</b>) (<a href="../../builtin.html#name-string">string</a>, <a href="../../builtin.html#name-error">error</a>)</span><span>
+			func <a href="#name-ParseJoinLobbyCmd">ParseJoinLobbyCmd</a>(pIm *<b>IncomingMessage</b>) (<a href="../../builtin.html#name-string">string</a>, <a href="../../builtin.html#name-error">error</a>)</span>
+			<input type='checkbox' class="showhide" id="IncomingMessage-showhide-outputofs"><i><label for="IncomingMessage-showhide-outputofs" class="show-inline">/* 3+ unexporteds ... */</label><label for="IncomingMessage-showhide-outputofs" class="hide-inline">/* 3+ unexporteds: */</label></i><span class="hidden"><i>
+			func inverse-battleships-server/server.(*<a href="../server.html#name-ClientManager">ClientManager</a>).<a href="../../../src/inverse-battleships-server/server/client_manager.go.html#line-1279">handleActionCmd</a>(pClient *<a href="../server.html">server</a>.<a href="../server.html#name-Client">Client</a>, pCommand *<b>IncomingMessage</b>) (<a href="../../builtin.html#name-bool">bool</a>, <a href="../../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func inverse-battleships-server/server.(*<a href="../server.html#name-ClientManager">ClientManager</a>).<a href="../../../src/inverse-battleships-server/server/client_manager.go.html#line-2195">handleCommand</a>(pClient *<a href="../server.html">server</a>.<a href="../server.html#name-Client">Client</a>, pCommand *<b>IncomingMessage</b>) (<a href="../../builtin.html#name-bool">bool</a>, <a href="../../builtin.html#name-error">error</a>)</i></span><span class="hidden"><i>
+			func inverse-battleships-server/server.(*<a href="../server.html#name-ClientManager">ClientManager</a>).<a href="../../../src/inverse-battleships-server/server/client_manager.go.html#line-1183">handleJoinLobbyCmd</a>(pClient *<a href="../server.html">server</a>.<a href="../server.html#name-Client">Client</a>, pCommand *<b>IncomingMessage</b>) (<a href="../../builtin.html#name-bool">bool</a>, <a href="../../builtin.html#name-error">error</a>)</i></span></span>
+
+</span></div></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (total 4, all are exported)</i></span></span>
+
+<div class="anchor value-res" id="name-GetCommand">	<input type='checkbox' class="fold" id="GetCommand-fold-content"><label for="GetCommand-fold-content"> func <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-29">GetCommand</a>(parts []<a href="../../builtin.html#name-string">string</a>) (*<a href="#name-IncomingMessage">IncomingMessage</a>, <a href="../../builtin.html#name-error">error</a>)</label><span id='GetCommand-fold-content-docs' class="fold-docs">
+<span class="md-text">		GetCommand parses the message received from the client. It returns the command or an error.</span>
+
+</span></div><div class="anchor value-res" id="name-ParseActionCmd">	<input type='checkbox' class="fold" id="ParseActionCmd-fold-content"><label for="ParseActionCmd-fold-content"> func <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-125">ParseActionCmd</a>(pIm *<a href="#name-IncomingMessage">IncomingMessage</a>) ([]<a href="../../builtin.html#name-int">int</a>, <a href="../../builtin.html#name-error">error</a>)</label><span id='ParseActionCmd-fold-content-docs' class="fold-docs">
+<span class="md-text">		ParseActionCmd parses an action command.</span>
+
+</span></div><div class="anchor value-res" id="name-ParseHandshakeCmd">	<input type='checkbox' class="fold" id="ParseHandshakeCmd-fold-content"><label for="ParseHandshakeCmd-fold-content"> func <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-93">ParseHandshakeCmd</a>(pIm *<a href="#name-IncomingMessage">IncomingMessage</a>) (<a href="../../builtin.html#name-string">string</a>, <a href="../../builtin.html#name-error">error</a>)</label><span id='ParseHandshakeCmd-fold-content-docs' class="fold-docs">
+<span class="md-text">		ParseHandshakeCmd parses a handshake command. It returns the nickname or an error.</span>
+
+</span></div><div class="anchor value-res" id="name-ParseJoinLobbyCmd">	<input type='checkbox' class="fold" id="ParseJoinLobbyCmd-fold-content"><label for="ParseJoinLobbyCmd-fold-content"> func <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-115">ParseJoinLobbyCmd</a>(pIm *<a href="#name-IncomingMessage">IncomingMessage</a>) (<a href="../../builtin.html#name-string">string</a>, <a href="../../builtin.html#name-error">error</a>)</label><span id='ParseJoinLobbyCmd-fold-content-docs' class="fold-docs">
+<span class="md-text">		ParseJoinLobbyCmd parses a join lobby command. It returns the lobby ID or an error.</span>
+
+</span></div></div>
+<div id="exported-constants"><span class="title">Package-Level Constants<span class="title-stat"><i> (only one, which is unexported)</i></span></span>
+
+	<input type='checkbox' class="showhide" id="unexported-constants-showhide"><i><label for="unexported-constants-showhide" class="show-inline">/* one unexported ... */</label><label for="unexported-constants-showhide" class="hide-inline">/* one unexported: */</label></i><div class="anchor value-res hidden" id="name-maxPlayerNameLength"><i>	<span class="nodocs">const <a href="../../../src/inverse-battleships-server/util/cmd_validator/cmd_validator.go.html#line-14">maxPlayerNameLength</a> = 20</span></i></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

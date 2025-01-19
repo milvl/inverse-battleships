@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package: internal/syscall/windows/sysdll</title>
+<link href="../../../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="package-details"><code><span style="font-size:xx-large;">package <b>sysdll</b></span>
+
+<span class="title">Import Path</span>
+	<a href="../../../../index.html#pkg-internal/syscall/windows/sysdll">internal/syscall/windows/sysdll</a><i> (on <a href="https://pkg.go.dev/internal/syscall/windows/sysdll" target="_blank">go.dev</a>)</i>
+
+<span class="title">Dependency Relation</span>
+	imports 0 packages, and imported by <a href="../../../../dep/internal/syscall/windows/sysdll.html#imported-by">3 packages</a>
+
+<div id="files"><span class="title">Involved Source Files</span>
+
+	<input type='checkbox' checked class="fold" id="file-0-fold-content"><label for="file-0-fold-content">  <a href="../../../../src/internal/syscall/windows/sysdll/sysdll.go.html#doc">d</a> <a href="../../../../src/internal/syscall/windows/sysdll/sysdll.go.html">sysdll.go</a></label><span id='file-0-fold-content-items' class="fold-items">
+<span class="md-text">		Package sysdll is an internal leaf package that records and reports
+		which Windows DLL names are used by Go itself. These DLLs are then
+		only loaded from the System32 directory. See Issue 14959.</span></span></div>
+<div id="exported-functions"><span class="title">Package-Level Functions<span class="title-stat"><i> (only one, which is exported)</i></span></span>
+
+<div class="anchor value-res" id="name-Add">	<input type='checkbox' class="fold" id="Add-fold-content"><label for="Add-fold-content"> func <a href="../../../../src/internal/syscall/windows/sysdll/sysdll.go.html#line-27">Add</a>(dll <a href="../../../builtin.html#name-string">string</a>) <a href="../../../builtin.html#name-string">string</a></label><span id='Add-fold-content-docs' class="fold-docs">
+<span class="md-text">		Add notes that dll is a system32 DLL which should only be loaded
+		from the Windows SYSTEM32 directory. It returns its argument back,
+		for ease of use in generated code.</span>
+
+</span></div></div>
+<div id="exported-variables"><span class="title">Package-Level Variables<span class="title-stat"><i> (only one, which is exported)</i></span></span>
+
+<div class="anchor value-res" id="name-IsSystemDLL">	<input type='checkbox' class="fold" id="IsSystemDLL-fold-content"><label for="IsSystemDLL-fold-content">  var <a href="../../../../src/internal/syscall/windows/sysdll/sysdll.go.html#line-22">IsSystemDLL</a> map[<a href="../../../builtin.html#name-string">string</a>]<a href="../../../builtin.html#name-bool">bool</a></label><span id='IsSystemDLL-fold-content-docs' class="fold-docs">
+<span class="md-text">		IsSystemDLL reports whether the named dll key (a base name, like
+		"foo.dll") is a system DLL which should only be loaded from the
+		Windows SYSTEM32 directory.
+		
+		Filenames are case sensitive, but that doesn't matter because
+		the case registered with Add is also the same case used with
+		LoadDLL later.
+		
+		It has no associated mutex and should only be mutated serially
+		(currently: during init), and not concurrent with DLL loading.</span>
+
+</span></div></div></code></pre><pre id="footer">
+<table><tr><td><img src="../../../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

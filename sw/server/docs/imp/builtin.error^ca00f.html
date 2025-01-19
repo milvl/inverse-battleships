@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method Implmentations: builtin.error</title>
+<link href="../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+<pre><code><span style="font-size:x-large;">type <a href="../pkg/builtin.html">builtin</a>.<b><a href="../pkg/builtin.html#name-error">error</a></b></span><span style="font-size:large;"> <b><i>(interface)</i></b></span>
+
+<code><span class="title">Method Implmentations<span class="title-stat"><i></i></span></span>
+
+<div class="anchor" id="name-Error">	Error() <a href="../pkg/builtin.html#name-string">string</a>
+		encoding/base64.<a href="../pkg/encoding/base64.html#name-CorruptInputError">CorruptInputError</a>.<b><a href="../src/encoding/base64/base64.go.html#line-303">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-InvalidUnmarshalError">InvalidUnmarshalError</a>.<b><a href="../src/encoding/json/decode.go.html#line-160">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-InvalidUTF8Error">InvalidUTF8Error</a>.<b><a href="../src/encoding/json/encode.go.html#line-226">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-MarshalerError">MarshalerError</a>.<b><a href="../src/encoding/json/encode.go.html#line-238">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-SyntaxError">SyntaxError</a>.<b><a href="../src/encoding/json/scanner.go.html#line-52">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-UnmarshalFieldError">UnmarshalFieldError</a>.<b><a href="../src/encoding/json/decode.go.html#line-150">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-UnmarshalTypeError">UnmarshalTypeError</a>.<b><a href="../src/encoding/json/decode.go.html#line-133">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-UnsupportedTypeError">UnsupportedTypeError</a>.<b><a href="../src/encoding/json/encode.go.html#line-201">Error</a></b>
+		*encoding/json.<a href="../pkg/encoding/json.html#name-UnsupportedValueError">UnsupportedValueError</a>.<b><a href="../src/encoding/json/encode.go.html#line-212">Error</a></b>
+		*internal/poll.<a href="../pkg/internal/poll.html#name-DeadlineExceededError">DeadlineExceededError</a>.<b><a href="../src/internal/poll/fd.go.html#line-60">Error</a></b>
+		*internal/reflectlite.<a href="../pkg/internal/reflectlite.html#name-ValueError">ValueError</a>.<b><a href="../src/internal/reflectlite/value.go.html#line-170">Error</a></b>
+		*io/fs.<a href="../pkg/io/fs.html#name-PathError">PathError</a>.<b><a href="../src/io/fs/fs.go.html#line-256">Error</a></b>
+		*net.<a href="../pkg/net.html#name-AddrError">AddrError</a>.<b><a href="../src/net/net.go.html#line-577">Error</a></b>
+		*net.<a href="../pkg/net.html#name-DNSConfigError">DNSConfigError</a>.<b><a href="../src/net/net.go.html#line-633">Error</a></b>
+		*net.<a href="../pkg/net.html#name-DNSError">DNSError</a>.<b><a href="../src/net/net.go.html#line-707">Error</a></b>
+		net.<a href="../pkg/net.html#name-Error">Error</a>.<b>Error</b>
+		net.<a href="../pkg/net.html#name-InvalidAddrError">InvalidAddrError</a>.<b><a href="../src/net/net.go.html#line-599">Error</a></b>
+		*net.<a href="../pkg/net.html#name-OpError">OpError</a>.<b><a href="../src/net/net.go.html#line-491">Error</a></b>
+		*net.<a href="../pkg/net.html#name-ParseError">ParseError</a>.<b><a href="../src/net/net.go.html#line-567">Error</a></b>
+		net.<a href="../pkg/net.html#name-UnknownNetworkError">UnknownNetworkError</a>.<b><a href="../src/net/net.go.html#line-593">Error</a></b>
+		*os.<a href="../pkg/os.html#name-LinkError">LinkError</a>.<b><a href="../src/os/file.go.html#line-109">Error</a></b>
+		*os.<a href="../pkg/os.html#name-SyscallError">SyscallError</a>.<b><a href="../src/os/error.go.html#line-54">Error</a></b>
+		*reflect.<a href="../pkg/reflect.html#name-ValueError">ValueError</a>.<b><a href="../src/reflect/value.go.html#line-176">Error</a></b>
+		runtime.<a href="../pkg/runtime.html#name-Error">Error</a>.<b>Error</b>
+		*runtime.<a href="../pkg/runtime.html#name-PanicNilError">PanicNilError</a>.<b><a href="../src/runtime/panic.go.html#line-717">Error</a></b>
+		*runtime.<a href="../pkg/runtime.html#name-TypeAssertionError">TypeAssertionError</a>.<b><a href="../src/runtime/error.go.html#line-33">Error</a></b>
+		*strconv.<a href="../pkg/strconv.html#name-NumError">NumError</a>.<b><a href="../src/strconv/atoi.go.html#line-33">Error</a></b>
+		*syscall.<a href="../pkg/syscall.html#name-DLLError">DLLError</a>.<b><a href="../src/syscall/dll_windows.go.html#line-21">Error</a></b>
+		syscall.<a href="../pkg/syscall.html#name-Errno">Errno</a>.<b><a href="../src/syscall/syscall_windows.go.html#line-141">Error</a></b>
+		*time.<a href="../pkg/time.html#name-ParseError">ParseError</a>.<b><a href="../src/time/format.go.html#line-898">Error</a></b>
+		context.<a href="../pkg/context.html#name-deadlineExceededError">deadlineExceededError</a>.<b><a href="../src/context/context.go.html#line-171">Error</a></b>
+		encoding/json.<a href="../pkg/encoding/json.html#name-jsonError">jsonError</a>.<i><a href="../src/encoding/json/encode.go.html#line-286">error</a></i>.<b>Error</b>
+		*errors.<a href="../pkg/errors.html#name-errorString">errorString</a>.<b><a href="../src/errors/errors.go.html#line-70">Error</a></b>
+		*errors.<a href="../pkg/errors.html#name-joinError">joinError</a>.<b><a href="../src/errors/join.go.html#line-44">Error</a></b>
+		*fmt.<a href="../pkg/fmt.html#name-wrapError">wrapError</a>.<b><a href="../src/fmt/errors.go.html#line-59">Error</a></b>
+		*fmt.<a href="../pkg/fmt.html#name-wrapErrors">wrapErrors</a>.<b><a href="../src/fmt/errors.go.html#line-72">Error</a></b>
+		*internal/bisect.<a href="../pkg/internal/bisect.html#name-parseError">parseError</a>.<b><a href="../src/internal/bisect/bisect.go.html#line-687">Error</a></b>
+		*internal/chacha8rand.<a href="../pkg/internal/chacha8rand.html#name-errUnmarshalChaCha8">errUnmarshalChaCha8</a>.<b><a href="../src/internal/chacha8rand/chacha8.go.html#line-136">Error</a></b>
+		internal/poll.<a href="../pkg/internal/poll.html#name-errNetClosing">errNetClosing</a>.<b><a href="../src/internal/poll/fd.go.html#line-24">Error</a></b>
+		internal/runtime/exithook.<a href="../pkg/internal/runtime/exithook.html#name-exitError">exitError</a>.<b><a href="../src/internal/runtime/exithook/hooks.go.html#line-85">Error</a></b>
+		net.<a href="../pkg/net.html#name-canceledError">canceledError</a>.<b><a href="../src/net/net.go.html#line-442">Error</a></b>
+		*net.<a href="../pkg/net.html#name-notFoundError">notFoundError</a>.<b><a href="../src/net/net.go.html#line-647">Error</a></b>
+		*net.<a href="../pkg/net.html#name-temporaryError">temporaryError</a>.<b><a href="../src/net/net.go.html#line-653">Error</a></b>
+		*net.<a href="../pkg/net.html#name-timeoutError">timeoutError</a>.<b><a href="../src/net/net.go.html#line-618">Error</a></b>
+		net/netip.<a href="../pkg/net/netip.html#name-parseAddrError">parseAddrError</a>.<b><a href="../src/net/netip/netip.go.html#line-147">Error</a></b>
+		net/netip.<a href="../pkg/net/netip.html#name-parsePrefixError">parsePrefixError</a>.<b><a href="../src/net/netip/netip.go.html#line-1327">Error</a></b>
+		runtime.<a href="../pkg/runtime.html#name-boundsError">boundsError</a>.<b><a href="../src/runtime/error.go.html#line-184">Error</a></b>
+		runtime.<a href="../pkg/runtime.html#name-errorAddressString">errorAddressString</a>.<b><a href="../src/runtime/error.go.html#line-91">Error</a></b>
+		runtime.<a href="../pkg/runtime.html#name-errorString">errorString</a>.<b><a href="../src/runtime/error.go.html#line-80">Error</a></b>
+		runtime.<a href="../pkg/runtime.html#name-plainError">plainError</a>.<b><a href="../src/runtime/error.go.html#line-111">Error</a></b>
+		time.<a href="../pkg/time.html#name-fileSizeError">fileSizeError</a>.<b><a href="../src/time/zoneinfo_read.go.html#line-41">Error</a></b>
+		*vendor/golang.org/x/net/dns/dnsmessage.<a href="../pkg/vendor/golang.org/x/net/dns/dnsmessage.html#name-nestedError">nestedError</a>.<b><a href="../src/vendor/golang.org/x/net/dns/dnsmessage/message.go.html#line-308">Error</a></b></div></code></pre><pre id="footer">
+<table><tr><td><img src="../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>

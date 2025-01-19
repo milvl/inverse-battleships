@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['param_5fboard_5findex_869',['PARAM_BOARD_INDEX',['../namespaceserver__communication.html#a9fd2e76cc0376018e16d58092d76c81e',1,'server_communication']]],
+  ['param_5fcontinue_5fboard_5findex_870',['PARAM_CONTINUE_BOARD_INDEX',['../namespaceserver__communication.html#a48908b31f173587347404b746c1e9dd3',1,'server_communication']]],
+  ['param_5fcontinue_5flobby_5fid_5findex_871',['PARAM_CONTINUE_LOBBY_ID_INDEX',['../namespaceserver__communication.html#a858d7d7fc35916d369896578b7234347',1,'server_communication']]],
+  ['param_5fcontinue_5fopponent_5findex_872',['PARAM_CONTINUE_OPPONENT_INDEX',['../namespaceserver__communication.html#ab0bd37233454f0105a39dff861136a6e',1,'server_communication']]],
+  ['param_5fcontinue_5fplayer_5fon_5fturn_5findex_873',['PARAM_CONTINUE_PLAYER_ON_TURN_INDEX',['../namespaceserver__communication.html#a2b62f0aebe13e15e29ff43cd66b0c435',1,'server_communication']]],
+  ['param_5flobby_5fid_5findex_874',['PARAM_LOBBY_ID_INDEX',['../namespaceserver__communication.html#a656af290b62107c8038996f3a7a79e3a',1,'server_communication']]],
+  ['param_5fplayer_5fid_5findex_875',['PARAM_PLAYER_ID_INDEX',['../namespaceserver__communication.html#a7f8d5bc27ed21035e9245deba380d3c8',1,'server_communication']]],
+  ['param_5fplayer_5fon_5fturn_5findex_876',['PARAM_PLAYER_ON_TURN_INDEX',['../namespaceserver__communication.html#a1cecb52e2aeecaaff339432f4a2b5663',1,'server_communication']]],
+  ['part_5fboard_5findex_877',['PART_BOARD_INDEX',['../namespaceserver__communication.html#a2ed8470b0a8a9da10c400d1220d8dfd2',1,'server_communication']]],
+  ['part_5fcmd_5findex_878',['PART_CMD_INDEX',['../namespaceserver__communication.html#a69906fc989938d9b0eeb5b709467a23b',1,'server_communication']]],
+  ['part_5fcontinue_5fboard_5findex_879',['PART_CONTINUE_BOARD_INDEX',['../namespaceserver__communication.html#a78795593123816c145e994037177b44e',1,'server_communication']]],
+  ['part_5fcontinue_5flobby_5fid_5findex_880',['PART_CONTINUE_LOBBY_ID_INDEX',['../namespaceserver__communication.html#a075d16cd38e7ff10c8edeab8e5ed1450',1,'server_communication']]],
+  ['part_5fcontinue_5fopponent_5findex_881',['PART_CONTINUE_OPPONENT_INDEX',['../namespaceserver__communication.html#a8d5e7acb42c19f30f5ecfe59780166ed',1,'server_communication']]],
+  ['part_5fcontinue_5fplayer_5fon_5fturn_5findex_882',['PART_CONTINUE_PLAYER_ON_TURN_INDEX',['../namespaceserver__communication.html#a32f20b314723c003cbdc234129825c16',1,'server_communication']]],
+  ['player_5fname_883',['player_name',['../classib__game_1_1IBGame.html#ac05b823a0ae7cbb84f92614c60ffa937',1,'ib_game::IBGame']]],
+  ['player_5fnickname_5fmax_5flength_884',['PLAYER_NICKNAME_MAX_LENGTH',['../namespaceserver__communication.html#a7847a0505efd6c8e0993d67aa1588e0c',1,'server_communication']]],
+  ['presentation_5fsurface_885',['presentation_surface',['../classib__game_1_1IBGame.html#a939a806daeaac802cc09754e99d3f138',1,'ib_game::IBGame']]],
+  ['project_5froot_5fdir_886',['PROJECT_ROOT_DIR',['../namespaceib__game.html#a4a3effcda87df0042bcca195c49b238f',1,'ib_game']]]
+];

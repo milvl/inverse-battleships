@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source: rt0_windows_amd64.s in package runtime</title>
+<link href="../../css/auto-v0.7.5.css" rel="stylesheet">
+<script src="../../jvs/golds-v0.7.5.js"></script>
+<body onload="onPageLoad()"><div>
+
+<pre id="header"><code><span class="title">Source File</span>
+	rt0_windows_amd64.s
+
+<span class="title">Belonging Package</span>
+	<a href="../../pkg/runtime.html">runtime</a>
+</code></pre>
+
+<pre class="line-numbers">
+<span class="codeline" id="line-1"><code>// Copyright 2011 The Go Authors. All rights reserved.</code></span>
+<span class="codeline" id="line-2"><code>// Use of this source code is governed by a BSD-style</code></span>
+<span class="codeline" id="line-3"><code>// license that can be found in the LICENSE file.</code></span>
+<span class="codeline" id="line-4"><code></code></span>
+<span class="codeline" id="line-5"><code>#include "go_asm.h"</code></span>
+<span class="codeline" id="line-6"><code>#include "go_tls.h"</code></span>
+<span class="codeline" id="line-7"><code>#include "textflag.h"</code></span>
+<span class="codeline" id="line-8"><code></code></span>
+<span class="codeline" id="line-9"><code>TEXT _rt0_amd64_windows(SB),NOSPLIT|NOFRAME,$-8</code></span>
+<span class="codeline" id="line-10"><code>	JMP	_rt0_amd64(SB)</code></span>
+<span class="codeline" id="line-11"><code></code></span>
+<span class="codeline" id="line-12"><code>// When building with -buildmode=(c-shared or c-archive), this</code></span>
+<span class="codeline" id="line-13"><code>// symbol is called. For dynamic libraries it is called when the</code></span>
+<span class="codeline" id="line-14"><code>// library is loaded. For static libraries it is called when the</code></span>
+<span class="codeline" id="line-15"><code>// final executable starts, during the C runtime initialization</code></span>
+<span class="codeline" id="line-16"><code>// phase.</code></span>
+<span class="codeline" id="line-17"><code>// Leave space for four pointers on the stack as required</code></span>
+<span class="codeline" id="line-18"><code>// by the Windows amd64 calling convention.</code></span>
+<span class="codeline" id="line-19"><code>TEXT _rt0_amd64_windows_lib(SB),NOSPLIT|NOFRAME,$40</code></span>
+<span class="codeline" id="line-20"><code>	// Create a new thread to do the runtime initialization and return.</code></span>
+<span class="codeline" id="line-21"><code>	MOVQ	BX, 32(SP) // callee-saved, preserved across the CALL</code></span>
+<span class="codeline" id="line-22"><code>	MOVQ	SP, BX</code></span>
+<span class="codeline" id="line-23"><code>	ANDQ	$~15, SP // alignment as per Windows requirement</code></span>
+<span class="codeline" id="line-24"><code>	MOVQ	_cgo_sys_thread_create(SB), AX</code></span>
+<span class="codeline" id="line-25"><code>	MOVQ	$_rt0_amd64_windows_lib_go(SB), CX</code></span>
+<span class="codeline" id="line-26"><code>	MOVQ	$0, DX</code></span>
+<span class="codeline" id="line-27"><code>	CALL	AX</code></span>
+<span class="codeline" id="line-28"><code>	MOVQ	BX, SP</code></span>
+<span class="codeline" id="line-29"><code>	MOVQ	32(SP), BX</code></span>
+<span class="codeline" id="line-30"><code>	RET</code></span>
+<span class="codeline" id="line-31"><code></code></span>
+<span class="codeline" id="line-32"><code>TEXT _rt0_amd64_windows_lib_go(SB),NOSPLIT|NOFRAME,$0</code></span>
+<span class="codeline" id="line-33"><code>	MOVQ  $0, DI</code></span>
+<span class="codeline" id="line-34"><code>	MOVQ	$0, SI</code></span>
+<span class="codeline" id="line-35"><code>	MOVQ	$runtime·rt0_go(SB), AX</code></span>
+<span class="codeline" id="line-36"><code>	JMP	AX</code></span>
+</pre><pre id="footer">
+<table><tr><td><img src="../../png/zigo101-twitter.png"></td>
+<td>The pages are generated with <a href="https://go101.org/apps-and-libs/golds.html"><b>Golds</b></a> <i>v0.7.5</i>. (GOOS=windows GOARCH=amd64)
+<b>Golds</b> is a <a href="https://go101.org">Go 101</a> project developed by <a href="https://tapirgames.com">Tapir Liu</a>.
+PR and bug reports are welcome and can be submitted to <a href="https://github.com/go101/golds">the issue list</a>.
+Please follow <a href="https://twitter.com/zigo_101">@zigo_101</a> (reachable from the left QR code) to get the latest news of <b>Golds</b>.</td></tr></table></pre>
