@@ -1,4 +1,4 @@
-# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS <br> Inverzní lodě</p>
+# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS &mdash; Inverzní lodě</p>
 
 > Autor: Milan Vlachovský
 
@@ -6,38 +6,123 @@
 
 - [1. Úvod](#1-úvod)
 - [2. Popis hry](#2-popis-hry)
-- [3. Architektura systému](#3-architektura-systému)
-- [4. Návod na zprovoznění](#4-návod-na-zprovoznění)
-- [5. Struktura projektu](#5-struktura-projektu)
-- [6. Testování](#6-testování)
+- [3. Popis síťového protokolu](#3-popis-síťového-protokolu)
+- [4. Architektura systému](#4-architektura-systému)
+- [5. Návod na zprovoznění](#5-návod-na-zprovoznění)
+- [6. Struktura projektu](#6-struktura-projektu)
 - [7. Algoritmické a implementační detaily](#7-algoritmické-a-implementační-detaily)
 - [8. Závěr](#8-závěr)
 
 ## 1. Úvod
 
-Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů používající síťovou komunikaci se serverovou částí v nízkoúrovňovém programovacím jazyce a klientskou částí v programovacím libovolném jazyce. Autor projektu zvolil vlastní variantu hry Lodě s upravenými pravidly nazvanou *&bdquo;Inverse Battleships&ldquo;*. Stejně jako její předloha je hra určena pro 2 hráče, přičemž se hráčí střídají v tazích. Byl zvolen protokol na bázi TCP. Jako programovací jazyk serveru byl zvolen jazyk Go, díky své rychlosti a nízkoúrovňovému přístupu k síťové komunikaci. Klientská část byla implementována v jazyce Python s využitím knihovny [pygame](https://www.pygame.org/news) pro správu vykreslování grafického prostředí hry.
+Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů používající síťovou komunikaci se serverovou částí v nízkoúrovňovém programovacím jazyce a klientskou částí v programovacím libovolném jazyce. Autor projektu zvolil vlastní variantu hry Lodě s upravenými pravidly nazvanou *&bdquo;Inverse Battleships&ldquo;*. Stejně jako její předloha je hra určena pro 2 hráče, přičemž se hráčí střídají v tazích.<p style="text-indent: 12pt;">Byl zvolen protokol na bázi TCP. Jako programovací jazyk serveru byl zvolen jazyk Go, díky své rychlosti a nízkoúrovňovému přístupu k síťové komunikaci. Klientská část byla implementována v jazyce Python s využitím knihovny [pygame](https://www.pygame.org/news) pro správu vykreslování grafického prostředí hry.</p>
 
 ## 2. Popis hry
 
+Hra *Inverse Battleships* je variantou klasické hry Lodě, ve které se hráči snaží najít a zničit všechny lodě protivníka. V této variantě hráči sdílí jedno pole 9x9 a každý dostane na začátku přiřazenou jednu loď. Následně se hráči střídají v tazích, kdy každý hráč se může pokusit vykonat akci na prázdné políčko. Mohou nastat tři situace:
 
-## 3. Architektura systému
+- Hráč zkusí akci na prázdné políčko, ve kterém se nachází nikým nezískaná loď. V tomto případě hráč loď získává a získává body.  
 
+- Hráč zkusí akci na prázdné políčko, ve kterém se nachází protivníkova loď. V tomto případě protivník o loď přichází, je zničena, hráč získává body a protivník ztrácí body.
 
+- Hráč zkusí akci na políčko, na kterém se nic nenachází. V tomto případě hráč nezískává nic.
+
+Hra končí, když jeden z hráčů ztratí všechny lodě. Vítězem je přeživší hráč. Body jsou pouze pro statistické účely a nemají vliv na průběh hry.
+
+## 3. Popis síťového protokolu
+
+## 4. Architektura systému
 
 ### Požadavky
 
-- Python 3.12 a novější
-- Go 1.23 a novější
+Projekt byl vyvíjen s použitím následujících technologií:
 
-## 4. Návod na zprovoznění
+- Python 3.12
+  - pygame 2.6.0
+  - pydantic 2.8.2
+  - typing-extensions 4.12.2
+  - termcolor 2.5.0
+  - pyinstaller 6.11.1
+- Go 1.23
 
+> Za použití zmiňovaných technologií by měl být projekt bez problémů spustitelný. Spouštění na starších verzích nebylo testováno a nemusí fungovat správně.
 
+## 5. Návod na zprovoznění
 
-### Instalace krok za krokem
+Pro sestavení celého projektu byly vytvořeny soubory *Makefile* a *Makefile.win*, které obsahují instrukce pro sestavení projektu na Unixových a Windows OS. Pro sestavení projektu na Unixových OS stačí spustit příkaz:
 
+```bash
+make
+```
 
+a pro Windows OS stačí spustit příkaz:
 
-## 5. Struktura projektu
+```cmd
+make -f Makefile.win
+```
+
+Předpokládá se, že je nainstalován program `make`; na Windows je možné použít například [make z chocolatey](https://community.chocolatey.org/packages/make), či jiné alternativy.<p style="text-indent: 12pt;">Skript sestaví spustitelné soubory ve složce *client/bin/* pro klientskou část projektu a ve složce *server/bin/* pro serverovou část projektu. Spustitelné soubory jsou pojmenovány *client* a *server*, případně na Windows *client.exe* a *server.exe*. Stačí pouze z kořenové složky projektu na Unix OS spustit příkaz:</p>
+
+```bash
+make
+```
+
+Nebo na Windows OS:
+
+```cmd
+make -f Makefile.win
+```
+
+> Jelikož je klientská část implementována v jazyce Python, je možné ji spustit i bez sestavení. Stačí spustit soubor *client/src/main.py* v Python virtuálním prostředí s nainstalovanými závislostmi ze souboru *requirements.txt*. Spustitelné soubory pro klientskou část byly vytvořeny pomocí knihovny *[pyinstaller](https://pyinstaller.org/en/stable/)* a jejich úspěšnost překladu bývá závislá na operačním systému a verzi Pythonu.
+
+> Na základě standardu [PEP 394](https://peps.python.org/pep-0394/) počítají soubory *Makefile* a *Makefile.win* s tím, že Python rozkaz pod Unixem je `python3` a pod Windows je `python`. V případě odlišného nastavení je nutné soubory upravit.
+
+### Klientská část
+
+Klientská část je napsaná v jazyce Python, tedy kód je standardně interpretován řádku po řádce pomocí Python interpreteru. Pro spuštění klientské části je tedy nutné mít nainstalovaný Python 3.12 a nainstalované závislosti ze souboru *requirements.txt*.
+
+### Spuštění krok za krokem
+
+Autor dopořučuje vytvořit si virtuální prostředí a nainstalovat závislosti pomocí následujících příkazů:
+
+> Příkazy jsou pro Unix OS, pro Windows OS je bude možná nutné přizpůsobit.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd client/
+```
+
+Následně je možné spustit klienta pomocí příkazu:
+
+```bash
+python3 ./src/main.py
+```
+
+> Standardně se předpokládá spouštění ze složky *client/*
+
+### Sestavení spustitelného souboru
+
+Kvůli charakteru jazyka není možné bez externích knihoven vytvořit spustitelný soubor. Autor proto zvolil cestu sestavení pomocí knihovny *pyinstaller*. Pro sestavení spustitelného souboru je nutné mít nainstalovaný *pyinstaller*.<p style="text-indent: 12pt;">Pro sestavení spustitelného souboru stačí pouze spustit z kořenové složky na Unix OS příkaz:</p>
+
+```bash
+make client
+```
+
+Nebo na Windows OS:
+
+```cmd
+make -f Makefile.win client
+```
+
+Pro manuální sestavení lze použít kód z Makefile souborů.
+
+### Serverová část
+
+Serverová část je napsaná v jazyce Go. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. TODO
+
+## 6. Struktura projektu
 
 ### Kořenová složka
 
@@ -334,22 +419,6 @@ Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů použ
 - **levels_config.js**: Modul obsahující konfiguraci levelů pro *normal* mód.
   
 > Většina elementů je pozicováná/škálována na základě předem specifikovaných poměrových konstant (vzhledem k šířce/výšce obrazovky/určité entity). Všechny tyto konstanty jsou buď definovány na začátku modulu, na začátku třídy nebo jsou předávány jako parametry metodám. -->
-
-## 6. Testování
-
-<!-- Aplikace byla testována pouze pomocí manuálních testů. Testování bylo zaměřeno na ověření funkčnosti hry a správného chování herní logiky. V rámci projektu proběhlo také testování od 3 nezávislých testerů, kteří měli za úkol ověřit funkčnost hry a zpětně poskytnout zpětnou vazbu, která byla následně zohledněna při vývoji. Zpětná vazba od testerů:
-
-- Kateřina Hanělová (*současná studentka předmětu KIV/UUR*)
-  - Odezva: *&bdquo;Aplikace je jednoduše a pěkně graficky zpracovaná, vše je na obrazovce rozloženo intuitivně. Doplnění vizuálu různými trefnými zvuky mě příjemně potěšilo. Ovládání menu, nastavení i hry je jednoduché a intuitivní. Líbí se mi možnost nastavení počtu životů a také módu hry, aby si uživatel přizpůsobil obtížnost podle své chuti. Samotná hra je jednoduchá a zabaví hráče na delší dobu, díky tomu, že je stále zábavná a levely jsou různé a postupně náročnější. Také udrží díky hezkému grafickému provedení. Při testování jsem na chyby nenarazila, vše fungovalo tak, jak jsem očekávala.&ldquo;*
-  - Autorova reakce: Potěšení z pozitivní zpětné vazby. Díky pozitivní zpětné vazbě ohledně intuitivního ovládání se autor zaměřil na tento aspekt a při testování odhalil, že se hra nedá pozastavit v herní session při aktivním CAPS LOCKu (hra očekávala písmeno *'p'*, ale CAPS LOCK přepisoval klávesu na *'P'*). Tento problém byl následně opraven. Dále byla nalevo od herního plátna přidána jednoduchá legenda pro klávesové ovládání.
-
-- Jiří Winter (*absolvent předmětu KIV/UUR*)
-  - Odezva: *&bdquo;Hra Bomberman Clone je pro mě velice zajímavé téma semestrální práce a testování bylo velice jednoduché a záživné. Hra i menu běží v pořádku a i při intenzivnějších pokusech o způsobení chyby, běžela v pořádku. Hra je responzivní a jednoduchá na ovládání. Na první dobrou jsem pochopil, jak ji ovládat a tutorialu nebylo vůbec potřeba. Líbí se mi, že byla zvolena stoupající obtížnost levelů od velice jednoduché po náročnější, kde jsem musel chvilku zůstat, abych se levelem probojoval. Jedinou výtku mám k menu a nemožnosti použití myši. Sice tomu rozhodnutí rozumím, aby bylo patrné, že ovládání je jen klávesy, ale jelikož se jedná o webovou aplikaci, uvítal bych možnost ovládání myší v menu. I přesto si ale myslím, že aplikace je velice povedená a hraní mi bavilo.&ldquo;*
-  - Reakce autora: Důvod absence myši byl záměrný. Hra je stylizována jako stará arkáda. Myš by mohla způsobit zmatení uživatele, kdyby ji mohl použít v menu, ale ne ve hře.
-
-- Luboš Hess (*student přírodních věd, volnočasový hráč PC her*)
-  - Odezva: *&bdquo;Rychlost pohybu hráče se zdá být příliš pomalá. Ze začátku mě kvůli tomu trochu štvalo zasekávání se o hrany nezničitelných zdí, ale po čase jsem si zvykl. Často se mi stávalo, že jsem se objevil v novém levelu a byl jsem okamžitě obklopen nepříteli a neměl jsem možnost úniku. Jakmile nepřátelé dorazí k bombě, zastaví se u ní a vyčkávají dokud nevybouchne. Když jsem si nastavil hru na 1 život, po 1. zásahu hra skončila, ačkoliv měla dále pokračovat. Ve 4. levelu normal modu je nepřítel umístěn doprostřed mapy mezi bloky. Po odstranění bloků se záporák začne pohybovat a okamžitě umírá na následky výbuchu položené bomby. V endless modu se v každém levelu objeví zničitelná zeď v levém horním rohu. Bylo často zdlouhavé se neustale dostávat k tomuto bloku. V menu nastavení bych uvítal možnost ovládat volby pohybem kláves doleva a doprava. Je to standardní v mnoha starých i nových hrách.&ldquo;*
-  - Autorova reakce: Rychlost pohybu byla nastavena na danou hodnotu záměrně, jelikož je hra velmi elementární, tak část její výzvy tvoří vyhýbání se nepřátelům. Pokud by byla rychlost pohybu vyšší, tak by se hra stala příliš snadnou nebo pro nezkušené hráče by vytvořila jednoduší způsob jak naběhnout do nepřátel. Při zvýšení rychlosti všech entit se poté hra stala příliš náročnou, kvůli zkrácenému reakčnímu času na vyhýbání se nepřátelům. Situace s &bdquo;insta-killem&ldquo; byla způsobena příliš malým radiusem okolo hráče, kde se neměly při generování levelu objevit žádné nepřátelské entity. Tento problém byl opraven. Vlastnost nepřátel, že chodí do bomb je úmyslná. Bystří hráči by mohli být schopni si vypočítat trajektorii pohybu nepřítele a umístit mu do cesty bombu. Chyba s počtem životů byla způsobena špatným nastavením podmínek pro ukončení hry. Tento problém byl také opraven. Případ sebedestruktivních nepřátel byl vyřešen vylepšením jejich AI na hledání cest k hráči. Nezničitelná zeď v levém horním rohu byla způsobena ladící entitou, která byla zapomenuta v kódu. Tato zničitelná zeď se již pravidelně negeneruje. Možnost ovládání menu klávesnicí byla přidána. -->
 
 ## 7. Algoritmické a implementační detaily
 
