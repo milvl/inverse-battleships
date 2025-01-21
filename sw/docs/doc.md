@@ -1,4 +1,4 @@
-# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS <br><br> Inverzní lodě</p>
+# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS <br><br>Téma práce: Hra Inverzní lodě</p>
 
 > Autor: Milan Vlachovský
 
@@ -12,7 +12,7 @@
   - [5.1 Klientská část](#51-klientská-část)
   - [5.2 Serverová část](#52-serverová-část)
 - [6. Struktura projektu](#6-struktura-projektu)
-- [7. Algoritmické a implementační detaily](#7-algoritmické-a-implementační-detaily)
+- [7. Popis implementace](#7-popis-implementace)
 - [8. Závěr](#8-závěr)
 
 ## 1. Úvod
@@ -144,7 +144,9 @@ Make sestaví spustilený soubor ve složce *server/bin/* s názvem *server*.
 
 #### Spuštění serveru
 
-Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které bude server naslouchat (parametr *-a*), nebo specifikovat konfigurační soubor (parametr *-c*). Pro spuštění serveru na 127.0.0.1 a na portu 8080 stačí zadat: 
+Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které bude server naslouchat (parametr *-a*), nebo specifikovat konfigurační soubor (parametr *-c*). Pro spuštění serveru na 127.0.0.1 a na portu 8080 stačí zadat:
+
+> Příkazy jsou pro Unix OS, pro Windows OS je nutné je přizpůsobit.
 
 ```bash
 ./server/bin/server -a "127.0.0.1:8080"
@@ -153,6 +155,12 @@ Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které 
 > Při volbě IP adresy a portu je vhodné zjistit, zda je adresa a port dostupný a nejsou blokovány firewallem apod.
 
 ## 6. Struktura projektu
+
+Projekt je rozdělen následovně:
+
+- *Kořenová složka* &mdash; Obsahuje soubory pro sestavení projektu, složky *client* a *server*, složku *docs* s dokumentací a soubor *requirements.txt* s definicemi Python závislostí.
+  - *client/* &mdash; Obsahuje celou klientskou část projektu včetně konfiguračních souborů, použitých textových a obrazových zdrojů a programátorské referenční dokumentace.
+  - *server/* &mdash; Obsahuje celou serverovou část projektu včetně konfiguračních souborů a programátorské referenční dokumentace.
 
 ### Kořenová složka
 
@@ -302,6 +310,9 @@ Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které 
       - *client/src/util/path.py* &mdash; Soubor s pomocnými metodami pro práci s cestami.
 
 - *docs/* &mdash; Složka obsahující dokumentaci.
+  - *docs/doc.md* a *docs/doc.pdf* &mdash; Tento dokument ve formátu Markdown a PDF.
+  - *docs/client_ref.html* &mdash; Odkaz na dokumentaci klientské části.
+  - *docs/server_ref.html* &mdash; Odkaz na dokumentaci serverové části.
 
 - *requirements.txt* &mdash; Soubor s definicemi Python závislostí.
 
@@ -345,134 +356,92 @@ Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které 
         - *server/src/util/msg_parser/msg_parser.go* &mdash; Soubor s kódem pro parsování zpráv.
       - *server/src/util/util.go* &mdash; Soubor s pomocnými funkcemi.
 
+## 7. Popis implementace
 
-<!-- ### Backend (složka *backend/* )
+### 7.1 Klientská část
 
-- `db.json`: JSON soubor pro inicializaci databáze pro správný běh hry při prvním spuštění.
-- `db_init.py`: Pythonovský skript pro inicializaci databáze.
-- `ajax_handler.py`: Pythonovský skript pro zpracování AJAX požadavků s využitím Flask.
-- `requirements.txt`: Závislosti pro Python.
+Klientská část aplikace byla implementována v jazyce Python s využití knihovny **pygame** pro grafické rozhraní. Hlavní součásti klienta jsou rozděleny do modulů podle jejich funkce.
 
-### Frontend (složka *js/* )
+> Veškerý kód se nachází pod složkou *client/src/*.
 
-> Soubory jsou řazeny podle jejich přednosti ve spouštění. Jsou ukázány pouze hlavní soubory, ze kterých je evidentní struktura and fungování hry. Podrobnější popis jednotlivých metod a tříd je uveden v dokumentaci kódu či v souboru **jsdoc.html**. Všechny metody jsou podrobně zdokumentovány pomocí JSDoc.
+Při běhu programu pracuje vždy jedno hlavní vlákno, které se stará o logiku hry, zpracovávání vstupů a vykreslování grafického rozhraní. Pro správu asynchronní komunikace se serverem je vždy vytvořeno vlastní vlákno, které
 
-- **app.js**: Vstupní bod pro hru.
-  - Zde dochází k inicializaci hry.
-  - Dojde k vytvoření instance PIXI aplikace.
-  - Dojde k napojení metod zajistujících škálování a přizpůsobení velikosti okna a pro ovládání klávesnicí.
-  - Dojde k načtení všech potřebných assetů (obrázky, zvuky, ...).
-  - Vznikne instance hry, kterou reprezentuje třída `Game` z modulu `game.js`.
-  - K metodě `update(delta)` z modulu **game.js** je připojen ticker poskytovaný PIXI.js, který zajišťuje pravidelné volání metody `update(delta)` s aktuálním časovým rozdílem mezi jednotlivými vykreslenými snímky.
-    - Metoda `update(delta)` zajišťuje aktualizaci stavu hry a jedná se o hlavní smyčku hry.
+#### Moduly klientské části
 
-- **loader.js**: Modul, který zajišťuje načítání assetů.
+1. **game**
+   - *connection_manager.py*: Spravuje připojení klienta k serveru pomocí socketů.
+   - *ib_game.py*: Obsahuje hlavní logiku hry, jako je zpracování tahů a synchronizace herního stavu se serverem.
+   - *ib_game_state.py*: Reprezentuje stav hry a poskytuje API pro manipulaci s herními daty.
 
-- **sound_manager.js**: Modul, který zajišťuje používání zvuků ve hře.
-  - Obsahuje třídu `SoundManager`, která si drží informace o zvucích ve hře.
-  - Každý zvuk se spoustí pomocí metody `playNázevZvuku()`.
-  - Instanci třídy `SoundManager` používá třída `Game` a `GameSession` pro spouštění zvuků ve hře.
+2. **graphics**
+   - *game_session.py*: Zajišťuje vykreslování herního prostředí a interakci uživatele s hrou.
+   - *menus*: Obsahuje moduly pro tvorbu a správu herních menu, jako jsou vstupní obrazovky, lobby nebo nastavení.
 
-- **game.js**: Modul obsahující třídu `Game`, která reprezentuje hru.
-  - Třída `Game` si drží informaci o stavu ve kterém se hra nachází pomocí proměnné `gameState` (jedná se o instanci třídy `GameState`, která je definována v modulu `game_state.js`).
-  - Hlavní metodou je `update(delta)`, která zajišťuje aktualizaci stavu hry.
-  - Metoda `update(delta)` je volána z `app.js` a zajišťuje pravidelné volání metody `update(delta)` s aktuálním časovým rozdílem mezi jednotlivými vykreslenými snímky.
-  - Funguje na pricipu stavového automatu, kde se v závislosti na stavu hry provádí jiné aktualizace (pro rozhnodování byl použit switch case).
-  - V závislosti na stavu hry se volají metody pro aktualizaci jednotlivých částí hry:
-    - `handleMainMenuUpdate()`: Aktualizace hlavního menu na základě stisknutých kláves a vybraných možností.
-    - `handleGameSessionUpdate(delta)`: Inicializace/aktualizace probíhající herní session.
-    - `handleSettingsUpdate()`: Aktualizace nastavení hry na základě stisknutých kláves a vybraných možností.
-    - `handleLeaderboardUpdate()`: Aktualizace pohledu žebříčku nejlepších hráčů.
-    - `handleGameEndScreen()`: Aktualizace obrazovky po skončení hry.
-  - Ve všech těchto metodách se pracuje se dvěma hlavními objekty:
-    - `screenContent`: Obsahuje všechny logické objekty, které se mají vykreslit na obrazovku (v případě menu tedy jednotlivé možnosti, v případě herní session tedy herní pole, hráče, nepřátele, ...).
-    - `drawingManager`: Jedná se jednu z instancí modulu `drawing_manager_menus.js` pokud se jedná o vykreslování určitého menu, nebo `game_session.js` pokud se jedná o vykreslování herní session.
-      - Pokud se jedná o menu, tak se přímo volají metody pro vykreslení celého pohledu na základě aktualizace uživatelského vstupu. Překreslování se děje vždy, když je změněn stav menu nebo z důvodu změny velikosti okna.
-      - Pokud se jedná o herní session, tak se neustále volá metoda pro aktualizaci herní session, která si sama spravuje vykreslování herního pole, hráče, nepřátel, ... a zajišťuje interakci mezi nimi včetně kolizí a zpracování vstupu od uživatele. Překresoloání se děje na úrovni herních objektů, které jsou vytvořeny pomocí PIXI.js nikoli na úrovni celého pohledu (z důvodu optimalizace a svižnosti překreslování).
-      - > Autorova původní myšlenka byla, že by se instance z modulu drawing_manager používaly pouze pro vykreslování na obrazovku, ale nakonec se ukázalo, že v případě herní session (kvůli složitosti implementace detekce kolizí bez přístupu k hernímu kanvasu atd.) bylo rozumnější nechat si spravovat vykreslování a interakce přímo herní session, neboť detekce a pohyb byl úzce spjat PIXI objekty a bylo by nepřehledné posílat aktualizace mezi různými moduly.
-      - JavaScript sice nativně nepodporuje rozhraní, ale na základě autorem vytvořené struktury se očekává, že instance proměnné `drawingManager` bude vždy obsahovat metody:
-        - `redraw()` pro překreslení herního pole po změně velikosti okna.
-        - `cleanUp()` pro vyčištění kreslící plochy po přechodu na jiný pohled.
-      - Všechny stavy zobrazující menu používají metodu `draw()`, která vykresluje `screenContent` na obrazovku.
-      - Stav herní session používá metodu `update(delta)`, která zajišťuje aktualizaci herní session a v případě potřeby i překreslení herního pole.
+3. **util**
+   - *assets_loader.py*: Zajišťuje načítání grafických a zvukových souborů.
+   - *loggers.py*: Implementuje vlastní logování pro snadněší diagnostiku a ladění.
+   - *init_setup.py*: Zajišťuje inicializaci klientské aplikace.
 
-- **game_session.js**: Modul obsahující třídu `GameSession`, která reprezentuje herní session.
-  - Třída `GameSession` si drží informaci o stavu ve kterém se herní session nachází pomocí proměnné `gameSessionState` (jedná se o instanci třídy `GameSessionState`, která je definována v modulu `game_session_state.js`).
-  - Jako první je nutné zavolat metodu `start()` pro inicializaci herní session.
-  - Hlavní metodou je `update(delta)`, která zajišťuje aktualizaci stavu herní session.
-  - Metoda `update(delta)` je volána z **game.js** a zajišťuje pravidelné překreslování a aktualizace herní logiky s aktuálním časovým rozdílem mezi jednotlivými vykreslenými snímky.
-  - Funguje na pricipu stavového automatu, kde se v závislosti na stavu herní session provádí jiné aktualizace (pro rozhnodování byl použit switch case).
-  - V závislosti na stavu herní session se volají metody pro aktualizaci jednotlivých částí hry:
-    - `handleGameSessionInProgressUpdate(delta)`: Aktualizace probíhající herní session. Posloupnost aktualizací je následující:
-      1) Aktualizace času hry.
-      2) Aktualizace HUD pomocí metody `updateStats(delta)`.
-      3) Aktualizace herních entit pomocí metody `updateEntities(delta)`. Tato metoda vrací informaci o případném zisku skóre, které je potřeba zpracovat.
-         1) Nejprve se získají informace o všech entitách na herním poli (hráč, nepřátelé, bomby, bonusy, ...).
-         2) Poté se aktualizuje entita hráče (kolize s entitami a poté pohyb).
-         3) Poté se aktualizují nepřátelé (kolize s entitami a poté pohyb).
-         4) Poté se aktualizují ničitelné zdi (kolize s entitami).
-         5) Poté se aktualizují bomby (pokládání bomb, časovač výbuchu).
-         6) Poté se aktualizují výbuchy bomb (vytvoření explozí, časovač trvání explozí).
-         7) Nakonec se kontroluje, zda se můžou objevit únikové dveře (pokud jsou splněny podmínky).
-      - > K aktualizacím dochází pouze pokud mometálně nedochází ke škálování herního pole (kvůli změně velikosti okna).
-    - `handleGameSessionPlayerHitUpdate(delta)`: Aktualizace herní session po zásahu hráče nepřítelem.
-      - Zajišťuje problikávání hráče při zásahu nepřítelem a aktualizaci životů hráče.
-      - Pokud hráč ztratí všechny životy, tak se stav herní session změní na `GAME_SESSION_STATE_GAME_END`.
-      - Pokud hráč má ještě životy, tak se stav herní session změní na `GAME_SESSION_STATE_LEVEL_INFO_SCREEN`.
-    - `handleGameSessionLevelInfoScreen(delta)`: Aktualizace obrazovky s informacemi o levelu.
-    - `handleGameSessionPausedUpdate()`: Aktualizace obrazovky po pozastavení hry.
-    - `handleGameSessionLeavePromptUpdate(delta)`: Aktualizace obrazovky s výzvou k opuštění hry.
-    - `handleGameSessionGameEndUpdate(delta)`: Metoda zajišťující správné ukončení herní session.
-    - Většina těchto metod pracuje s proměnnou `screenContent`, která obsahuje všechny logické objekty, které se mají vykreslit na obrazovku (v případě herní session tedy herní pole, hráče, nepřátele, HUD, prompty, ...).
+#### Rozvrstvení klientské aplikace
 
-- **arena.js**: Modul obsahující třídu `Arena`, která reprezentuje herní pole.
-  - Třída `Arena` si drží informace o herním poli (reprezentované 2D polem) vzhledem k obrazovce.
-  - Obsahuje metody pro vykreslení a překreslení herního pole.
-  - Obsahuje metody pro získání informací o herním poli (získání 2D indexu pole na základě souřadnic, získání souřadnic pole na základě 2D indexu, ...).
-  - Obsahuje metodu pro ověření kolize s herním polem (metoda pro výpočet je předávána jako parametr).
-  - Také obsahuje metody
-    - `draw()`: Metoda pro vykreslení herního pole.
-    - `redraw()`: Metoda pro překreslení herního pole.
-    - `cleanUp()`: Metoda pro vyčištění herního pole.
+Klientská část je navržena jako modulární aplikace s jasným rozdělením na:
 
-- **entity.js**: Modul obsahující třídu `Entity`, která reprezentuje herní entitu.
-  - Třída `Entity` si drží informace o herní entitě vzhledem k hernímu poli.
-  - Obsahuje metody pro vykreslení entity při jejím vytvoření a aktualizaci entity (detekce kolize a pohyb).
-  - Všechny herní entity (hráč, nepřátelé, bomby, exploze, ...) dědí od třídy `Entity` a přepisují metodu `update(delta)` na základě svých potřeb.
-  - Obsahuje metody:
-    - `spawn(x, y)`: Metoda pro vytvoření entity na herním poli na základě souřadnic.
-    - `update(delta)`: Metoda pro aktualizaci entity.
-    - `redraw()`: Metoda pro překreslení entity (při změně velikosti okna).
-    - `moveToTop()`: Metoda pro přesunutí entity do popředí.
-    - `remove()`: Metoda pro odstranění entity z herního pole.
+- **Prezentaci (UI)**: Moduly v *graphics*.
+- **Logiku hry**: Moduly v *game*.
+- **Podpůrné funkce**: Moduly v *util*.
 
-- **levels_config.js**: Modul obsahující konfiguraci levelů pro *normal* mód.
-  
-> Většina elementů je pozicováná/škálována na základě předem specifikovaných poměrových konstant (vzhledem k šířce/výšce obrazovky/určité entity). Všechny tyto konstanty jsou buď definovány na začátku modulu, na začátku třídy nebo jsou předávány jako parametry metodám. -->
+#### Použité knihovny klientské části
 
-## 7. Algoritmické a implementační detaily
+- **pygame 2.6.0**: Pro vykreslování grafického rozhraní.
+- **pydantic 2.8.2**: Pro validaci dat.
+- **termcolor 2.5.0**: Pro barevné logování v terminálu.
+- **pyinstaller 6.11.1**: Pro sestavení spustitelných souborů.
 
-<!-- Způsob kreslení herních elementů v game session prošel v průběhu vývoje velkými změnami. V původní verzi bylo vykreslování a pohybování entit řešeno zvenčí. V průběhu vývoje se ukázalo, že je lepší nechat si spravovat vykreslování a pohybování entit přímo v jejich vlastních instancích, neboť jednotlivé odchylky způsobů aktualizací, založené na typu entity, se daly řešit děděním od nadřazeného, implicitního objektu `Entity`. Před posláním verze testerům tedy došlo k větším změnám v kódu.\
-\
-Jinak je kód dle autorova úsudku napsaný se standardními postupy pokud se jedná o problematiku jako jsou stavové automaty, zobrazování grafických primitiv na plátně, preškálování, řešení hit testů, pohyb na základě delta času, atd. Úsek kódu, který stojí za zmínku, neboť se jedná o vlastní verzi algoritmu je pohyb nepřátel z modulu **enemy.js**. Způsob jakým se nepřítel pohybuje je následující:
+#### Paralelizace klienta
 
-```pseudocode
-1. Nepřítel si zkontroluje, zda má nastavený cíl.
-2. Pokud nemá cíl, tak se pokusí najít cíl následujícím způsobem:
-   1. S určitou pravděpodobností (na základě obtížnosti nepřítele) si vybere pokud jeho cíl bude hráč nebo náhodný bod na herním poli.
-   2. S určitou pravděpodobností (na základě obtížnosti nepřítele) si vybere jakým způsobem vypočítá cestu k cíli.
-       - Při vyšší obtížnosti se spíše použije BFS algoritmus pro nalezení nejkratší cesty k cíli.
-       - Při nižší obtížnosti se spíše použije DFS algoritmus pro nalezení nejkratší cesty k cíli (varianta s náhodným výběrem větve).
-   3. Vypočítaná cesta k cíly je tvořena seznamem 2D indexů herního pole.
-3. Pokud má cíl, tak se pokouší jednoduchým přičítáním a odečítáním od souřadnic dostat na následující bod v cestě k cíli (vzdálenost je vypočítána v souladu s rychlostí hráče)
-4. Takto se pokouší dostat na cíl, dokud není v dosahu cíle.
-5. Pokud je v dosahu cíle, tak se cesta k cíli zahodí a algoritmus se opakuje od bodu 1.
-``` -->
+Klientská část využívá moduly knihovny **asyncio** pro správu asynchronní komunikace se serverem, což umožňuje zpracovávat zprávy od serveru souběžně s vykreslováním a zpracováním vstupů uživatele.
+
+### 7.2 Serverová část
+
+Serverová část byla implementována v jazyce Go pro svou rychlost a efektivní práci s paralelizací. Server je navržen jako modulární aplikace s těmito hlavními komponentami:
+
+#### Moduly serverové části
+
+1. **server**
+   - *connection_manager.go*: Spravuje připojení klientů a jejich komunikaci se serverem.
+   - *client_manager.go*: Uchovává informace o připojených klientech a jejich stavech.
+
+2. **util**
+   - *arg_parser.go*: Zajišťuje parsování argumentů při spouštění serveru.
+   - *cmd_validator.go*: Validuje příkazy přijaté od klientů.
+   - *msg_parser.go*: Zajišťuje správné formátování zpráv při odesílání a příjmu.
+
+3. **const**
+   - *protocol/server_communication.go*: Obsahuje definice protokolu a formátu zpráv mezi klientem a serverem.
+
+#### Rozvrstvení serverové aplikace
+
+Server je rozdělen do těchto vrstev:
+
+- **Komunikační vrstva**: Moduly *connection_manager* a *client_manager*.
+- **Aplikační logika**: Validace a zpracování příkazů v *util*.
+- **Konfigurace**: Moduly v *const*.
+
+#### Použité knihovny serverové části
+
+- **Go 1.23**: Základní runtime.
+- Standardní knihovna Go pro práci s net (TCP komunikace).
+
+#### Paralelizace
+
+Server využívá **gorutiny** pro souběžné zpracování klientských požadavků. Pro synchronizaci dat jsou používány **mutexy** a kanály (*channels*).
+
+---
+
+Tento popis poskytuje přehled o implementaci obou částí aplikace a může být dle potřeby rozšířen o další detaily.
+
+
+
 
 ## 8. Závěr
 
-<!-- Aplikace byla úspěšně dokončena a splnila všechny povinné požadavky ze zadání. Během vývoje projektu si autor rozšířil znalosti v oblasti JavaScriptu, práce s knihovnou PIXI.js a backendového vývoje v Pythonu s Flaskem. Hra byla otestována třemi nezávislými testery a získaná zpětná vazba byla zohledněna při dalším vývoji, což vedlo k vylepšení uživatelského rozhraní a herní logiky.\
-\
-Autor reflektuje na tento projekt jako na významný krok ve svém studiu, který mu umožnil propojit teoretické znalosti s praktickou realizací software. Cenné bylo zejména řešení reálných programátorských výzev, jako je optimalizace výkonu hry a zajištění plynulého uživatelského zážitku.\
-\
-Aplikace by dále mohla být rozvíjena přidáním dalších herních módu, vylepšením AI nepřátel pro zvýšení obtížnosti, přidáním power-upů a bonusů a implementací mobilní verze hry, aby byla přístupná širšímu spektru hráčů. Tento projekt posílil autorovy schopnosti jako vývojáře software a ukázal důležitost základů uživatelského rozhraní a herní logiky pro vytvoření kvalitního produktu. -->
