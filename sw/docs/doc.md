@@ -1,4 +1,4 @@
-# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS &mdash; Inverzní lodě</p>
+# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS <br><br> Inverzní lodě</p>
 
 > Autor: Milan Vlachovský
 
@@ -9,6 +9,8 @@
 - [3. Popis síťového protokolu](#3-popis-síťového-protokolu)
 - [4. Architektura systému](#4-architektura-systému)
 - [5. Návod na zprovoznění](#5-návod-na-zprovoznění)
+  - [5.1 Klientská část](#51-klientská-část)
+  - [5.2 Serverová část](#52-serverová-část)
 - [6. Struktura projektu](#6-struktura-projektu)
 - [7. Algoritmické a implementační detaily](#7-algoritmické-a-implementační-detaily)
 - [8. Závěr](#8-závěr)
@@ -77,15 +79,15 @@ make -f Makefile.win
 
 > Na základě standardu [PEP 394](https://peps.python.org/pep-0394/) počítají soubory *Makefile* a *Makefile.win* s tím, že Python rozkaz pod Unixem je `python3` a pod Windows je `python`. V případě odlišného nastavení je nutné soubory upravit.
 
-### Klientská část
+### 5.1 Klientská část
 
 Klientská část je napsaná v jazyce Python, tedy kód je standardně interpretován řádku po řádce pomocí Python interpreteru. Pro spuštění klientské části je tedy nutné mít nainstalovaný Python 3.12 a nainstalované závislosti ze souboru *requirements.txt*.
 
-### Spuštění krok za krokem
+#### Spuštění krok za krokem
 
 Autor dopořučuje vytvořit si virtuální prostředí a nainstalovat závislosti pomocí následujících příkazů:
 
-> Příkazy jsou pro Unix OS, pro Windows OS je bude možná nutné přizpůsobit.
+> Příkazy jsou pro Unix OS, pro Windows OS je nutné je přizpůsobit.
 
 ```bash
 python3 -m venv venv
@@ -97,12 +99,18 @@ cd client/
 Následně je možné spustit klienta pomocí příkazu:
 
 ```bash
-python3 ./src/main.py
+python ./src/main.py
+```
+
+Je také možné spustit klienta se specifickým nastavením a nastavením logování pomocí:
+
+```bash
+python ./src/main.py -c ./cfg/debug_cfg.json -l ./cfg/debug_loggers_cfg.json
 ```
 
 > Standardně se předpokládá spouštění ze složky *client/*
 
-### Sestavení spustitelného souboru
+#### Sestavení spustitelného souboru
 
 Kvůli charakteru jazyka není možné bez externích knihoven vytvořit spustitelný soubor. Autor proto zvolil cestu sestavení pomocí knihovny *pyinstaller*. Pro sestavení spustitelného souboru je nutné mít nainstalovaný *pyinstaller*.<p style="text-indent: 12pt;">Pro sestavení spustitelného souboru stačí pouze spustit z kořenové složky na Unix OS příkaz:</p>
 
@@ -118,9 +126,31 @@ make -f Makefile.win client
 
 Pro manuální sestavení lze použít kód z Makefile souborů.
 
-### Serverová část
+### 5.2 Serverová část
 
-Serverová část je napsaná v jazyce Go. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. TODO
+Serverová část je napsaná v jazyce Go. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. Sestavení opět probíhá za pomocí souborů *Makefile* a *Makefile.win*. Na Unix OS stačí spustit příkaz:
+
+```bash
+make server
+```
+
+Na Windows OS:
+
+```cmd
+make -f Makefile.win server
+```
+
+Make sestaví spustilený soubor ve složce *server/bin/* s názvem *server*.
+
+#### Spuštění serveru
+
+Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které bude server naslouchat (parametr *-a*), nebo specifikovat konfigurační soubor (parametr *-c*). Pro spuštění serveru na 127.0.0.1 a na portu 8080 stačí zadat: 
+
+```bash
+./server/bin/server -a "127.0.0.1:8080"
+```
+
+> Při volbě IP adresy a portu je vhodné zjistit, zda je adresa a port dostupný a nejsou blokovány firewallem apod.
 
 ## 6. Struktura projektu
 
