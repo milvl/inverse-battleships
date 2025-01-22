@@ -13,6 +13,8 @@
   - [5.2 Serverová část](#52-serverová-část)
 - [6. Struktura projektu](#6-struktura-projektu)
 - [7. Popis implementace](#7-popis-implementace)
+  - [7.1 Klientská část](#71-klientská-část)
+  - [7.2 Serverová část](#72-serverová-část)
 - [8. Závěr](#8-závěr)
 
 ## 1. Úvod
