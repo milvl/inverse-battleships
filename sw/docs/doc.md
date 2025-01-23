@@ -19,7 +19,10 @@
 
 ## 1. Úvod
 
-Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů používající síťovou komunikaci se serverovou částí v nízkoúrovňovém programovacím jazyce a klientskou částí v programovacím libovolném jazyce. Autor projektu zvolil vlastní variantu hry Lodě s upravenými pravidly nazvanou *&bdquo;Inverse Battleships&ldquo;*. Stejně jako její předloha je hra určena pro 2 hráče, přičemž se hráčí střídají v tazích.<p style="text-indent: 12pt;">Byl zvolen protokol na bázi TCP. Jako programovací jazyk serveru byl zvolen jazyk Go, díky své rychlosti a nízkoúrovňovému přístupu k síťové komunikaci. Klientská část byla implementována v jazyce Python s využitím knihovny [pygame](https://www.pygame.org/news) pro správu vykreslování grafického prostředí hry.</p>
+<style>body {text-align: justify}</style>
+
+Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů používající síťovou komunikaci se serverovou částí v nízkoúrovňovém programovacím jazyce a klientskou částí v programovacím libovolném jazyce. Autor projektu zvolil vlastní variantu hry Lodě s upravenými pravidly nazvanou *&bdquo;Inverse Battleships&ldquo;*. Stejně jako její předloha je hra určena pro 2 hráče, přičemž se hráčí střídají v tazích.
+&nbsp;&nbsp;&nbsp;&nbsp;Byl zvolen protokol na bázi TCP. Jako programovací jazyk serveru byl zvolen jazyk Go, díky své rychlosti a nízkoúrovňovému přístupu k síťové komunikaci. Klientská část byla implementována v jazyce Python s využitím knihovny [pygame](https://www.pygame.org/news) pro správu vykreslování grafického prostředí hry.
 
 ## 2. Popis hry
 
@@ -35,7 +38,16 @@ Hra končí, když jeden z hráčů ztratí všechny lodě. Vítězem je přeži
 
 ## 3. Popis síťového protokolu
 
+Posílané zprávy jsou v plaintext nešifrovaném formátu. Každá zpráva je ukončena znakem nového řádku (ASCII 10). Každá zpráva musí obsahovat předem nadefinovanou hlavičku *"IBGAME"*. Následuje druh rozkazu a poté případné parametry. Každá část zprávy je rozdělena znakem *';'* (případné další specifičtější oddělovače pro druh rozkazu jsou uvedeny v [definici protokolu](#protocol)). Při nutnosti poslání oddělovače *';'* přímo v parametru se použije escape sekvence pomocí znaku *'\\'*.
+&nbsp;&nbsp;&nbsp;&nbsp;Všechny přijaté zprávy jsou validovány na základě protokolu. Pokud zpráva od klienta neodpovídá protokolu, je ignorována a klient je odpojen. Pokud odpověď od serveru není validní, klient ukončí spojení se serverem a pokusí se znovu připojit. Při validním rozkazu dochází k parsování zprávy do požadovaného formátu (podle [definice protokolu](#protocol); např. rozkaz LOBBIES od serveru je parsován do seznamu rětězců, rozkaz ACTION od klienta je parsován do dvou celých čísel apod.).
+
+<img id="protocol" src="protocol.png" alt="Popis protokolu" style="width:650px; height:533px;">
+<div style="display: flex; justify-content: center;"><i>Definice protokolu</i></div>
+
 ## 4. Architektura systému
+
+Systém je rozdělen na dvě části: serverovou a klientskou. Serverová část je napsána v jazyce Go a klientská část v jazyce Python s využitím knihovny *pygame*. Serverová část je zodpovědná za správu hry, komunikaci s klienty a validaci zpráv. Klientská část je zodpovědná za zobrazení grafického rozhraní, zpracování vstupů od uživatele a komunikaci se serverem. 
+&nbsp;&nbsp;&nbsp;&nbsp;V obou částech je síťová komunikace zajištěna na nízké úrovni pomocí socketů (v Pythonu pomocí knihovny *socket* a v Go pomocí knihovny *net*). Jedná se o tahovou hru, kde se hráči střídají v tazích. Proto byl jako protokol zvolen TCP, který je vhodný pro tento typ hry.
 
 ### Požadavky
 
@@ -65,7 +77,8 @@ a pro Windows OS stačí spustit příkaz:
 make -f Makefile.win
 ```
 
-Předpokládá se, že je nainstalován program `make`; na Windows je možné použít například [make z chocolatey](https://community.chocolatey.org/packages/make), či jiné alternativy.<p style="text-indent: 12pt;">Skript sestaví spustitelné soubory ve složce *client/bin/* pro klientskou část projektu a ve složce *server/bin/* pro serverovou část projektu. Spustitelné soubory jsou pojmenovány *client* a *server*, případně na Windows *client.exe* a *server.exe*. Stačí pouze z kořenové složky projektu na Unix OS spustit příkaz:</p>
+Předpokládá se, že je nainstalován program `make`; na Windows je možné použít například [make z chocolatey](https://community.chocolatey.org/packages/make), či jiné alternativy. 
+&nbsp;&nbsp;&nbsp;&nbsp;Skript sestaví spustitelné soubory ve složce *client/bin/* pro klientskou část projektu a ve složce *server/bin/* pro serverovou část projektu. Spustitelné soubory jsou pojmenovány *client* a *server*, případně na Windows *client.exe* a *server.exe*. Stačí pouze z kořenové složky projektu na Unix OS spustit příkaz:
 
 ```bash
 make
@@ -114,7 +127,9 @@ python ./src/main.py -c ./cfg/debug_cfg.json -l ./cfg/debug_loggers_cfg.json
 
 #### Sestavení spustitelného souboru
 
-Kvůli charakteru jazyka není možné bez externích knihoven vytvořit spustitelný soubor. Autor proto zvolil cestu sestavení pomocí knihovny *pyinstaller*. Pro sestavení spustitelného souboru je nutné mít nainstalovaný *pyinstaller*.<p style="text-indent: 12pt;">Pro sestavení spustitelného souboru stačí pouze spustit z kořenové složky na Unix OS příkaz:</p>
+Kvůli charakteru jazyka není možné bez externích knihoven vytvořit spustitelný soubor. Autor proto zvolil cestu sestavení pomocí knihovny *pyinstaller*. 
+
+Pro sestavení spustitelného souboru stačí pouze spustit z kořenové složky na Unix OS příkaz:
 
 ```bash
 make client
@@ -368,7 +383,9 @@ Klientská část aplikace byla implementována v jazyce Python s využití knih
 
 > Veškerý kód se nachází pod složkou *client/src/*.
 
-Při běhu programu pracuje vždy jedno hlavní vlákno, které se stará o logiku hry, zpracovávání vstupů a vykreslování grafického rozhraní. Pro správu asynchronní komunikace se serverem je vždy vytvořeno vlastní vlákno, které pomocí synchronizačních přístupů (Python *threading.Lock*, *threading.Event*, ...) zpracovává zprávy od serveru a zasílá zpět odpovědi. <p style="text-indent: 12pt;">Při každé změně stavu hry je spuštěno nové vlákno pro zpracovávání serverové komunikace odpovídající stavu hry. Pokud dostane klient neočekávanou zprávu od serveru (rozbitou, nevalidní, nesprávnou na základě stavu hry, apod.) dojde k odpojení od serveru a vypsání chybové hlášky.</p><p style="text-indent: 12pt;">Vstupní bod programu je soubor *main.py* a metoda `main()`. Tato metoda inicializuje klientskou aplikaci, načte konfiguraci, nahraje zdroje, vytvoří instanci třídy *IBGame* z *ib_game.py* a spustí hlavní smyčku hry.</p>
+Při běhu programu pracuje vždy jedno hlavní vlákno, které se stará o logiku hry, zpracovávání vstupů a vykreslování grafického rozhraní. Pro správu asynchronní komunikace se serverem je vždy vytvořeno vlastní vlákno, které pomocí synchronizačních přístupů (Python *threading.Lock*, *threading.Event*, ...) zpracovává zprávy od serveru a zasílá zpět odpovědi. 
+&nbsp;&nbsp;&nbsp;&nbsp;Při každé změně stavu hry je spuštěno nové vlákno pro zpracovávání serverové komunikace odpovídající stavu hry. Pokud dostane klient neočekávanou zprávu od serveru (rozbitou, nevalidní, nesprávnou na základě stavu hry, apod.) dojde k odpojení od serveru a vypsání chybové hlášky. 
+&nbsp;&nbsp;&nbsp;&nbsp;Vstupní bod programu je soubor *main.py* a metoda `main()`. Tato metoda inicializuje klientskou aplikaci, načte konfiguraci, nahraje zdroje, vytvoří instanci třídy *IBGame* z *ib_game.py* a spustí hlavní smyčku hry.
 
 #### Moduly klientské části
 
