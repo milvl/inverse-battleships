@@ -165,15 +165,6 @@ linux_venv
 win_venv
 activate*
 build_venv*
-bonus02/all-in-one.txt
-bonus02/concat_code.py
-bonus02/server
-bonus01/.vscode/launch.json
-bonus01/.vscode/launch.json
-bonus01/client
-bonus01/client_debug
-bonus01/client_debug.o
-bonus01/client.o
 .vscode/launch.json
 .vscode/settings.json
-sw/client/cfg/users/*
+client/cfg/users/*
