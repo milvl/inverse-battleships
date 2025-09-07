@@ -1,6 +1,6 @@
 SHELL := /bin/sh
 
-.PHONY: all cleanup server client venv
+.PHONY: all clean server client venv
 
 PYTHON_VENV_PATH := venv
 ACTIVATE := $(PYTHON_VENV_PATH)/bin/activate
@@ -23,7 +23,7 @@ venv:
 	. $(ACTIVATE) && $(PYTHON_VENV_PATH)/bin/python -m pip install --upgrade pip
 	. $(ACTIVATE) && pip install -r requirements.txt
 
-cleanup:
+clean:
 	@echo "=== Cleaning up build artifacts ==="
 	rm -rf client/bin/*
 	rm -rf build dist *.spec

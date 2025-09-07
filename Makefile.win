@@ -1,6 +1,6 @@
 SHELL := cmd.exe
 
-.PHONY: all cleanup server client venv
+.PHONY: all clean server client venv
 
 PYTHON_VENV_PATH := venv
 ACTIVATE := $(PYTHON_VENV_PATH)\Scripts\activate
@@ -22,7 +22,7 @@ venv:
 	if not exist $(PYTHON_VENV_PATH) python -m venv $(PYTHON_VENV_PATH)
 	cmd /c "$(ACTIVATE) && $(PYTHON_VENV_PATH)\Scripts\python.exe -m pip install --upgrade pip && pip install -r requirements.txt"
 
-cleanup:
+clean:
 	@echo === Cleaning up build artifacts ===
 	if exist build rd /s /q build
 	if exist dist rd /s /q dist
