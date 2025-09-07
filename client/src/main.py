@@ -1,14 +1,8 @@
 # win: python .\client\src\main.py -c .\client\cfg\debug_cfg.json -l .\client\cfg\debug_loggers_cfg.json
 # linux: python ./client/src/main.py -c ./client/cfg/debug_cfg.json -l ./client/cfg/debug_loggers_cfg.json
-# sudo ufw allow 12975/tcp && sudo ufw allow 32976/tcp && sudo ufw allow 8080/tcp
-# Stop Hamachi
-# sudo /etc/init.d/logmein-hamachi stop
-# # Start Hamachi
-# sudo /etc/init.d/logmein-hamachi start
-# # Restart Hamachi
-# sudo /etc/init.d/logmein-hamachi restart
 
 import os
+from sys import exit
 from const.paths import RESOURCES_DIR_PATH
 from util.init_setup import loggers, LOGGER_NAME
 from util.init_setup import CFG_PATH
@@ -147,4 +141,3 @@ if __name__ == '__main__':
 
     # p = pstats.Stats('main.prof')
     # p.sort_stats('time').print_stats(10)  # Sort by time and show top 10 results
-
