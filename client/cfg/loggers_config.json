@@ -1,11 +1,12 @@
 {
   "loggers": [
+    "main_logger"
   ],
   "loggers_general": [
     "general_logger"
   ],
   "temp_loggers": {
-    "temp": true
+    "temp": false
   },
   "logger_handler_configs": {
     "general_logger.console_handler": {
