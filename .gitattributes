@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 docs/* linguist-documentation
 client/docs/* linguist-documentation
 server/docs/* linguist-documentation
+=======
+docs/** linguist-documentation
+client/docs/** linguist-documentation
+server/docs/** linguist-documentation
+>>>>>>> 476d9fd (chore: add .gitattributes)
