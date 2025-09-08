@@ -1,66 +1,66 @@
-# <p style="text-align: center;">Dokumentace k semestrální práci z předmětu KIV/UPS <br><br>Téma práce: Hra Inverzní lodě</p>
+# <p style="text-align: center;">Documentation For Inverse Battleships Game</p>
 
-> Autor: Milan Vlachovský
+> Author: Milan Vlachovský
 
-## Obsah
+## Contents
 
-- [1. Úvod](#1-úvod)
-- [2. Popis hry](#2-popis-hry)
-- [3. Popis síťového protokolu](#3-popis-síťového-protokolu)
-- [4. Architektura systému](#4-architektura-systému)
-- [5. Návod na zprovoznění](#5-návod-na-zprovoznění)
-  - [5.1 Klientská část](#51-klientská-část)
-  - [5.2 Serverová část](#52-serverová-část)
-- [6. Struktura projektu](#6-struktura-projektu)
-- [7. Popis implementace](#7-popis-implementace)
-  - [7.1 Klientská část](#71-klientská-část)
-  - [7.2 Serverová část](#72-serverová-část)
-  - [7.3 Detaily implementace](#73-detaily-implementace)
-- [8. Závěr](#8-závěr)
+- [1. Introduction](#1-introduction)
+- [2. Game Description](#2-game-description)
+- [3. Network Protocol Description](#3-network-protocol-description)
+- [4. System Architecture](#4-system-architecture)
+- [5. Setup Guide](#5-setup-guide)
+  - [5.1 Client](#51-client)
+  - [5.2 Server](#52-server)
+- [6. Project Structure](#6-project-structure)
+- [7. Implementation Details](#7-implementation-details)
+  - [7.1 Client](#71-client)
+  - [7.2 Server](#72-server)
+  - [7.3 Implementation specifics](#73-implementation-specifics)
+- [8. Conclusion](#8-conclusion)
 
-## 1. Úvod
+## 1. Introduction
 
 <style>body {text-align: justify}</style>
 
-Cílem tohoto projektu bylo vytvořit elementární hru pro více hráčů používající síťovou komunikaci se serverovou částí v nízkoúrovňovém programovacím jazyce a klientskou částí v programovacím libovolném jazyce. Autor projektu zvolil vlastní variantu hry Lodě s upravenými pravidly nazvanou *&bdquo;Inverse Battleships&ldquo;*. Stejně jako její předloha je hra určena pro 2 hráče, přičemž se hráčí střídají v tazích.
-&nbsp;&nbsp;&nbsp;&nbsp;Byl zvolen protokol na bázi TCP. Jako programovací jazyk serveru byl zvolen jazyk Go, díky své rychlosti a nízkoúrovňovému přístupu k síťové komunikaci. Klientská část byla implementována v jazyce Python s využitím knihovny [pygame](https://www.pygame.org/news) pro správu vykreslování grafického prostředí hry.
+The goal of this project was to create a simple multiplayer game that uses network communication with a server-side component written in a low-level programming language, and a client-side component in any programming language. The work was created initially as an university project. The author chose a custom variant of Battleships with modified rules called *“Inverse Battleships”*. As in the original, the game is for 2 players who take turns.
+&nbsp;&nbsp;&nbsp;&nbsp;A TCP-based protocol was chosen. The server is implemented in Go due to its speed and low-level access to network communication. The client is implemented in Python using [pygame](https://www.pygame.org/news) to render the game’s GUI.
 
-## 2. Popis hry
+## 2. Game Description
 
-Hra *Inverse Battleships* je variantou klasické hry Lodě, ve které se hráči snaží najít a zničit všechny lodě protivníka. V této variantě hráči sdílí jedno pole 9x9 a každý dostane na začátku přiřazenou jednu loď. Následně se hráči střídají v tazích, kdy každý hráč se může pokusit vykonat akci na prázdné políčko. Mohou nastat tři situace:
+*Inverse Battleships* is a variant of the classic Battleships game in which players try to find and capture/destroy all of the opponent’s ships. In this variant, players share a single 9×9 board and each is assigned one ship at the start. Players then alternate turns, and on each turn a player may try to perform an action on an empty tile. Three situations can occur:
 <div style="page-break-after: always;"></div>
 
-- Hráč zkusí akci na prázdné políčko, ve kterém se nachází nikým nezískaná loď. V tomto případě hráč loď získává a získává body.  
+- The player acts on an empty tile that contains an unclaimed ship. In this case, the player acquires that ship and gains points.  
 
-- Hráč zkusí akci na prázdné políčko, ve kterém se nachází protivníkova loď. V tomto případě protivník o loď přichází, je zničena, hráč získává body a protivník ztrácí body.
+- The player acts on an empty tile that contains the opponent’s ship. In this case, the opponent loses the ship (it is destroyed), the player gains points, and the opponent loses points.
 
-- Hráč zkusí akci na políčko, na kterém se nic nenachází. V tomto případě hráč nezískává nic.
+- The player acts on a tile where there is nothing. In this case, the player gains nothing.
 
-Hra končí, když jeden z hráčů ztratí všechny lodě. Vítězem je přeživší hráč. Body jsou pouze pro statistické účely a nemají vliv na průběh hry.
+The game ends when one of the players loses all ships. The winner is the surviving player. Points are purely for statistics and do not affect gameplay.
 
-## 3. Popis síťového protokolu
+## 3. Network Protocol Description
 
-Posílané zprávy jsou v plaintext nešifrovaném formátu. Každá zpráva je ukončena znakem nového řádku (ASCII 10). Každá zpráva musí obsahovat předem nadefinovanou hlavičku *"IBGAME"*. Následuje druh rozkazu a poté případné parametry. Každá část zprávy je rozdělena znakem *';'* (případné další specifičtější oddělovače pro druh rozkazu jsou uvedeny v [definici protokolu](#protocol)). Při nutnosti poslání oddělovače *';'* přímo v parametru se použije escape sekvence pomocí znaku *'\\'*.
-&nbsp;&nbsp;&nbsp;&nbsp;Všechny přijaté zprávy jsou validovány na základě protokolu. Pokud zpráva od klienta neodpovídá protokolu, je ignorována a klient je odpojen. Pokud odpověď od serveru není validní, klient ukončí spojení se serverem a pokusí se znovu připojit. Při validním rozkazu dochází k parsování zprávy do požadovaného formátu (podle [definice protokolu](#protocol); např. rozkaz LOBBIES od serveru je parsován do seznamu rětězců, rozkaz ACTION od klienta je parsován do dvou celých čísel apod.), pokud parsování selže, je zpráva ignorována a klient je odpojen.
+Messages are sent in plaintext, unencrypted format. Each message ends with a newline character (ASCII 10). Every message must contain the predefined header *"IBGAME"*. This is followed by the command type and then any parameters. Each part of the message is separated by a semicolon *';'* (any additional, command-specific separators are listed in the [protocol definition](#protocol)). If you need to include the separator *';'* directly in a parameter value, escape it using the backslash *'\\'*.
+&nbsp;&nbsp;&nbsp;&nbsp;All received messages are validated against the protocol. If a client message does not conform to the protocol, it is ignored and the client is disconnected. If a server response is invalid, the client terminates the connection and attempts to reconnect. For a valid command, the message is parsed into the required format (according to the [protocol definition](#protocol); e.g., the server’s LOBBIES command is parsed into a list of strings, the client’s ACTION command is parsed into two integers, etc.). If parsing fails, the message is ignored and the client is disconnected.
 
-<img id="protocol" src="protocol.png" alt="Popis protokolu" style="width:700px;">
-<div style="display: flex; justify-content: center;"><i>Tabulka s definicí protokolu</i></div>
+<img id="protocol" src="protocol_en.png" alt="Protocol description" style="width:700px;">
+<div style="display: flex; justify-content: center;"><i>Table with protocol definition</i></div>
 
-Následující [diagram](#communication) znázorňuje zjednodušenou komunikaci mezi klientem a serverem.
+The following [diagram](#communication) shows simplified communication between the client and the server.
 
-<img id="communication" src="communication.png" alt="Komunikace mezi klientem a serverem" style="width:700px;">
-<div style="display: flex; justify-content: center;"><i>Diagram zjednoduššené komunikace mezi klientem a serverem</i></div>
+<img id="communication" src="communication_en.png" alt="Client–server communication" style="width:700px;">
+<div style="display: flex; justify-content: center;"><i>Diagram of simplified client–server communication</i></div>
 
-Zprávy jsou odlišeny šedivou barvou a kurzívou. Zprávy od klienta posouvají server do dalších stavů a naopak. Samovolné přechody (způsobené vnějšími událostmi typu nalezení soupeře, návrat soupeře, návrat z ukončeného zápasu, ...) jsou zobrazeny čárkovanou čarou. U téměř každého stavu je výstupní hrana označující selhání validace/odpojení/timeout klienta.
+Messages are highlighted in gray and italics. Messages from the client advance the server to the next states and vice versa. Spontaneous transitions (caused by external events such as finding an opponent, opponent returning, returning from a finished match, ...) are shown with a dashed line. For almost every state there is an outgoing edge indicating validation failure/disconnect/client timeout.
 
-## 4. Architektura systému
+## 4. System Architecture
 
-Systém je rozdělen na dvě části: serverovou a klientskou. Serverová část je napsána v jazyce Go a klientská část v jazyce Python s využitím knihovny *pygame*. Serverová část je zodpovědná za správu hry, komunikaci s klienty a validaci zpráv. Klientská část je zodpovědná za zobrazení grafického rozhraní, zpracování vstupů od uživatele a komunikaci se serverem.
-&nbsp;&nbsp;&nbsp;&nbsp;V obou částech je síťová komunikace zajištěna na nízké úrovni pomocí socketů (v Pythonu pomocí knihovny *socket* a v Go pomocí knihovny *net*). Jedná se o tahovou hru, kde se hráči střídají v tazích. Proto byl jako protokol zvolen TCP, který je vhodný pro tento typ hry.
+The system is divided into two parts: server and client. The server is written in Go and the client in Python using *pygame*. The server manages the game, communicates with clients, and validates messages. The client renders the GUI, processes user input, and communicates with the server.
+&nbsp;&nbsp;&nbsp;&nbsp;In both parts, network communication is implemented at a low level using sockets (Python’s *socket* library and Go’s *net* library). This is a turn-based game where players alternate turns, so TCP was chosen as the protocol as it fits this kind of game.
 
-### Požadavky
+### Requirements
 
-Projekt byl vyvíjen s použitím následujících technologií:
+The project was developed using the following technologies:
 
 - Python 3.12
   - pygame 2.6.0
@@ -70,37 +70,33 @@ Projekt byl vyvíjen s použitím následujících technologií:
   - pyinstaller 6.11.1
 - Go 1.23
 
-> Za použití zmiňovaných technologií by měl být projekt bez problémů spustitelný. Spouštění na starších verzích nebylo testováno a nemusí fungovat správně.
+> Using the above technologies, the project should run without issues. Running on older versions was not tested and may not work correctly.
 
-## 5. Návod na zprovoznění
+## 5. Setup Guide
 
-Pro sestavení celého projektu byly vytvořeny soubory *Makefile* a *Makefile.win*, které obsahují instrukce pro sestavení projektu na Unixových a Windows OS. Pro sestavení projektu na Unixových OS stačí spustit příkaz:
+To build the entire project, *Makefile* and *Makefile.win* were created with instructions for Unix and Windows OS. To build on Unix-like systems, run:
 
-```bash
-make
-```
+    make
 
-a pro Windows OS stačí spustit příkaz:
+and on Windows:
 
-```cmd
-make -f Makefile.win
-```
+    make -f Makefile.win
 
-Předpokládá se, že je nainstalován program `make`; na Windows je možné použít například [make z chocolatey](https://community.chocolatey.org/packages/make), či jiné alternativy. 
-&nbsp;&nbsp;&nbsp;&nbsp;Skript sestaví spustitelné soubory ve složce *client/bin/* pro klientskou část projektu a ve složce *server/bin/* pro serverovou část projektu. Spustitelné soubory jsou pojmenovány *client* a *server*, případně na Windows *client.exe* a *server.exe*.
-> Jelikož je klientská část implementována v jazyce Python, je možné ji spustit i bez sestavení. Stačí spustit soubor *client/src/main.py* v Python virtuálním prostředí s nainstalovanými závislostmi ze souboru *requirements.txt*. Spustitelné soubory pro klientskou část byly vytvořeny pomocí knihovny *[pyinstaller](https://pyinstaller.org/en/stable/)* a jejich úspěšnost překladu bývá závislá na operačním systému a verzi Pythonu.
+It is assumed that `make` is installed; on Windows you can use [make from Chocolatey](https://community.chocolatey.org/packages/make), or other alternatives. 
+&nbsp;&nbsp;&nbsp;&nbsp;The script creates executables in *client/bin/* for the client part and *server/bin/* for the server part. The executables are named *client* and *server*, or on Windows *client.exe* and *server.exe*.
+> Since the client is implemented in Python, it can also be run without building. Just run *client/src/main.py* in a Python virtual environment with dependencies installed from *requirements.txt*. The client executables were produced using *[pyinstaller](https://pyinstaller.org/en/stable/)*, and build success can depend on the operating system and Python version.
 
-> Na základě standardu [PEP 394](https://peps.python.org/pep-0394/) počítají soubory *Makefile* a *Makefile.win* s tím, že Python rozkaz pod Unixem je `python3` a pod Windows je `python`. V případě odlišného nastavení je nutné soubory upravit.
+> Per [PEP 394](https://peps.python.org/pep-0394/), the *Makefile* and *Makefile.win* assume the Python command is `python3` on Unix and `python` on Windows. If your setup differs, you must adjust the files.
 
-### 5.1 Klientská část
+### 5.1 Client
 
-Klientská část je napsaná v jazyce Python, tedy kód je standardně interpretován řádku po řádce pomocí Python interpreteru. Pro spuštění klientské části je tedy nutné mít nainstalovaný Python 3.12 a nainstalované závislosti ze souboru *requirements.txt*.
+The client is written in Python; the code is interpreted line by line by the Python interpreter. To run the client, you need Python 3.12 and the dependencies listed in *requirements.txt*.
 
-#### Spuštění krok za krokem
+#### Step-by-step run
 
-Autor dopořučuje vytvořit si virtuální prostředí a nainstalovat závislosti pomocí následujících příkazů:
+The author recommends creating a virtual environment and installing dependencies with the following commands:
 
-> Příkazy jsou pro Unix OS, pro Windows OS je nutné je přizpůsobit.
+> Commands are for Unix; adapt them for Windows.
 
 ```bash
 python3 -m venv venv
@@ -109,394 +105,312 @@ pip install -r requirements.txt
 cd client/
 ```
 
-Následně je možné spustit klienta pomocí příkazu:
-
+You can then start the client with:
 ```bash
 python ./src/main.py
 ```
 
-Je také možné spustit klienta se specifickým nastavením a nastavením logování pomocí:
+You can also run the client with a specific configuration and logging setup: 
 
 ```bash
-python ./src/main.py -c ./cfg/debug_cfg.json -l ./cfg/debug_loggers_cfg.json
+python ./src/main.py -c ./cfg/debug_cfg.json \
+-l ./cfg/debug_loggers_cfg.json
+
 ```
 
-> Standardně se předpokládá spouštění ze složky *client/*
+> By default, commands are expected to be run from the *client/* directory.
 <div style="page-break-after: always;"></div>
 
-#### Sestavení spustitelného souboru
+#### Building the executable
 
-Kvůli charakteru jazyka není možné bez externích knihoven vytvořit spustitelný soubor. Autor proto zvolil cestu sestavení pomocí knihovny *pyinstaller*. 
+Due to the nature of the language, you cannot create a standalone executable without external tools. The author chose to build with *pyinstaller*. 
 
-Pro sestavení spustitelného souboru stačí pouze spustit z kořenové složky na Unix OS příkaz:
-
+To build the executable from the project root on Unix:
 ```bash
 make client
 ```
 
-Nebo na Windows OS:
-
-```cmd
+Or on Windows:
+```bash
 make -f Makefile.win client
 ```
 
-Pro manuální sestavení lze použít kód z Makefile souborů.
+You can also build manually using the commands defined in the Makefiles.
 
-### 5.2 Serverová část
+### 5.2 Server
 
-Serverová část je napsaná v jazyce Go. Pro sestavení serverové části je nutné mít nainstalovaný Go 1.23 či novější. Sestavení opět probíhá za pomocí souborů *Makefile* a *Makefile.win*. Na Unix OS stačí spustit příkaz:
-
+The server is written in Go. To build it, you need Go 1.23 or newer. Building again uses *Makefile* and *Makefile.win*. On Unix:
 ```bash
 make server
 ```
 
-Na Windows OS:
-
-```cmd
+On Windows:
+```bash
 make -f Makefile.win server
 ```
 
-Make sestaví spustilený soubor ve složce *server/bin/* s názvem *server*.
+Make builds the executable in *server/bin/* named *server*.
 
-#### Spuštění serveru
+#### Running the server
 
-Pro spuštění serveru je nutné zadat jako parametr buď IP adresu, na které bude server naslouchat (parametr *-a*), nebo specifikovat konfigurační soubor (parametr *-c*). Pro spuštění serveru na 127.0.0.1 a na portu 8080 stačí zadat:
+To run the server, pass either the IP address the server should listen on (the *-a* parameter) or specify a configuration file (the *-c* parameter). To run the server on 127.0.0.1 and port 8080:
 
-> Příkazy jsou pro Unix OS, pro Windows OS je nutné je přizpůsobit.
-
-```bash
+> Commands are for Unix; adapt them for Windows.
+```
 ./server/bin/server -a "127.0.0.1:8080"
 ```
 
-> Při volbě IP adresy a portu je vhodné zjistit, zda je adresa a port dostupný a nejsou blokovány firewallem apod.
+> When choosing the IP address and port, make sure the address/port is available and not blocked by a firewall, etc.
+<div style="page-break-after: always;"></div><p></p>
 
-## 6. Struktura projektu
+## 6. Project Structure
 
-Projekt je rozdělen následovně:
+The project is organized as follows:
 
-- *Kořenová složka* &mdash; Obsahuje soubory pro sestavení projektu, složky *client* a *server*, složku *docs* s dokumentací a soubor *requirements.txt* s definicemi Python závislostí.
-  - *client/* &mdash; Obsahuje celou klientskou část projektu včetně konfiguračních souborů, použitých textových a obrazových zdrojů a programátorské referenční dokumentace.
-  - *server/* &mdash; Obsahuje celou serverovou část projektu včetně konfiguračních souborů a programátorské referenční dokumentace.
+- *Root folder* — Contains the build files, the *client* and *server* folders, a *docs* folder with documentation, and *requirements.txt* with Python dependency definitions.
+  - *client/* — The whole client part, including configuration files, text and image assets, and developer reference documentation.
+  - *server/* — The whole server part, including configuration files and developer reference documentation.
 
-### Kořenová složka
+### Root folder
 
-<!-- strom: -->
-<!-- .
-├── ./Makefile
-├── ./Makefile.win
-├── ./client/
-│   ├── ./client/Doxyfile
-│   ├── ./client/cfg/
-│   │   ├── ./client/cfg/debug_cfg.json
-│   │   ├── ./client/cfg/debug_loggers_cfg.json
-│   │   ├── ./client/cfg/debug_loggers_cfg_win.json
-│   │   ├── ./client/cfg/default_config.json
-│   │   ├── ./client/cfg/default_user_config.json
-│   │   ├── ./client/cfg/loggers_config.json
-│   │   └── ./client/cfg/users/
-│   ├── ./client/docs/
-│   ├── ./client/res/
-│   │   ├── ./client/res/colors.json
-│   │   ├── ./client/res/img
-│   │   └── ./client/res/strings.json
-│   └── ./client/src/
-│       ├── ./client/src/const/
-│       │   ├── ./client/src/const/exit_codes.py
-│       │   ├── ./client/src/const/loggers.py
-│       │   ├── ./client/src/const/paths.py
-│       │   └── ./client/src/const/typedefs.py
-│       ├── ./client/src/game/
-│       │   ├── ./client/src/game/connection_manager.py
-│       │   ├── ./client/src/game/ib_game.py
-│       │   └── ./client/src/game/ib_game_state.py
-│       ├── ./client/src/graphics/
-│       │   ├── ./client/src/graphics/game_session.py
-│       │   ├── ./client/src/graphics/menus
-│       │   │   ├── ./client/src/graphics/menus/info_screen.py
-│       │   │   ├── ./client/src/graphics/menus/input_menu.py
-│       │   │   ├── ./client/src/graphics/menus/lobby_select.py
-│       │   │   ├── ./client/src/graphics/menus/primitives.py
-│       │   │   ├── ./client/src/graphics/menus/select_menu.py
-│       │   │   └── ./client/src/graphics/menus/settings_menu.py
-│       │   └── ./client/src/graphics/viewport.py
-│       ├── ./client/src/main.py
-│       └── ./client/src/util/
-│           ├── ./client/src/util/assets_loader.py
-│           ├── ./client/src/util/etc.py
-│           ├── ./client/src/util/file.py
-│           ├── ./client/src/util/generic_client.py
-│           ├── ./client/src/util/graphics.py
-│           ├── ./client/src/util/init_setup.py
-│           ├── ./client/src/util/input_validators.py
-│           ├── ./client/src/util/loggers.py
-│           └── ./client/src/util/path.py
-├── ./docs/
-├── ./requirements.txt
-└── ./server/
-    ├── ./server/cfg/
-    ├── ./server/docs/
-    └── ./server/src/
-        ├── ./server/src/const
-        │   ├── ./server/src/const/const_file/
-        │   │   └── ./server/src/const/const_file/const_file.go
-        │   ├── ./server/src/const/custom_errors/
-        │   │   └── ./server/src/const/custom_errors/custom_errors.go
-        │   ├── ./server/src/const/exit_codes/
-        │   │   └── ./server/src/const/exit_codes/exit_codes.go
-        │   ├── ./server/src/const/msg/
-        │   │   └── ./server/src/const/msg/msg.go
-        │   └── ./server/src/const/protocol/
-        │       └── ./server/src/const/protocol/server_communication.go
-        ├── ./server/src/go.mod
-        ├── ./server/src/logging/
-        │   └── ./server/src/logging/logging.go
-        ├── ./server/src/main.go
-        ├── ./server/src/server/
-        │   ├── ./server/src/server/connection_manager.go
-        │   └── ./server/src/server/client_manager.go
-        └── ./server/src/util/
-            ├── ./server/src/util/arg_parser/
-            │   └── ./server/src/util/arg_parser/arg_parser.go
-            ├── ./server/src/util/cmd_validator/
-            │   └── ./server/src/util/cmd_validator/cmd_validator.go
-            ├── ./server/src/util/msg_parser/
-            │   └── ./server/src/util/msg_parser/msg_parser.go
-            └── ./server/src/util/util.go -->
+- *Makefile* — Build script for Unix.
+- *Makefile.win* — Build script for Windows.
+- *client/* — Folder containing the client application code.
 
-- *Makefile* &mdash; Soubor pro sestavení projektu na Unix OS.
+  - *client/Doxyfile* — Doxygen configuration.
 
-- *Makefile.win* &mdash; Soubor pro sestavení projektu na Windows OS.
+  - *client/cfg/* — Client configuration files.
+    - *client/cfg/debug_cfg.json* — Debug configuration.
+    - *client/cfg/debug_loggers_cfg.json* — Logging configuration for debugging.
+    - *client/cfg/debug_loggers_cfg_win.json* — Logging configuration for debugging on Windows.
+    - *client/cfg/default_config.json* — Default configuration.
+    - *client/cfg/default_user_config.json* — Default new-user configuration.
+    - *client/cfg/loggers_config.json* — Logging configuration.
+    - *client/cfg/users/* — Per-user configurations.
 
-- *client/* &mdash; Složka obsahující kód s klientskou částí aplikace.
+  - *client/docs/* — Client code documentation.
 
-  - *client/Doxyfile* &mdash; Soubor s konfigurací pro Doxygen.
+  - *client/res/* — Client assets.
+    - *client/res/colors.json* — Color definitions used in the client GUI.
+    - *client/res/img/** — Images used in the client GUI.
+    - *client/res/strings.json* — Text string definitions used in the client GUI.<div style="page-break-after: always;"></div>
 
-  - *client/cfg/* &mdash; Složka obsahující konfigurační soubory klientské části.
-    - *client/cfg/debug_cfg.json* &mdash; Soubor s konfigurací pro debugování.
-    - *client/cfg/debug_loggers_cfg.json* &mdash; Soubo s konfigurací logování pro debugování.
-    - *client/cfg/debug_loggers_cfg_win.json* &mdash; Soubor s konfigurací logování pro debugování na Windows.
-    - *client/cfg/default_config.json* &mdash; Soubor s výchozí konfigurací.
-    - *client/cfg/default_user_config.json* &mdash; Soubor s výchozí konfigurací nového uživatele.
-    - *client/cfg/loggers_config.json* &mdash; Soubor s konfigurací logování.
-    - *client/cfg/users/* &mdash; Složka obsahující konfigurace uživatelů.
+  - *client/src/* — Client source code.
 
-  - *client/docs/* &mdash; Složka obsahující dokumentaci kódu klientské části.
+    - *client/src/const/* — Constants.
+      - *client/src/const/exit_codes.py* — Return code constants.
+      - *client/src/const/loggers.py* — Logging constants.
+      - *client/src/const/paths.py* — Path constants.
+      - *client/src/const/typedefs.py* — Definitions of objects used in client code.
 
-  - *client/res/* &mdash; Složka obsahující zdroje pro klientskou část.
-    - *client/res/colors.json* &mdash; Soubor s definicemi barev použitých v GUI klienta.
-    - *client/res/img/* &mdash; Složka obsahující obrázky použité ve GUI klienta.
-    - *client/res/strings.json* &mdash; Soubor s definicemi textoých řetězců použitých v GUI klienta.<div style="page-break-after: always;"></div>
+    - *client/src/game/* — Game management code.
+      - *client/src/game/connection_manager.py* — Connection management with the server.
+      - *client/src/game/ib_game.py* — Game logic manager.
+      - *client/src/game/ib_game_state.py* — Game state.
 
-  - *client/src/* &mdash; Složka obsahující zdrojové kódy klientské části.
+    - *client/src/graphics/* — Client GUI code.
+      - *client/src/graphics/game_session.py* — GUI for the game session.
+      - *client/src/graphics/menus/* — GUI menus.
+        - *client/src/graphics/menus/info_screen.py* — GUI for the info screen.
+        - *client/src/graphics/menus/input_menu.py* — GUI for the input menu.
+        - *client/src/graphics/menus/lobby_select.py* — GUI for lobby selection.
+        - *client/src/graphics/menus/primitives.py* — GUI primitives.
+        - *client/src/graphics/menus/select_menu.py* — GUI select menu.
+        - *client/src/graphics/menus/settings_menu.py* — Settings menu.
 
-    - *client/src/const/* &mdash; Složka obsahující konstanty.
-      - *client/src/const/exit_codes.py* &mdash; Soubor s konstantami pro návratové kódy.
-      - *client/src/const/loggers.py* &mdash; Soubor s konstantami pro logování.
-      - *client/src/const/paths.py* &mdash; Soubor s cestovými konstantami.
-      - *client/src/const/typedefs.py* &mdash; Soubo s definicemi požívaných objektů v kódu klienta.
+      - *client/src/graphics/viewport.py* — Viewport abstraction for rendering any GUI.
 
-    - *client/src/game/* &mdash; Složka zastřešující kód pro správu hry.
-      - *client/src/game/connection_manager.py* &mdash; Soubor s kódem pro správu spojení se serverem.
-      - *client/src/game/ib_game.py* &mdash; Soubor s kódem spravujícím hru.
-      - *client/src/game/ib_game_state.py* &mdash; Soubor s kódem pro stav hry.
+    - *client/src/main.py* — Client entry point.<div style="page-break-after: always;"></div>
 
-    - *client/src/graphics/* &mdash; Složka obsahující kód GUI klienta.
-      - *client/src/graphics/game_session.py* &mdash; Soubor s kódem pro GUI herní session.
-      - *client/src/graphics/menus/* &mdash; Složka obsahující kód GUI menu.
-        - *client/src/graphics/menus/info_screen.py* &mdash; Soubor s kódem GUI informační obrazovku.
-        - *client/src/graphics/menus/input_menu.py* &mdash; Soubor s kódem GUI vstupní menu.
-        - *client/src/graphics/menus/lobby_select.py* &mdash; Soubor s kódem GUI výběr lobby.
-        - *client/src/graphics/menus/primitives.py* &mdash; Soubor s kódem pro primitiva GUI.
-        - *client/src/graphics/menus/select_menu.py* &mdash; Soubor s kódem pro výběrové menu.
-        - *client/src/graphics/menus/settings_menu.py* &mdash; Soubor s kódem pro nastavení.
+    - *client/src/util/* — Helper methods.
+      - *client/src/util/assets_loader.py* — Loading assets (images, sounds, …).
+      - *client/src/util/etc.py* — Misc helper methods.
+      - *client/src/util/file.py* — File utility methods.
+      - *client/src/util/generic_client.py* — Generic socket-based client.
+      - *client/src/util/graphics.py* — Graphics helper methods.
+      - *client/src/util/init_setup.py* — Client initialization.
+      - *client/src/util/input_validators.py* — Input validators.
+      - *client/src/util/loggers.py* — Custom logging.
+      - *client/src/util/path.py* — Path utilities.
 
-      - *client/src/graphics/viewport.py* &mdash; Soubor s kódem představujícím viewport pro zobrazování libovolného GUI.
+- *docs/* — Documentation folder.
+  - *docs/doc.md* and *docs/doc.pdf* — This document in Markdown and PDF.
+  - *docs/client_ref.html* — Link to client reference documentation.
+  - *docs/server_ref.html* — Link to server reference documentation.
 
-    - *client/src/main.py* &mdash; Soubor s kódem pro spuštění klienta.<div style="page-break-after: always;"></div>
+- *requirements.txt* — Python dependencies.
 
-    - *client/src/util/* &mdash; Složka obsahující pomocné metody.
-      - *client/src/util/assets_loader.py* &mdash; Soubor s kódem pro načítání zdrojů (obrázky, zvuky, ...).
-      - *client/src/util/etc.py* &mdash; Soubor s vedlejšími pomocnými metodami.
-      - *client/src/util/file.py* &mdash; Soubor s pomocnými metodami pro práci se soubory.
-      - *client/src/util/generic_client.py* &mdash; Soubor s kódem představující generického klienta (založeném na socketech).
-      - *client/src/util/graphics.py* &mdash; Soubor s pomocnými metodami pro práci s grafikou.
-      - *client/src/util/init_setup.py* &mdash; Soubor s kódem pro inicializaci klienta.
-      - *client/src/util/input_validators.py* &mdash; Soubor s validátory vstupu.
-      - *client/src/util/loggers.py* &mdash; Soubor s kódem pro příspůsobené logování.
-      - *client/src/util/path.py* &mdash; Soubor s pomocnými metodami pro práci s cestami.
+- *server/* — Server application code.
 
-- *docs/* &mdash; Složka obsahující dokumentaci.
-  - *docs/doc.md* a *docs/doc.pdf* &mdash; Tento dokument ve formátu Markdown a PDF.
-  - *docs/client_ref.html* &mdash; Odkaz na dokumentaci klientské části.
-  - *docs/server_ref.html* &mdash; Odkaz na dokumentaci serverové části.
+  - *server/cfg/* — Server configuration files.
 
-- *requirements.txt* &mdash; Soubor s definicemi Python závislostí.
+  - *server/docs/* — Server code documentation.
 
-- *server/* &mdash; Složka obsahující kód s serverovou částí aplikace.
+  - *server/src/* — Server source code.
 
-  - *server/cfg/* &mdash; Složka obsahující konfigurační soubory serverové části.
+    - *server/src/const/* — Constants.
+      - *server/src/const/const_file/const_file.go* — File-handling constants.
+      - *server/src/const/custom_errors/custom_errors.go* — Error definitions.
+      - *server/src/const/exit_codes/exit_codes.go* — Return code constants.
+      - *server/src/const/msg/msg.go* — User-facing message definitions.
+      - *server/src/const/protocol/server_communication.go* — Network protocol definitions.
 
-  - *server/docs/* &mdash; Složka obsahující dokumentaci kódu serverové části.
+    - *server/src/go.mod* — Go module definition.
 
-  - *server/src/* &mdash; Složka obsahující zdrojové kódy serverové části.
+    - *server/src/logging/logging.go* — Logging code.
 
-    - *server/src/const/* &mdash; Složka obsahující konstanty.
-      - *server/src/const/const_file/const_file.go* &mdash; Soubor s konstantami pro práci se soubory.
-      - *server/src/const/custom_errors/custom_errors.go* &mdash; Soubor s definicemi chyb.
-      - *server/src/const/exit_codes/exit_codes.go* &mdash; Soubor s konstantami pro návratové kódy.
-      - *server/src/const/msg/msg.go* &mdash; Soubor s definicemi uživatelských zpráv.
-      - *server/src/const/protocol/server_communication.go* &mdash; Soubor s definicemi síťového protokolu.
+    - *server/src/main.go* — Server entry point.<div style="page-break-after: always;"></div>
 
-    - *server/src/go.mod* &mdash; Soubor s definicí modulů Go.
+    - *server/src/server/* — Server management code.
+      - *server/src/server/connection_manager.go* — Connection management.
+      - *server/src/server/client_manager.go* — Client management.
 
-    - *server/src/logging/logging.go* &mdash; Soubor s kódem pro logování.
+    - *server/src/util/* — Utilities.
+      - *server/src/util/arg_parser/arg_parser.go* — CLI argument parsing.
+      - *server/src/util/cmd_validator/cmd_validator.go* — Network command validation.
+      - *server/src/util/msg_parser/msg_parser.go* — Message parsing.
+      - *server/src/util/util.go* — Helper functions.
 
-    - *server/src/main.go* &mdash; Soubor s kódem pro spuštění serveru.<div style="page-break-after: always;"></div>
+## 7. Implementation Details
 
-    - *server/src/server/* &mdash; Složka obsahující kód pro správu serveru.
-      - *server/src/server/connection_manager.go* &mdash; Soubor s kódem pro správu spojení.
-      - *server/src/server/client_manager.go* &mdash; Soubor s kódem pro správu klientů.
+This section covers only the most important parts of the code needed to understand how the application works. For more detail, see the developer reference documentation available in *docs/client_ref.html* and *docs/server_ref.html* (these link to *client/docs/* and *server/docs/*).
 
-    - *server/src/util/* &mdash; Složka obsahující pomocné funkce.
-      - *server/src/util/arg_parser/arg_parser.go* &mdash; Soubor s kódem pro parsování argumentů.
-      - *server/src/util/cmd_validator/cmd_validator.go* &mdash; Soubor s kódem pro validaci síťových příkazů.
-      - *server/src/util/msg_parser/msg_parser.go* &mdash; Soubor s kódem pro parsování zpráv.
-      - *server/src/util/util.go* &mdash; Soubor s pomocnými funkcemi.
+> The reference documentation is available only in English.
 
-## 7. Popis implementace
+### 7.1 Client
 
-Do popisu implementace budou převážně zahrnuty jen ty nejdůležitější části kódu potřebné pro pochopení principu fungování aplikace. Pro podrobnější informace je možné využít programátorskou referenční dokumentaci, která je dostupná v *docs/client_ref.html* a *docs/server_ref.html* (odkazují do *client/docs/* a *server/docs/* ).
+The client was implemented in Python using **pygame** for the GUI. The main components are split into modules by function.
 
-> Referenční dokumentace jsou dostupné pouze v angličtině.
+> All code lives under *client/src/*.
 
-### 7.1 Klientská část
+> **Note on naming/encapsulation:**  
+> In several places the Python client uses double leading underscores (e.g., `__example`) to mimic encapsulation via name-mangling. However, in Python the more appropriate and conventional way is to use a single leading underscore (e.g., `_example`) to indicate internal members.  
+> For clarity, maintainability, and consistency with Python practices, **any future development or derivative works should replace double underscores with single underscores**. The naming choice does not affect current functionality so it was left unchanged for this project.
 
-Klientská část aplikace byla implementována v jazyce Python s využití knihovny **pygame** pro grafické rozhraní. Hlavní součásti klienta jsou rozděleny do modulů podle jejich funkce.
+At runtime, a single main thread handles game logic, input processing, and GUI rendering. For asynchronous communication with the server, a dedicated thread is created, which uses synchronization primitives (Python *threading.Lock*, *threading.Event*, …) to process server messages and send responses.
+&nbsp;&nbsp;&nbsp;&nbsp;On each game-state change, a new thread is started to handle server communication appropriate to that state. If the client receives an unexpected message from the server (corrupted, invalid, not allowed in the current game state, etc.), it disconnects and prints an error.
+&nbsp;&nbsp;&nbsp;&nbsp;The program entry point is *main.py* and the `main()` function. It initializes the client application, loads configuration, loads assets, creates an instance of *IBGame* from *ib_game.py*, and starts the main game loop.<div style="page-break-after: always;"></div>
 
-> Veškerý kód se nachází pod složkou *client/src/*.
+#### Client modules
 
-Při běhu programu pracuje vždy jedno hlavní vlákno, které se stará o logiku hry, zpracovávání vstupů a vykreslování grafického rozhraní. Pro správu asynchronní komunikace se serverem je vždy vytvořeno vlastní vlákno, které pomocí synchronizačních přístupů (Python *threading.Lock*, *threading.Event*, ...) zpracovává zprávy od serveru a zasílá zpět odpovědi.
-&nbsp;&nbsp;&nbsp;&nbsp;Při každé změně stavu hry je spuštěno nové vlákno pro zpracovávání serverové komunikace odpovídající stavu hry. Pokud dostane klient neočekávanou zprávu od serveru (rozbitou, nevalidní, nesprávnou na základě stavu hry, apod.) dojde k odpojení od serveru a vypsání chybové hlášky.
-&nbsp;&nbsp;&nbsp;&nbsp;Vstupní bod programu je soubor *main.py* a metoda `main()`. Tato metoda inicializuje klientskou aplikaci, načte konfiguraci, nahraje zdroje, vytvoří instanci třídy *IBGame* z *ib_game.py* a spustí hlavní smyčku hry.<div style="page-break-after: always;"></div>
-
-#### Moduly klientské části
-
-1. **game** &mdash; Hlavní modul, který zastřešuje veškerou logiku hry.
+1. **game** — Central module covering all game logic.
     - *connection_manager.py*
-      - Spravuje připojení klienta k serveru pomocí socketů (používáním *generic_client.py*).
-      - Poskytuje API pro odesílání a příjem zpráv, které využívá *ib_game.py*.
+      - Manages the client’s socket connection to the server (using *generic_client.py*).
+      - Provides an API for send/receive that *ib_game.py* uses.
     - *ib_game.py*
-      - Spravuje celou logiku hry, jako je zpracování tahů a synchronizace herního stavu se serverem.
-      - Zde dochází ke správě grafického rozhraní a vstupů od uživatele.
-      - Drží informace o stavu hry a komunikuje se serverem pomocí *connection_manager.py* (metody, které síťové vlákna vykonávají mají prefix `__handle_net`).
-      - Obecně funguje na principu stavového automatu, kde každý stav odpovídá určité fázi hry.
-        - Vždy dochází k volání metody `update()` z *main.py*, která dále volá podmetody podle aktuálního stavu hry (`__update_main_menu()`, `__update_game_session()`, ...).
-        - V každé aktualizační podmetodě dochází k inicializaci grafického kontextu, případně vytvoření nového vlákna pro komunikaci se serverem (metody s prefixem `__prepare`), ke zpracování vstupů od uživatele (metoda `__proccess_input(events)`), k aktualizacím grafického rozhraní (metoda `update()` grafického kontextu), k vykreslení těchto změn (metoda `draw()` či `redraw()` grafického kontextu) a k případným aktualizacím stavu hry na základě odezvy od grafického rozhraní nebo serveru (metody s prefixem `__handle_update_feedback`).
-        - Četnost volání aktualizačních metod je závislá na *tick_speed* (v případě tohoto projektu srovnatelné se snímky za vteřinu) nastavené v konfiguračním souboru pomocí volání metody `clock.tick(tick_speed)` v *main.py* hlavní smyčce.
-        - Při přechodech mezi stavy hry vždy dochází k ukončování dříve spuštěných vláken.
-    - *ib_game_state.py*.
-      - Obsahuje třídu representující stav hry.<div style="page-break-after: always;"></div>
+      - Manages overall game logic such as handling turns and synchronizing state with the server.
+      - Manages the GUI and user input.
+      - Holds game state and communicates with the server via *connection_manager.py* (network-thread methods are prefixed `__handle_net`).
+      - Operates as a state machine, where each state corresponds to a game phase.
+        - `main.py` repeatedly calls `update()`, which dispatches to sub-methods based on the current state (`__update_main_menu()`, `__update_game_session()`, …).
+        - In each update sub-method, the GUI context is initialized, a new networking thread may be created (methods prefixed `__prepare`), inputs are processed (`__proccess_input(events)`), the GUI is updated (`update()` on the GUI context), changes are rendered (`draw()` or `redraw()` on the GUI context), and game state may be updated based on GUI/server feedback (methods prefixed `__handle_update_feedback`).
+        - The call frequency of update methods depends on *tick_speed* (comparable to frames per second) set in the config via `clock.tick(tick_speed)` in the main loop.
+        - When transitioning between game states, previously started threads are always terminated.
+    - *ib_game_state.py*
+      - Contains the class representing the game state.<div style="page-break-after: always;"></div>
 
-2. **graphics** &mdash; Modul pro vykreslování grafického rozhraní
+2. **graphics** — GUI rendering module
     - *viewport.py*
-      - Obsahuje třídu *Viewport*, kterou musí dědit všechny třídy, které chtějí vykreslovat do okna.
-      - Třída určuje kontrakt pro vykreslování a aktualizaci, který musí být dodržen.
-      - Každý potomek třídy *Viewport* musí implementovat metody:
-        - `redraw()`: Pro překreslení celého obsahu okna.
-        - `draw()`: Pro překreslení změněného obsahu okna.
-        - `update(events)`: Pro aktualizaci obsahu okna na základě změn (např. vstupů od uživatele, zpráv od serveru, ...).
+      - Defines the *Viewport* base class, which all window-rendering classes must inherit.
+      - Specifies the rendering/update contract that must be followed.
+      - Each subclass of *Viewport* must implement:
+        - `redraw()`: Repaint the entire window content.
+        - `draw()`: Repaint only changed content.
+        - `update(events)`: Update content based on changes (user input, server messages, …).
     - *game_session.py*
-      - Zajišťuje vykreslování herního prostředí a interakci uživatele s herní relací.
+      - Renders the game environment and handles user interaction with the session.
     - *menus*
-      - Obsahuje moduly pro tvorbu a správu herních menu, jako jsou vstupní obrazovky, lobby nebo nastavení.
+      - Modules for creating and managing menus like input screens, lobby, or settings.
 
-3. **util** &mdash; Modul pro pomocné funkce
-   - *assets_loader.py*: Zajišťuje načítání grafických a dalších zdrojů.
-   - *generic_client.py*: Představuje generického klienta pro komunikaci se serverem používajícího socketovou komunikaci.
-   - *loggers.py*: Implementuje vlastní logování pro snadněší diagnostiku a ladění.
-   - *init_setup.py*: Zajišťuje inicializaci klientské aplikace.
+3. **util** — Helper utilities
+   - *assets_loader.py*: Loads graphics and other assets.
+   - *generic_client.py*: Generic socket-based client for communicating with the server.
+   - *loggers.py*: Custom logging for easier diagnostics and debugging.
+   - *init_setup.py*: Client initialization.
 
-#### Použité knihovny klientské části
+#### Client libraries used
 
-- **pygame 2.6.0**: Pro vykreslování grafického rozhraní.
-- **pydantic 2.8.2**: Pro validaci dat.
-- **termcolor 2.5.0**: Pro barevné logování v terminálu.
-- **pyinstaller 6.11.1**: Pro sestavení spustitelných souborů.
+- **pygame 2.6.0**: GUI rendering.
+- **pydantic 2.8.2**: Data validation.
+- **termcolor 2.5.0**: Colored terminal logging.
+- **pyinstaller 6.11.1**: Building executables.
 
-#### Paralelizace klienta
+#### Client parallelism
 
-Klientská část využívá knihovny *threading* pro správu asynchronní komunikace se serverem, což umožňuje zpracovávat zprávy od serveru souběžně s vykreslováním a zpracováním vstupů uživatele. Při inicializaci každého stavu hry dochází k připravení grafického kontextu a k případnému vytvoření a spuštění vlákna pro komunikaci se serverem. Vlákno zpracovává zprávy od serveru a případně propaguje změny do hlavního vlákna:
+The client uses *threading* to manage asynchronous communication with the server, allowing server messages to be processed concurrently with rendering and input handling. When each game state is initialized, the GUI context is prepared and a networking thread may be created and started. The thread processes server messages and propagates changes to the main thread:
 
-- pomocí použítí *threading.Lock* zámku (`self.net_lock`) a:
-  - úpravou stavové proměnné reprezentující stav hry (`self.game_state`),
-  - úpravou speciální přoměnné pro správu herní relace (`self.__game_session_updates`);
-- pomocí smazání reference na grafický kontext, což vynutí inicializační metodu v dalším cyklu, která vykoná přípravu nového grafického kontextu, spuštění nového vlákna, ...<div style="page-break-after: always;"></div>
+- using a *threading.Lock* (`self.net_lock`) to:
+  - modify the variable representing game state (`self.game_state`),
+  - modify a special variable for managing the game session (`self.__game_session_updates`);
+- by clearing the reference to the current GUI context, which forces the next cycle’s initialization method to prepare a new GUI context, start a new thread, …
 
-Komunikace z hlavního vlákna do síťových vláken probíhá pomocí:
+Communication from the main thread to network threads uses:
 
-- *threading.Event* (`self.__end_net_handler_thread`, `self.do_exit`), které signalizuje ukončení vlákna,
-- *queue.Queue* (`self.__action_input_queue`), která slouží k předávání zpráv z herní relace do síťového vlákna.
+- *threading.Event* (`self.__end_net_handler_thread`, `self.do_exit`) to signal thread termination,
+- *queue.Queue* (`self.__action_input_queue`) to pass messages from the game session to the network thread.
+<div style="page-break-after: always;"></div>
 
-### 7.2 Serverová část
+### 7.2 Server
 
-Serverová část byla implementována v jazyce Go pro svou rychlost a efektivní práci s paralelizací. Byly využity pouze základní knihovny Go (pro síťovou komunikaci balíček *net*). Serverová část je rozdělena do modulů podle jejich funkcí.
+The server was implemented in Go for its speed and efficient concurrency. Only Go’s standard libraries were used (for networking, the *net* package). The server is divided into modules by function.
 
-> Veškerý kód se nachází pod složkou *server/src/*.
+> All code lives under *server/src/*.
 
-Vstupní bod serveru je soubor *main.go*, který načte konfiguraci, vytvoří instanci serveru a manažera klientů a spustí hlavní smyčku herního serveru (funkce `manageServer()`). Serverová část je rozdělena do tří hlavních modulů: *server*, *util* a *const*.
+The server entry point is *main.go*, which loads configuration, creates a server instance and a client manager, and starts the main game-server loop (function `manageServer()`). The server is divided into three main modules: *server*, *util*, and *const*.
 
-#### Moduly serverové části
+#### Server modules
 
-1. **server** &mdash; Hlavní modul, který zastřešuje veškerou logiku serveru.
+1. **server** — Central module covering server logic.
    - *connection_manager.go*
-      - Představuje jedno spojení mezi serverem a klientem.
-      - Definuje strukturu serveru, který je representován IP adresou a *net.Listenerem*.
-      - Obsahuje metody pro přijímání nových přípojení, zpracování jejich zpráv a odesílání zpráv.<div style="page-break-after: always;"></div>
+      - Represents a single connection between the server and a client.
+      - Defines the server structure represented by an IP address and a *net.Listener*.
+      - Contains methods to accept new connections, process their messages, and send messages.<div style="page-break-after: always;"></div>
    - *client_manager.go*
-      - Spravuje všechny klienty připojené k serveru a logiku spojenou s během herního serveru.
-      - Hlavní funkce je `ManageServer()`, která obsahuje hlavní smyčku serveru, která běží na hlavním vlákně.
-      - Naslouchá na SIGINT a SIGTERM signály pro ukončení serveru.
-      - Používá sdílené struktury (mapy) pro správu ne/ověřených klientů a lobby.
-      > Při káždém přístupu ke sdíleným strukturám (např. klienti, lobby, ...) využívá client_manager *rwmutexy* pro zajištění bezpečného synchronního přístupu.
-      - Hlavní smyčka serveru vypadá následovně:
-        1. Kontroluje kontrolní proměnné pro ukončení serveru.
-        2. Zavolá se funkce, která spravuje všechny aktivní lobby, které jsou hostované na serveru (funkce `ManageLobbies()`).
-            - Tato funkce zajišťuje správu herních relací. Na základě stavu každého lobby ho roztřídí do front čekajících na odbavení (`lobbiesToStart`, `lobbiesToAdvance`, `lobbiesToDelete`, ...).
-            - Všechny lobby se postupně pokusí odbavit a posunout do dalšího stavu, je-li to možné (funkce s prefixem `manageLobbies`).
-            - Při nutnosti poslání informační zprávy klientům používá *send* zámek, který je pro každý klient definován (případně posílá zprávy paralelně pomocí Gorutin, které pouze odesílají zprávy a hned končí).
-        3. Kontroluje, zda se nový klient nepokouší připojit k serveru. Pokud ano, vytvoří nové spojení a novou Gorutinu (vlákno), která bude neustále až do odpojení zpracovávat interakce od klienta.
-            > Každý nový klient má *recv* a *send* mutexy, které zajišťují bezpečný výlučný přístup k operacím prováděným nad sockety.
-            - Nejprve se pokusí klienta ověřit a přihlásit (na základě kontraktu protokolu). Při neúspěchu klienta odpojí a odebere ze sdílených struktur.
-            - Poté zpracovává zprávy od klienta a vykonává příslušné akce (např. vytvoření nové herní relace, připojení k existující herní relaci, příprava na změnu stavu lobby na základě příkazu od klienta, ...). Jedná se o funkce s prefixem *handle* (`handlePingCmd`, `handleJoinLobbyCmd`, ...). Při neplatném či nepovoleném rozkazu klienta odpojí, odebere ze sdílených struktur, případně označí klientovo lobby k odstranění.<div style="page-break-after: always;"></div>
+      - Manages all clients connected to the server and the logic associated with the running game server.
+      - The main function is `ManageServer()`, which contains the main server loop running on the main thread.
+      - Listens for SIGINT and SIGTERM to shut down gracefully.
+      - Uses shared structures (maps) to manage un/authenticated clients and lobbies.
+      > On each access to shared structures (e.g., clients, lobbies, …), *client_manager* uses RW mutexes to ensure safe synchronized access.
+      - The main server loop proceeds as follows:
+        1. Checks control variables for server shutdown.
+        2. Calls the function that manages all active lobbies hosted on the server (`ManageLobbies()`).
+            - This function manages game sessions. Based on each lobby’s state, it places it into queues for processing (`lobbiesToStart`, `lobbiesToAdvance`, `lobbiesToDelete`, ...).
+            - All lobbies are then processed and advanced to the next state if possible (functions prefixed `manageLobbies`).
+            - When it needs to send informational messages to clients, it uses a per-client *send* lock (or sends in parallel using goroutines that only send and then exit).
+        3. Checks whether a new client is trying to connect. If so, it creates a new connection and a new goroutine (thread) that will continuously process that client’s interactions until disconnection.
+            > Each new client has *recv* and *send* mutexes to ensure safe exclusive access to socket operations.
+            - It first attempts to authenticate and log in the client (according to the protocol contract). On failure, it disconnects the client and removes it from shared structures.
+            - It then processes client messages and performs corresponding actions (e.g., create a new game session, join an existing session, prepare a lobby state change based on a client command, …). These are functions prefixed *handle* (`handlePingCmd`, `handleJoinLobbyCmd`, …). For invalid or disallowed commands, the client is disconnected and removed from shared structures, and the client’s lobby may be marked for deletion.<div style="page-break-after: always;"></div>
 
-2. **util** &mdash; Modul pro pomocné funkce.
-   - *arg_parser.go*: Zajišťuje parsování argumentů při spouštění serveru.
-   - *cmd_validator.go*: Validuje příkazy přijaté od klientů.
-   - *msg_parser.go*: Zajišťuje správné formátování zpráv při odesílání a příjmu.
+2. **util** — Utilities.
+   - *arg_parser.go*: Parses command-line arguments when starting the server.
+   - *cmd_validator.go*: Validates commands received from clients.
+   - *msg_parser.go*: Formats messages for sending and receiving.
 
-3. **const** &mdash; Modul pro konstanty.
-   - *protocol/server_communication.go*: Obsahuje definice protokolu a formátu zpráv mezi klientem a serverem.
+3. **const** — Constants.
+   - *protocol/server_communication.go*: Protocol and message format definitions between client and server.
 
-4. **logging** &mdash; Modul pro logování.
-   - *logging.go*: Implementuje logování pro snadnější diagnostiku a ladění.
+4. **logging** — Logging.
+   - *logging.go*: Implements logging for easier diagnostics and debugging.
 
-#### Použité knihovny serverové části
+#### Server libraries used
 
-- Standardní knihovny Go: *net*, *os*, *fmt*, *sync*, *time*, ...
+- Go standard libraries: *net*, *os*, *fmt*, *sync*, *time*, ...
 
-#### Paralelizace
+#### Concurrency
 
-Server využívá gorutiny pro souběžné zpracování klientských požadavků. Pro synchronizaci dat jsou používány mutexy a kanály (*channels*). Každý nový klient má své vlastní mutexy pro zajištění bezpečného přístupu k socketům. Server využívá *sync.RWMutex* pro zajištění bezpečného přístupu k sdíleným strukturám (mapy klientů, lobby, ...).
+The server uses goroutines to handle client requests concurrently. Mutexes and channels are used for data synchronization. Each new client has its own mutexes to ensure safe access to sockets. The server uses *sync.RWMutex* to safely access shared structures (client maps, lobbies, ...).
 
-### 7.3 Detaily implementace
+### 7.3 Implementation specifics
 
-#### Síťová komunikace
+#### Network communication
 
-Protože posílání a příjem zpráv přes BSD sockety je ovlivněn implementací, kterou používá OS, bylo potřeba řešit situace, kdy mohlo přijít více zpráv najednou, nebo kdy byla zpráva rozdělena na více částí. Jak klient, tak server si pro každé připojení drží buffer, do kterého umí ukládat přebytečná data a zpracovávat je až při příští žádost o příjem zprávy. Pokud nepřijde celá zpráva, žádost o příjem se opakuje, dokud není zpráva kompletní nebo nevyprší časový limit pro zpracování celé zprávy. Nevýhodou je, že pokud by přisla zpráva neuplná a hned na ni jiná tentokrát validní zpráva, spojení by se považovalo za nevalidní a došlo by k odpojení. Tento postup je pro projekt takové velikosti dostatečný, ale pro větší projekty by bylo vhodné implementovat žádost o znovuodeslání zprávy.<div style="page-break-after: always;"></div>
+Because sending/receiving messages over BSD sockets is affected by the OS’s implementation, it was necessary to handle situations where multiple messages might arrive at once or a message might be split into parts. Both client and server keep a buffer for each connection, into which they can store extra data and process it during the next receive call. If a full message does not arrive, the receive request is repeated until the message is complete or the timeout for processing the entire message expires. A drawback is that if an incomplete message arrives followed immediately by another, this time valid, message, the connection would be considered invalid and disconnected. This approach is sufficient for a project of this size, but for larger projects it would be advisable to implement message retransmission requests.
+<div style="page-break-after: always;"></div>
 
-## 8. Závěr
+## 8. Conclusion
 
-Vytvoření elementární síťové hry pro dva hráče se podařilo. Hra má název *Inverse Battleships* a je inspirována klasickou hrou Lodě. Hra je rozdělena na klientskou a serverovou část. Klientská část je napsána v jazyce Python a serverová část v jazyce Go. V projektu bylo nutné řešit asynchronní komunikaci pomocí použití vláken na straně klienta a využití gorutin na straně serveru.
-&nbsp;&nbsp;&nbsp;&nbsp;Pro síťovou komunikaci byl použit vlastní protokol založený na TCP. Spojení je realizováno na nízké úrovni pomocí BSD socketů. Přes protokol jsou posílány nešifrované zprávy v plain text formátu, rozdělené a parsované na základě delimiterů a pravidel z protokolu.
-&nbsp;&nbsp;&nbsp;&nbsp;Hra je plně funkční a umožňuje hrát hru mezi dvěma hráči. Hra reaguje na vstupy od hráčů a zobrazuje herní stav v grafickém rozhraní. Hra umí i reagovat na neočekávané vstupy (odpojením) a zotavovat se z krátkodobé nedostupnosti serveru či klienta.
-&nbsp;&nbsp;&nbsp;&nbsp;Tento projekt poskytuje základ pro další rozšíření, jako je implementace šifrování zpráv, větší množství herních pravidel apod. Zároveň slouží jako užitečný studijní materiál pro pochopení základních principů síťové komunikace a herního designu.
+The creation of a simple networked game for two players was successful. The game is called *Inverse Battleships* and is inspired by classic Battleships. The project is split into a Python client and a Go server. The project required handling asynchronous communication using threads on the client side and goroutines on the server side.
+&nbsp;&nbsp;&nbsp;&nbsp;A custom TCP-based protocol was used for network communication. Connections are implemented at a low level using BSD sockets. Unencrypted plaintext messages are sent over the protocol, separated and parsed based on delimiters and protocol rules.
+&nbsp;&nbsp;&nbsp;&nbsp;The game is fully functional and can be played between two players. It responds to player input and displays the game state in the GUI. It can also react to unexpected input (by disconnecting) and recover from short-term server/client unavailability.
+&nbsp;&nbsp;&nbsp;&nbsp;This project provides a foundation for further extensions, such as encrypting messages or adding more game rules. It also serves as a useful study resource for understanding the basics of network communication and game design.
