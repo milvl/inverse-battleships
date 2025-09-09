@@ -5,6 +5,8 @@ The client is implemented in **Python** using **pygame** for rendering, and the 
 
 For detailed information about the project, please refer to the [documentation](./docs/doc.md).
 
+>For ease of use, a server is hosted at `94.130.104.142:8887`. You can connect to it using the client provided in this repository. NOTICE: The protocol is not secure (plain text), so avoid using sensitive information.
+
 ## Features
 - Two-player turn-based gameplay.
 - Shared 9×9 board with inverted ship rules:

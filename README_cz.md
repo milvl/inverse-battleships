@@ -5,6 +5,8 @@ Klient je implementován v **Pythonu** s využitím **pygame** pro vykreslován�
 
 Podrobné informace o projektu naleznete v [dokumentaci](./docs/doc_cz.md).
 
+>Pro snadné použití je zřízený server na adrese 94.130.104.142:8887. Můžete se k němu připojit pomocí klienta z tohoto repozitáře. UPOZORNĚNÍ: Protokol není zabezpečený (přenáší data v plain-text formátu), proto se vyhněte používání citlivých/osobních informací.
+
 ## Funkce
 - Tahová hra pro dva hráče.
 - Sdílené 9×9 pole s „obrácenými“ pravidly pro lodě:
